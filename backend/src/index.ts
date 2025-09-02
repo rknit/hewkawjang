@@ -11,7 +11,7 @@ app.get('/', (req: Request, res: Response) => {
       console.error(err);
       res.status(500).send('Error querying database');
     } else {
-      res.send(`Database time: ${result.rows[0].now}`);
+      res.send(`Database time: ${result.rows[0].now}}`);
     }
   });
 });
