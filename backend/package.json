@@ -2,21 +2,22 @@
 	"name": "backend",
 	"version": "1.0.0",
 	"scripts": {
-		"start": "ts-node src/index.ts",
-		"build": "tsc",
-		"serve": "node dist/index.js"
+		"start": "npx nodemon src/index.ts",
+		"build": "rimraf dist && tsc",
+		"precommit": "tsc --project tsconfig.json && npm run build && git add dist"
 	},
 	"devDependencies": {
 		"@types/express": "^5.0.3",
 		"@types/node": "^24.3.0",
 		"@types/pg": "^8.15.5",
-		"express": "^5.1.0",
 		"nodemon": "^3.1.10",
+		"rimraf": "^6.0.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
 		"dotenv": "^17.2.1",
+		"express": "^5.1.0",
 		"pg": "^8.16.3"
 	}
 }
