@@ -39,10 +39,11 @@ cd backend
 npm i
 ```
 
-Rename `.env.dev.template` to `.env` for dev environment
+Copy `.env.dev.template` and paste it as `.env` for dev environment
 
 ```bash
-mv .env.dev.template .env
+# Or run this command in mac or linux
+cp .env.dev.template .env
 ```
 
 The server should be running at `localhost:8080` when running this command
