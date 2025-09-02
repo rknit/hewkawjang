@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- expo go
+- [expo go](https://expo.dev/go)
 - node.js
 - npm
 - docker
@@ -32,6 +32,7 @@ Spin-up database
 ```bash
 TODO
 ```
+
 Set up backend project
 
 ```bash
