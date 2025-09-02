@@ -16,7 +16,7 @@ cd frontend
 npm i
 ```
 
-Try running
+Start the project by running this command
 
 ```bash
 # When running the project
@@ -41,8 +41,9 @@ Copy `.env.dev.template` and paste it as `.env` for dev environment
 cp .env.dev.template .env
 ```
 
-The server should be running at `localhost:8080` when running this command
+Once you've filled out all empty fields in `.env`, you can run the server by using this command
 
 ```bash
+# Server should be available at localhost:8080
 npm start
 ```
