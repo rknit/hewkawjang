@@ -5,6 +5,7 @@
 - node.js
 - npm
 - docker
+- [expo orbit](https://expo.dev/orbit) (for mobile development)
 
 ## Frontend
 
@@ -20,7 +21,7 @@ Try running
 ```bash
 # When running the project
 # Type 'w' to open in web
-# Type 'i' to open in IOS sim
+# Type 'i' to open in IOS sim (require expo orbit)
 npx expo start
 ```
 
