@@ -2,7 +2,6 @@
 
 ## Requirements
 
-- [expo go](https://expo.dev/go)
 - node.js
 - npm
 - docker
@@ -30,7 +29,13 @@ npx expo start
 Spin-up database
 
 ```bash
-TODO
+docker run -d \
+    --name hewkawjang-db \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_USER=postgres \
+    -e POSTGRES_DB=hewkawjang \
+    -p 5432:5432 \
+    postgres
 ```
 
 Set up backend project
@@ -40,7 +45,13 @@ cd backend
 npm i
 ```
 
-Try running
+Rename `.env.dev.template` to `.env` for dev environment
+
+```bash
+mv .env.dev.template .env
+```
+
+The server should be running at `localhost:8080` when running this command
 
 ```bash
 npm start
