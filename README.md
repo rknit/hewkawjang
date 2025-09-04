@@ -4,10 +4,9 @@
 
 - node.js
 - npm
-- docker
 - [expo orbit](https://expo.dev/orbit) (for mobile development)
 
-## Frontend
+## How to develop on Frontend
 
 Set up frontend project
 
@@ -25,7 +24,7 @@ Start the project by running this command
 npx expo start
 ```
 
-## Backend
+## How to develop on Backend
 
 Set up backend project
 
