@@ -1,0 +1,17 @@
+**/.DS_Store
+**/package-lock.json
+**/node_modules
+
+**/*.env
+**/.vercel
+
+**/*.DS_Store
+**/*.pem
+
+# local env files
+**/*.env*.local
+
+# typescript
+**/*.tsbuildinfo
+
+**/app-example

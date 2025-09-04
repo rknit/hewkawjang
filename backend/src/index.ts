@@ -1,19 +1,15 @@
 import express, { Request, Response } from 'express';
-import pool from './pool';
+import userRoute from './route/user.route';
 
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.get('/', (req: Request, res: Response) => {
-  // return SELECT NOW() from PostgreSQL
-  pool.query('SELECT NOW()', (err, result) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send('Error querying database');
-    } else {
-      res.send(`Database time: ${result.rows[0].now}}`);
-    }
-  });
+app.use(express.json());
+
+app.use('/users', userRoute);
+
+app.use((_: Request, res: Response) => {
+  res.status(403).send('Forbidden');
 });
 
 app.listen(port, () => {
