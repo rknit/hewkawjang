@@ -5,6 +5,7 @@
     "start": "npx nodemon src/index.ts",
     "build": "rimraf dist && tsc",
     "dev": "npm run sync:db && npm run start",
+    "prod": "npm run build && NODE_ENV=production node dist/index.js",
     "sync:db": "drizzle-kit push"
   },
   "devDependencies": {

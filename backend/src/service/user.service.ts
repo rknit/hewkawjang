@@ -6,14 +6,14 @@ export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
 
 export default class UserService {
-  static getUsers(
+  static async getUsers(
     props: { ids?: number[]; offset?: number; limit?: number } = {},
   ): Promise<User[]> {
     let offset = props.offset ?? 0;
     let limit = props.limit ?? 10;
 
     if (!props.ids) {
-      return db
+      return await db
         .select()
         .from(usersTable)
         .orderBy(asc(usersTable.id))
@@ -21,7 +21,7 @@ export default class UserService {
         .limit(limit);
     }
 
-    return db
+    return await db
       .select()
       .from(usersTable)
       .where(inArray(usersTable.id, props.ids))
@@ -30,7 +30,7 @@ export default class UserService {
       .limit(limit);
   }
 
-  static createUsers(data: NewUser[]): Promise<User[]> {
-    return db.insert(usersTable).values(data).returning();
+  static async createUsers(data: NewUser[]): Promise<User[]> {
+    return await db.insert(usersTable).values(data).returning();
   }
 }

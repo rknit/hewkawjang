@@ -4,7 +4,11 @@ import UserService from '../service/user.service';
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const props = req.body;
+  const props: {
+    ids?: number[];
+    offset?: number;
+    limit?: number;
+  } = req.body;
   const users = await UserService.getUsers(props);
   res.json(users);
 });
