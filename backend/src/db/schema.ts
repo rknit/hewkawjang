@@ -5,12 +5,7 @@ export const usersTable = pgTable('users', {
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email').notNull().unique(),
-});
 
-export const usersProfileTable = pgTable('users_profile', {
-  userId: serial('user_id')
-    .notNull()
-    .unique()
-    .references(() => usersTable.id),
-  displayName: text('display_name').notNull(),
+  displayName: text('display_name'),
+  profileUrl: text('profile_url'),
 });

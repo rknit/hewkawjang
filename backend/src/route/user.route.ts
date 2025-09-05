@@ -10,15 +10,13 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { firstName, lastName, email } = req.body;
-  const newUsers = await UserService.createUsers([
-    {
-      firstName: firstName!,
-      lastName: lastName!,
-      email: email!,
-    },
-  ]);
-  res.status(201).json(newUsers);
+  const data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  } = req.body;
+  const newUser = await UserService.createUsers([data]);
+  res.status(201).json(newUser);
 });
 
 export default router;
