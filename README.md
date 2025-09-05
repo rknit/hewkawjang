@@ -11,6 +11,7 @@
 Set up frontend project
 
 ```bash
+# make sure you're in the 'frontend' directory
 cd frontend
 npm i
 ```
@@ -26,23 +27,19 @@ npx expo start
 
 ## How to develop on Backend
 
-Set up backend project
-
 ```bash
+# make sure you're in the 'backend' directory
 cd backend
 npm i
 ```
 
 Copy `.env.dev.template` and paste it as `.env` for dev environment
+then fill all empty fields in `.env`
+
+To start the backend, run
 
 ```bash
-# Or run this command in mac or linux
-cp .env.dev.template .env
-```
-
-Once you've filled out all empty fields in `.env`, you can run the server by using this command
-
-```bash
-# Server should be available at localhost:8080
-npm start
+# Server should be available at localhost:8080.
+# The server also reload automatically when making changes.
+npm run dev
 ```
