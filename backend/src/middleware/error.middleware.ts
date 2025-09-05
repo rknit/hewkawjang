@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import createHttpError from 'http-errors';
 
 export default function errorHandler(
   error: any,
@@ -23,7 +24,19 @@ export default function errorHandler(
 
   const isProduction = process.env.NODE_ENV === 'production';
 
-  res.status(error.status || 500).json({
+  // If the error is an HTTP error, use its status and message
+  if (createHttpError.isHttpError(error)) {
+    res.status(error.status).json({
+      error: {
+        message: error.message,
+        ...(isProduction ? {} : { req: reqDisp, stack: error.stack }), // Only show stack in development
+      },
+    });
+    return;
+  }
+
+  // For unexpected errors, respond with 500
+  res.status(500).json({
     error: {
       message: 'Internal Server Error',
       ...(isProduction ? {} : { req: reqDisp, stack: error.stack }), // Only show stack in development

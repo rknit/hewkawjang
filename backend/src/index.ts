@@ -9,8 +9,12 @@ app.use(express.json());
 
 app.use('/users', userRoute);
 
+app.get('/', (_: Request, res: Response) => {
+  res.status(200).send('Hello, World!');
+});
+
 app.use((_: Request, res: Response) => {
-  res.status(403).send('Forbidden');
+  res.status(404).send('Not Found');
 });
 
 // make sure error handler is the last middleware

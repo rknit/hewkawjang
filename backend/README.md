@@ -50,6 +50,8 @@ When updating `schema.ts`, run this command to sync Supabase DB
 npm run sync:db
 ```
 
+If the command hangs, try changing `SUPABASE_DB_URL` port in `.env` file to `5432`, and re-run the command.
+
 ### Vercel
 
 Don't do anything related to Vercel in backend for now.

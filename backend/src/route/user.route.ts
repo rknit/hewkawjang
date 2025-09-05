@@ -5,11 +5,11 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   const props: {
-    ids?: number[];
+    id?: number;
     offset?: number;
     limit?: number;
   } = req.body;
-  const users = await UserService.getUsers(props);
+  const users = await UserService.getUser(props);
   res.json(users);
 });
 
@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
     lastName: string;
     email: string;
   } = req.body;
-  const newUser = await UserService.createUsers([data]);
+  const newUser = await UserService.createUser(data);
   res.status(201).json(newUser);
 });
 
