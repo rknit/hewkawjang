@@ -45,4 +45,27 @@ export default class UserService {
     let [newUser] = await db.insert(usersTable).values(data).returning();
     return newUser;
   }
+
+  /*
+    In our documentation, it states that user's information should be changed to NULL, but in schema, it is not allowed to be NULL.
+    Therefore, I set default values for soft deleted users. 
+  */
+  static async softDeleteUser(userId: number): Promise<void> {
+    try {
+      const result = await db.update(usersTable)
+        .set({
+          firstName: 'Deleted',
+          lastName: 'User',
+          email: `deleted_${userId}@gmail.com`,
+          phone_no: '0000000000',
+          displayName: 'Deleted User',
+          profileUrl: null,
+        })
+        .where(eq(usersTable.id, userId))
+        .returning();
+    } catch (error) {
+      console.error('Error soft deleting user:', error);
+      throw new Error('Could not soft delete user');
+    }
+  }
 }
