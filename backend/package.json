@@ -9,6 +9,7 @@
     "sync:db": "drizzle-kit push"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.3",
     "@types/node": "^24.3.0",
     "drizzle-kit": "^0.31.4",
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
