@@ -3,6 +3,8 @@ import request from 'supertest';
 import UserService from '../service/user.service';
 
 jest.mock('../service/user.service');
+
+// IMPORTANT: mock client so that it won't error out when SUPABASE_DB_URL is not set in automated tests
 jest.mock('../db', () => ({
   client: jest.fn(),
 }));

@@ -36,6 +36,7 @@ jest.mock('../db', () => ({
   db: {
     select: jest.fn(),
   },
+  // IMPORTANT: mock client so that it won't error out when SUPABASE_DB_URL is not set in automated tests
   client: jest.fn(),
 }));
 
