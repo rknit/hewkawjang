@@ -1,16 +1,48 @@
-import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import {
+  inArray,
+  InferInsertModel,
+  InferSelectModel,
+  asc,
+  eq,
+} from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { db } from '../db';
+import createHttpError from 'http-errors';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
 
 export default class UserService {
-  static async getUsers(): Promise<User[]> {
-    return await db.select().from(usersTable);
+  static async getUsers(
+    props: { ids?: number[]; offset?: number; limit?: number } = {},
+  ): Promise<User[]> {
+    let offset = props.offset ?? 0;
+    let limit = props.limit ?? 10;
+
+    let query = db
+      .select()
+      .from(usersTable)
+      .orderBy(asc(usersTable.id))
+      .offset(offset)
+      .limit(limit);
+
+    if (props.ids && props.ids.length > 0) {
+      return await query.where(inArray(usersTable.id, props.ids));
+    }
+    return await query;
   }
 
-  static async createUsers(data: NewUser[]): Promise<User[]> {
-    return await db.insert(usersTable).values(data).returning();
+  static async createUser(data: NewUser): Promise<User> {
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
+    if (dup.length > 0) {
+      throw createHttpError.Conflict('Email already exists');
+    }
+
+    let [newUser] = await db.insert(usersTable).values(data).returning();
+    return newUser;
   }
 }

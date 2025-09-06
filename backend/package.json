@@ -4,7 +4,9 @@
   "scripts": {
     "start": "npx nodemon src/index.ts",
     "build": "rimraf dist && tsc",
-    "precommit": "tsc --project tsconfig.json && npm run build && git add dist"
+    "dev": "npm run sync:db && npm run start",
+    "prod": "npm run build && NODE_ENV=production node dist/index.js",
+    "sync:db": "drizzle-kit push"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
@@ -16,9 +18,11 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.2",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
+    "http-errors": "^2.0.0",
     "postgres": "^3.4.7"
   }
 }

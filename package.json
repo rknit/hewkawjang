@@ -1,0 +1,8 @@
+{
+	"name": "hewkawjang",
+	"version": "1.0.0",
+	"scripts": {
+		"frontend": "cd frontend && npm start",
+		"backend": "cd backend && npm run dev"
+	}
+}
