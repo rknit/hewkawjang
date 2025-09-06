@@ -22,6 +22,10 @@ app.use((_: Request, res: Response) => {
 // make sure error handler is the last middleware
 app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}
+
+export default app;

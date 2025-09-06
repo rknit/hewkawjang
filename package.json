@@ -3,6 +3,8 @@
 	"version": "1.0.0",
 	"scripts": {
 		"frontend": "cd frontend && npm start",
-		"backend": "cd backend && npm run dev"
+		"backend": "cd backend && npm run dev",
+		"test:backend": "cd backend && npm run test",
+		"test": "npm run test:backend"
 	}
 }
