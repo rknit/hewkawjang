@@ -11,7 +11,7 @@ let mockUsers: User[] = [
     phone_no: '+1234567890',
     displayName: 'John Doe',
     profileUrl: 'https://example.com/avatars/john.jpg',
-  },
+  } as User,
   {
     id: 2,
     firstName: 'Jane',
@@ -20,7 +20,7 @@ let mockUsers: User[] = [
     phone_no: '+1987654321',
     displayName: 'Jane Smith',
     profileUrl: null,
-  },
+  } as User,
   {
     id: 3,
     firstName: 'Bob',
@@ -29,13 +29,14 @@ let mockUsers: User[] = [
     phone_no: '+1555123456',
     displayName: null,
     profileUrl: 'https://example.com/avatars/bob.jpg',
-  },
+  } as User,
 ];
 
 jest.mock('../db', () => ({
   db: {
     select: jest.fn(),
   },
+  // IMPORTANT: mock client so that it won't error out when SUPABASE_DB_URL is not set in automated tests
   client: jest.fn(),
 }));
 
