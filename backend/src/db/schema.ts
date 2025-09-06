@@ -13,6 +13,7 @@ export const usersTable = pgTable('users', {
 
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
+  ownerId: integer('owner_id').references(() => usersTable.id),
   name: text('name').notNull().unique(),
   phoneNo: text('phone_no').notNull(),
   // address
