@@ -13,3 +13,6 @@
 **/*.tsbuildinfo
 
 **/app-example
+
+# jest coverage reports
+**/coverage/
