@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import userRoute from './route/user.route';
+import userRoute from './routes/user.routes';
 import errorHandler from './middleware/error.middleware';
 
 const app = express();
