@@ -2,7 +2,6 @@ import { InferInsertModel, InferSelectModel, asc, eq } from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
-import { checkPostgresError } from '../utils/http-helper';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
@@ -28,21 +27,16 @@ export default class UserService {
   }
 
   static async createUser(data: NewUser): Promise<User> {
-    try {
-      let [newUser] = await db.insert(usersTable).values(data).returning();
-      return newUser;
-    } catch (error) {
-      // check if error is due to duplicate email
-      if (
-        checkPostgresError(
-          error,
-          (error) => error.code === '23505' && error.detail?.includes('email'),
-        )
-      ) {
-        throw createHttpError.Conflict('Email already exists');
-      }
-
-      throw error;
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
+    if (dup.length > 0) {
+      throw createHttpError.Conflict('Email already exists');
     }
+
+    let [newUser] = await db.insert(usersTable).values(data).returning();
+    return newUser;
   }
 }
