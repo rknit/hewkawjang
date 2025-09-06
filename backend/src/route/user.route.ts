@@ -13,4 +13,9 @@ router.post('/', async (req, res) => {
   res.status(201).json(newUser);
 });
 
+// register a new user
+router.post('/register', async (req, res) => {
+  const newUser = await UserService.createUser(req.body);
+  res.status(201).json(newUser);
+});
 export default router;
