@@ -4,22 +4,12 @@ import UserService from '../service/user.service';
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const props: {
-    id?: number;
-    offset?: number;
-    limit?: number;
-  } = req.body;
-  const users = await UserService.getUser(props);
+  const users = await UserService.getUsers(req.body);
   res.json(users);
 });
 
 router.post('/', async (req, res) => {
-  const data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  } = req.body;
-  const newUser = await UserService.createUser(data);
+  const newUser = await UserService.createUser(req.body);
   res.status(201).json(newUser);
 });
 

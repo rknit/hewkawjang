@@ -1,4 +1,10 @@
-import { InferInsertModel, InferSelectModel, asc, eq } from 'drizzle-orm';
+import {
+  inArray,
+  InferInsertModel,
+  InferSelectModel,
+  asc,
+  eq,
+} from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -7,8 +13,8 @@ export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
 
 export default class UserService {
-  static async getUser(
-    props: { id?: number; offset?: number; limit?: number } = {},
+  static async getUsers(
+    props: { ids?: number[]; offset?: number; limit?: number } = {},
   ): Promise<User[]> {
     let offset = props.offset ?? 0;
     let limit = props.limit ?? 10;
@@ -20,8 +26,8 @@ export default class UserService {
       .offset(offset)
       .limit(limit);
 
-    if (props.id) {
-      return await query.where(eq(usersTable.id, props.id));
+    if (props.ids && props.ids.length > 0) {
+      return await query.where(inArray(usersTable.id, props.ids));
     }
     return await query;
   }
