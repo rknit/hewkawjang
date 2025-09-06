@@ -1,0 +1,33 @@
+name: test-backend
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "backend/**"
+    pull_request:
+        branches:
+            - main
+        paths:
+            - "backend/**"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v5
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 24
+
+            - name: Install backend dependencies
+              working-directory: ./backend
+              run: npm ci
+
+            - name: Run backend tests
+              working-directory: ./backend
+              run: npm run test
