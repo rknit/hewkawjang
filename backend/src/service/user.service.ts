@@ -46,4 +46,18 @@ export default class UserService {
     let [newUser] = await db.insert(usersTable).values(data).returning();
     return newUser;
   }
+  static async loginUser(data: User): Promise<User> {
+    let loginUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email));
+    if (loginUser.length === 0) {
+      throw createHttpError.NotFound('User not found');
+    }
+    const isMatch = await comparePassword(data.password, loginUser[0].password);
+    if (!isMatch) {
+      throw createHttpError.Unauthorized('Invalid password');
+    }
+    return loginUser[0];
+  }
 }
