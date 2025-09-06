@@ -32,7 +32,12 @@ let mockUsers: User[] = [
   },
 ];
 
-jest.mock('../db');
+jest.mock('../db', () => ({
+  db: {
+    select: jest.fn(),
+  },
+  client: jest.fn(),
+}));
 
 describe('User Service', () => {
   beforeEach(() => {

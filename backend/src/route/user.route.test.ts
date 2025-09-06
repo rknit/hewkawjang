@@ -1,8 +1,11 @@
 import app from '..';
 import request from 'supertest';
-import UserService, { User } from '../service/user.service';
+import UserService from '../service/user.service';
 
 jest.mock('../service/user.service');
+jest.mock('../db', () => ({
+  client: jest.fn(),
+}));
 
 describe('User Routes', () => {
   beforeEach(() => {
