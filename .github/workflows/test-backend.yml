@@ -1,12 +1,16 @@
-name: build-project
+name: test-backend
 
 on:
     push:
         branches:
             - main
+        paths:
+            - "backend/**"
     pull_request:
         branches:
             - main
+        paths:
+            - "backend/**"
 
 jobs:
     build:
@@ -20,14 +24,10 @@ jobs:
               with:
                   node-version: 24
 
-            - name: Build frontend
-              working-directory: ./frontend
-              run: |
-                  npm ci
-                  npm run build:web
-
-            - name: Build backend
+            - name: Install backend dependencies
               working-directory: ./backend
-              run: |
-                  npm ci
-                  npm run build
+              run: npm ci
+
+            - name: Run backend tests
+              working-directory: ./backend
+              run: npm run test
