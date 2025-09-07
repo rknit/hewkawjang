@@ -52,11 +52,11 @@ export default class UserService {
       .from(usersTable)
       .where(eq(usersTable.email, data.email));
     if (loginUser.length === 0) {
-      throw createHttpError.NotFound('User not found');
+      throw createHttpError.Unauthorized('Invalid email or password');
     }
     const isMatch = await comparePassword(data.password, loginUser[0].password);
     if (!isMatch) {
-      throw createHttpError.Unauthorized('Invalid password');
+      throw createHttpError.Unauthorized('Invalid email or password');
     }
     return loginUser[0];
   }
