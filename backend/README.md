@@ -34,8 +34,8 @@ backend/
     ├── index.ts                # Main application entry point (add `app.use(router/middleware)` here)
     ├── db/
     │   └── schema.ts           # Database schema definitions
-    ├── route/                  # All HewKawJang API Routes
-    │   └── *.route.ts          # Put API Route here (e.g. `/users` is `user.api.ts`)
+    ├── routes/                  # All HewKawJang API Routes
+    │   └── *.routes.ts          # Put API Route here (e.g. `/users` is `user.api.ts`)
     ├── middleware/             # Reusable middlewares
     │   └── *.middleware.ts     # Put middleware here
     └── service/                # Code that interact with database or 3rd-party API
