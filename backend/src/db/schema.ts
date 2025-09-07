@@ -9,4 +9,5 @@ export const usersTable = pgTable('users', {
   password: text('password').notNull(),
   displayName: text('display_name'),
   profileUrl: text('profile_url'),
+  isVerified: text('is_verified').default('false').$type<boolean | string>(),
 });
