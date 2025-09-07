@@ -8,7 +8,7 @@ import {
 import { usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
-import { hashPassword, comparePassword } from "../utils/hash";
+import { hashPassword, comparePassword } from '../utils/hash';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;

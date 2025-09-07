@@ -31,15 +31,24 @@ npm run dev
 ```text
 backend/
 └── src/
-    ├── index.ts                # Main application entry point (add `app.use(router/middleware)` here)
+    ├── index.ts                    # Main application entry point (add `app.use(router/middleware)` here)
     ├── db/
-    │   └── schema.ts           # Database schema definitions
-    ├── routes/                  # All HewKawJang API Routes
-    │   └── *.routes.ts          # Put API Route here (e.g. `/users` is `user.api.ts`)
-    ├── middleware/             # Reusable middlewares
-    │   └── *.middleware.ts     # Put middleware here
-    └── service/                # Code that interact with database or 3rd-party API
-        └── *.service.ts        # Put business logic here (e.g. user management is `user.service.ts`)
+    │   └── schema.ts               # Database schema definitions
+    ├── routes/                     # All HewKawJang API Routes
+    │   ├── *.routes.ts             # Put API Route here (e.g. `/users` is `user.routes.ts`)
+    │   └── *.routes.test.ts        # Put tests for routes here
+    ├── middleware/                 # Reusable middlewares
+    │   ├── *.middleware.ts         # Put middleware here
+    │   └── *.middleware.test.ts    # Put tests for middlewares here
+    └── service/                    # Code that interact with database or 3rd-party API
+        ├── *.service.ts            # Put business logic here (e.g. user management is `user.service.ts`)
+        └── *.service.test.ts       # Put tests for services here
+```
+
+### Test
+
+```bash
+npm run test
 ```
 
 ### Database Sync
