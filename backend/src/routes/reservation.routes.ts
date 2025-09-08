@@ -16,7 +16,7 @@ router.get('/unconfirmed/inspect', async (req, res) => {
     offset,
   });
 
-  res.json(reservations);
+  return res.json(reservations);
 });
 
 export default router;
