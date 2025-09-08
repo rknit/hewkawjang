@@ -20,9 +20,9 @@ router.post('/register', async (req, res) => {
 });
 
 // User login
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   const loginUser = await UserService.loginUser(req.body);
-  res.status(201).json(loginUser);  
+  res.status(201).json(loginUser);
 });
 
 export default router;

@@ -33,6 +33,7 @@
     "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
     "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
     "postgres": "^3.4.7"
   }
 }

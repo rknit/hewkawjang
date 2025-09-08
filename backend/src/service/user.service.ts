@@ -4,6 +4,7 @@ import {
   InferSelectModel,
   asc,
   eq,
+  InferColumnsDataTypes,
 } from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { db } from '../db';
@@ -12,6 +13,11 @@ import { hashPassword, comparePassword } from '../utils/hash';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
+
+export type LoginUser = {
+  email: string;
+  password: string;
+};
 
 export default class UserService {
   static async getUsers(
@@ -46,7 +52,8 @@ export default class UserService {
     let [newUser] = await db.insert(usersTable).values(data).returning();
     return newUser;
   }
-  static async loginUser(data: User): Promise<User> {
+
+  static async loginUser(data: LoginUser): Promise<User> {
     let loginUser = await db
       .select()
       .from(usersTable)
@@ -54,10 +61,13 @@ export default class UserService {
     if (loginUser.length === 0) {
       throw createHttpError.Unauthorized('Invalid email or password');
     }
-    const isMatch = await comparePassword(data.password, loginUser[0].password);
+    let user = loginUser[0];
+
+    const isMatch = await comparePassword(data.password, user.password);
     if (!isMatch) {
       throw createHttpError.Unauthorized('Invalid email or password');
     }
-    return loginUser[0];
+
+    return user;
   }
 }
