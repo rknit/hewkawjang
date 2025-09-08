@@ -7,6 +7,16 @@ if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
+// Extend Express Request interface to include authPayload and authRefreshToken
+declare global {
+  namespace Express {
+    interface Request {
+      authPayload?: JwtPayload;
+      authRefreshToken?: string;
+    }
+  }
+}
+
 export type JwtPayload = {
   userEmail: string;
   userId: number;

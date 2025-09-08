@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
-import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
+import {
+  ACCESS_TOKEN_SECRET,
+  JwtPayload,
+  REFRESH_TOKEN_SECRET,
+} from '../utils/jwt';
 
 export default function authHandler(
   req: Request,
@@ -17,7 +21,7 @@ export default function authHandler(
     if (err) {
       return next(createHttpError.Unauthorized());
     }
-    (req as any).authPayload = decoded;
+    req.authPayload = decoded as JwtPayload;
     next();
   });
 }
@@ -36,8 +40,8 @@ export function refreshAuthHandler(
     if (err) {
       return next(createHttpError.Unauthorized());
     }
-    (req as any).authRefreshToken = refreshToken;
-    (req as any).authPayload = decoded;
+    req.authRefreshToken = refreshToken;
+    req.authPayload = decoded as JwtPayload;
     next();
   });
 }

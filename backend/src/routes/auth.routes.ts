@@ -18,14 +18,15 @@ router.post('/login', async (req, res) => {
 
 // Token refresh
 router.post('/refresh', refreshAuthHandler, async (req, res) => {
-  const refreshToken = (req as any).authRefreshToken;
-  const data = (req as any).authPayload;
-  if (!refreshToken || !data) {
+  if (!req.authRefreshToken || !req.authPayload) {
     // This should not happen due to the middleware, but just in case
     throw createHttpError.InternalServerError();
   }
 
-  const tokens = await AuthService.refreshTokens(refreshToken, data);
+  const tokens = await AuthService.refreshTokens(
+    req.authRefreshToken,
+    req.authPayload,
+  );
   res.status(200).json(tokens);
 });
 
