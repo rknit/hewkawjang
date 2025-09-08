@@ -1,12 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { comparePassword } from '../utils/hash';
-import {
-  genJwtAccessToken,
-  genJwtTokens,
-  JwtPayload,
-  JwtTokens,
-} from '../utils/jwt';
+import { genJwtTokens, JwtPayload, JwtTokens } from '../utils/jwt';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 
