@@ -17,14 +17,7 @@ export const usersTable = pgTable('users', {
   password: text('password').notNull(),
   displayName: text('display_name'),
   profileUrl: text('profile_url'),
-});
-
-export const usersAuthTable = pgTable('users_auth', {
-  userId: integer('user_id')
-    .notNull()
-    .references(() => usersTable.id)
-    .unique(),
-  refreshToken: text('refresh_token').notNull(),
+  refreshToken: text('refresh_token'),
 });
 
 export const restaurantTable = pgTable('restaurant', {

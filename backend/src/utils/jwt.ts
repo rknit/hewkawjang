@@ -1,16 +1,11 @@
-import { User } from '../service/user.service';
 import jwt from 'jsonwebtoken';
 
-const access_token_secret = process.env.ACCESS_TOKEN_SECRET;
-const refresh_token_secret = process.env.REFRESH_TOKEN_SECRET;
-
-if (!access_token_secret) {
-  throw new Error('ACCESS_TOKEN_SECRET is not defined');
+if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
+  throw new Error('JWT secrets must be defined in environment variables');
 }
 
-if (!refresh_token_secret) {
-  throw new Error('REFRESH_TOKEN_SECRET is not defined');
-}
+export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
 export type JwtPayload = {
   userEmail: string;
@@ -22,23 +17,21 @@ export type JwtTokens = {
   refresh_token: string;
 };
 
-export function genJwtTokens(user: User): JwtTokens {
-  const access_token = genJwtAccessToken(user);
-  const refresh_token = genJwtRefreshToken(user);
+export function genJwtTokens(payload: JwtPayload): JwtTokens {
+  const access_token = genJwtAccessToken(payload);
+  const refresh_token = genJwtRefreshToken(payload);
   return { access_token, refresh_token };
 }
 
-export function genJwtAccessToken(user: User): string {
-  let payload: JwtPayload = { userEmail: user.email, userId: user.id };
-  return jwt.sign(payload, access_token_secret!, {
+export function genJwtAccessToken(payload: JwtPayload): string {
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
     expiresIn: '1m',
     algorithm: 'HS256',
   });
 }
 
-export function genJwtRefreshToken(user: User): string {
-  let payload: JwtPayload = { userEmail: user.email, userId: user.id };
-  return jwt.sign(payload, refresh_token_secret!, {
+export function genJwtRefreshToken(payload: JwtPayload): string {
+  return jwt.sign(payload, REFRESH_TOKEN_SECRET, {
     expiresIn: '1d',
     algorithm: 'HS256',
   });
