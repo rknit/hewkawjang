@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import userRoute from './routes/user.routes';
 import restaurantRoute from './routes/restaurant.routes';
+import reservationRoute from './routes/reservation.routes';
 import errorHandler from './middleware/error.middleware';
 
 const app = express();
@@ -10,6 +11,7 @@ app.use(express.json());
 
 app.use('/users', userRoute);
 app.use('/restaurants', restaurantRoute);
+app.use('/reservations', reservationRoute);
 
 app.get('/', (_: Request, res: Response) => {
   res.status(200).send('Hello, World!');
