@@ -1,14 +1,30 @@
-import { pgTable, serial, text , time, integer, timestamp, pgEnum} from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  time,
+  integer,
+  timestamp,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email').notNull().unique(),
-  phone_no: text('phone_no').notNull(),
+  phoneNo: text('phone_no').notNull(),
   password: text('password').notNull(),
   displayName: text('display_name'),
   profileUrl: text('profile_url'),
+});
+
+export const usersAuthTable = pgTable('users_auth', {
+  userId: integer('user_id')
+    .notNull()
+    .references(() => usersTable.id)
+    .unique(),
+  refreshToken: text('refresh_token').notNull(),
 });
 
 export const restaurantTable = pgTable('restaurant', {
@@ -41,8 +57,12 @@ export const reservationStatusEnum = pgEnum('reservation_status', [
 
 export const reservationTable = pgTable('reservation', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => usersTable.id),
-  restaurantId: integer('restaurant_id').notNull().references(() => restaurantTable.id),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => usersTable.id),
+  restaurantId: integer('restaurant_id')
+    .notNull()
+    .references(() => restaurantTable.id),
   reserveAt: timestamp('reserve_at').notNull(),
   numberOfElderly: integer('number_of_elderly').default(0),
   numberOfAdult: integer('number_of_adult').default(0),

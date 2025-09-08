@@ -4,12 +4,12 @@ import {
   InferSelectModel,
   asc,
   eq,
-  InferColumnsDataTypes,
 } from 'drizzle-orm';
-import { usersTable } from '../db/schema';
+import { usersAuthTable, usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword, comparePassword } from '../utils/hash';
+import { genJwtTokens, JwtTokens } from '../utils/jwt';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
@@ -53,7 +53,7 @@ export default class UserService {
     return newUser;
   }
 
-  static async loginUser(data: LoginUser): Promise<User> {
+  static async loginUser(data: LoginUser): Promise<JwtTokens> {
     let loginUser = await db
       .select()
       .from(usersTable)
@@ -68,6 +68,17 @@ export default class UserService {
       throw createHttpError.Unauthorized('Invalid email or password');
     }
 
-    return user;
+    const tokens = genJwtTokens(user);
+
+    // Store refresh token in database
+    await db
+      .insert(usersAuthTable)
+      .values({ userId: user.id, refreshToken: tokens.refresh_token })
+      .onConflictDoUpdate({
+        target: usersAuthTable.userId,
+        set: { refreshToken: tokens.refresh_token },
+      });
+
+    return tokens;
   }
 }
