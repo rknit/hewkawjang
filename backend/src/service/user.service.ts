@@ -5,19 +5,13 @@ import {
   asc,
   eq,
 } from 'drizzle-orm';
-import { usersAuthTable, usersTable } from '../db/schema';
+import { usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
-import { hashPassword, comparePassword } from '../utils/hash';
-import { genJwtTokens, JwtTokens } from '../utils/jwt';
+import { hashPassword } from '../utils/hash';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
-
-export type LoginUser = {
-  email: string;
-  password: string;
-};
 
 export default class UserService {
   static async getUsers(
@@ -51,34 +45,5 @@ export default class UserService {
     data.password = await hashPassword(data.password);
     let [newUser] = await db.insert(usersTable).values(data).returning();
     return newUser;
-  }
-
-  static async loginUser(data: LoginUser): Promise<JwtTokens> {
-    let loginUser = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, data.email));
-    if (loginUser.length === 0) {
-      throw createHttpError.Unauthorized('Invalid email or password');
-    }
-    let user = loginUser[0];
-
-    const isMatch = await comparePassword(data.password, user.password);
-    if (!isMatch) {
-      throw createHttpError.Unauthorized('Invalid email or password');
-    }
-
-    const tokens = genJwtTokens(user);
-
-    // Store refresh token in database
-    await db
-      .insert(usersAuthTable)
-      .values({ userId: user.id, refreshToken: tokens.refresh_token })
-      .onConflictDoUpdate({
-        target: usersAuthTable.userId,
-        set: { refreshToken: tokens.refresh_token },
-      });
-
-    return tokens;
   }
 }

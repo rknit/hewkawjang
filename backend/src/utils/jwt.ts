@@ -31,7 +31,7 @@ export function genJwtTokens(user: User): JwtTokens {
 export function genJwtAccessToken(user: User): string {
   let payload: JwtPayload = { userEmail: user.email, userId: user.id };
   return jwt.sign(payload, access_token_secret!, {
-    expiresIn: '5m',
+    expiresIn: '1m',
     algorithm: 'HS256',
   });
 }

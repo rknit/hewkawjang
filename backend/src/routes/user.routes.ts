@@ -8,24 +8,10 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
-router.post('/', async (req, res) => {
-  const newUser = await UserService.createUser(req.body);
-  res.status(201).json(newUser);
-});
-
 // register a new user
 router.post('/register', async (req, res) => {
   const newUser = await UserService.createUser(req.body);
   res.status(201).json(newUser);
 });
-
-// User login
-router.post('/login', async (req, res) => {
-  const token = await UserService.loginUser(req.body);
-  res.status(200).json(token);
-});
-
-// Token refresh
-router.post('/refresh', async (req, res) => {});
 
 export default router;
