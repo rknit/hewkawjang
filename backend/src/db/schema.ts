@@ -9,7 +9,6 @@ export const usersTable = pgTable('users', {
   password: text('password').notNull(),
   displayName: text('display_name'),
   profileUrl: text('profile_url'),
-  isVerified: integer('is_verified').default(0).notNull(),
 });
 
 export const restaurantTable = pgTable('restaurant', {
