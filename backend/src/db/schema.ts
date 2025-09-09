@@ -1,4 +1,4 @@
-import { pgTable, serial, text , time, integer} from 'drizzle-orm/pg-core';
+import { pgTable, serial, text , time, integer, timestamp, pgEnum} from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -30,4 +30,22 @@ export const restaurantTable = pgTable('restaurant', {
   openTime: time('open_time'),
   closeTime: time('close_time'),
   priceRange: integer('priceRange'),
+});
+
+export const reservationStatusEnum = pgEnum('reservation_status', [
+  'unconfirmed',
+  'confirmed',
+  'cancelled',
+  'expired',
+]);
+
+export const reservationTable = pgTable('reservation', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => usersTable.id),
+  restaurantId: integer('restaurant_id').notNull().references(() => restaurantTable.id),
+  reserveAt: timestamp('reserve_at').notNull(),
+  numberOfElderly: integer('number_of_elderly').default(0),
+  numberOfAdult: integer('number_of_adult').default(0),
+  numberOfChildren: integer('number_of_children').default(0),
+  status: reservationStatusEnum('status').notNull().default('unconfirmed'),
 });
