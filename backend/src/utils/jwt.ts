@@ -1,11 +1,16 @@
 import jwt from 'jsonwebtoken';
 
-if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
+if (
+  process.env.NODE_ENV !== 'test' &&
+  (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET)
+) {
   throw new Error('JWT secrets must be defined in environment variables');
 }
 
-export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+export const ACCESS_TOKEN_SECRET =
+  process.env.ACCESS_TOKEN_SECRET ?? 'access_secret';
+export const REFRESH_TOKEN_SECRET =
+  process.env.REFRESH_TOKEN_SECRET ?? 'refresh_secret';
 
 // Extend Express Request interface to include authPayload and authRefreshToken
 declare global {
