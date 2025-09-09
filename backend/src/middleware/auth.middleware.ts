@@ -4,11 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
 import { UserAuthPayload } from '../service/auth.service';
 
-export default function authHandler(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+export function authHandler(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) {
     return next(createHttpError.Unauthorized());
   }
