@@ -1,13 +1,17 @@
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { comparePassword } from '../utils/hash';
-import { genJwtTokens, JwtPayload, JwtTokens } from '../utils/jwt';
+import { genJwtTokens, JwtTokens } from '../utils/jwt';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 
 export type LoginUser = {
   email: string;
   password: string;
+};
+
+export type UserAuthPayload = {
+  userId: number;
 };
 
 export default class AuthService {
@@ -25,10 +29,8 @@ export default class AuthService {
       throw createHttpError.Unauthorized('Invalid email or password');
     }
 
-    const tokens = genJwtTokens({
-      userEmail: user.email,
-      userId: user.id,
-    });
+    const payload: UserAuthPayload = { userId: user.id };
+    const tokens = genJwtTokens(payload);
 
     // Store refresh token in database
     await db
@@ -41,25 +43,18 @@ export default class AuthService {
 
   static async refreshTokens(
     refreshToken: string,
-    data: JwtPayload,
+    data: UserAuthPayload,
   ): Promise<JwtTokens> {
     const [user] = await db
       .select()
       .from(usersTable)
-      .where(
-        and(
-          eq(usersTable.id, data.userId),
-          eq(usersTable.email, data.userEmail),
-        ),
-      );
+      .where(eq(usersTable.id, data.userId));
     if (!user || !user.refreshToken || user.refreshToken !== refreshToken) {
       throw createHttpError.Unauthorized();
     }
 
-    const tokens = genJwtTokens({
-      userEmail: user.email,
-      userId: user.id,
-    });
+    const payload: UserAuthPayload = { userId: user.id };
+    const tokens = genJwtTokens(payload);
 
     // Store refresh token in database
     await db

@@ -1,11 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
-import {
-  ACCESS_TOKEN_SECRET,
-  JwtPayload,
-  REFRESH_TOKEN_SECRET,
-} from '../utils/jwt';
+import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
+import { UserAuthPayload } from '../service/auth.service';
 
 export default function authHandler(
   req: Request,
@@ -21,7 +18,13 @@ export default function authHandler(
     if (err) {
       return next(createHttpError.Unauthorized());
     }
-    req.authPayload = decoded as JwtPayload;
+
+    let payload = getPayloadFrom(decoded);
+    if (!payload) {
+      return next(createHttpError.Unauthorized());
+    }
+
+    req.authPayload = payload;
     next();
   });
 }
@@ -40,8 +43,21 @@ export function refreshAuthHandler(
     if (err) {
       return next(createHttpError.Unauthorized());
     }
+
+    let payload = getPayloadFrom(decoded);
+    if (!payload) {
+      return next(createHttpError.Unauthorized());
+    }
+
+    req.authPayload = payload;
     req.authRefreshToken = refreshToken;
-    req.authPayload = decoded as JwtPayload;
     next();
   });
+}
+
+function getPayloadFrom(data: any): UserAuthPayload | undefined {
+  if (data && data.userId) {
+    return { userId: data.userId };
+  }
+  return undefined;
 }

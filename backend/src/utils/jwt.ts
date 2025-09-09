@@ -11,38 +11,33 @@ export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 declare global {
   namespace Express {
     interface Request {
-      authPayload?: JwtPayload;
+      authPayload?: any;
       authRefreshToken?: string;
     }
   }
 }
-
-export type JwtPayload = {
-  userEmail: string;
-  userId: number;
-};
 
 export type JwtTokens = {
   access_token: string;
   refresh_token: string;
 };
 
-export function genJwtTokens(payload: JwtPayload): JwtTokens {
+export function genJwtTokens(payload: any): JwtTokens {
   const access_token = genJwtAccessToken(payload);
   const refresh_token = genJwtRefreshToken(payload);
   return { access_token, refresh_token };
 }
 
-export function genJwtAccessToken(payload: JwtPayload): string {
+function genJwtAccessToken(payload: any): string {
   return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
-    expiresIn: '1m',
-    algorithm: 'HS256',
+    expiresIn: '15m',
+    algorithm: 'HS512',
   });
 }
 
-export function genJwtRefreshToken(payload: JwtPayload): string {
+function genJwtRefreshToken(payload: any): string {
   return jwt.sign(payload, REFRESH_TOKEN_SECRET, {
     expiresIn: '1d',
-    algorithm: 'HS256',
+    algorithm: 'HS512',
   });
 }
