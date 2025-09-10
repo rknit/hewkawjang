@@ -1,38 +1,46 @@
 import express, { Request, Response } from 'express';
 import AuthService, { LoginUser } from '../service/auth.service';
-import { refreshAuthHandler } from '../middleware/auth.middleware';
+import {
+  refreshAuthHandler,
+  authClientTypeHandler,
+} from '../middleware/auth.middleware';
 import createHttpError from 'http-errors';
 import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
 // Login and get tokens
-router.post('/login', async (req, res) => {
-  const { email, password }: LoginUser = req.body;
-  if (!email || !password) {
+router.post('/login', authClientTypeHandler, async (req, res) => {
+  const user: LoginUser = req.body;
+  if (!user.email || !user.password) {
     throw createHttpError.BadRequest('Email and password are required');
   }
 
-  const tokens = await AuthService.loginUser(req.body);
+  const tokens = await AuthService.loginUser(user);
   responseTokens(req, res, tokens);
 });
 
 // Token refresh
-router.post('/refresh', refreshAuthHandler, async (req, res) => {
-  if (!req.userAuthRefreshToken || !req.userAuthPayload) {
-    // This should not happen due to the middleware, but just in case
-    throw createHttpError.InternalServerError();
-  }
+router.post(
+  '/refresh',
+  authClientTypeHandler,
+  refreshAuthHandler,
+  async (req, res) => {
+    if (!req.userAuthRefreshToken || !req.userAuthPayload) {
+      // This should not happen due to the middleware, but just in case
+      throw createHttpError.InternalServerError();
+    }
 
-  const tokens = await AuthService.refreshTokens(
-    req.userAuthRefreshToken,
-    req.userAuthPayload,
-  );
-  responseTokens(req, res, tokens);
-});
+    const tokens = await AuthService.refreshTokens(
+      req.userAuthRefreshToken,
+      req.userAuthPayload,
+    );
+    responseTokens(req, res, tokens);
+  },
+);
 
 function responseTokens(req: Request, res: Response, token: JwtTokens) {
-  switch (req.clientType) {
+  switch (req.userAuthClientType) {
     case 'web':
       // Set refresh token as HttpOnly cookie for web clients
       res.cookie('refreshToken', token.refreshToken, {

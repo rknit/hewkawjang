@@ -10,8 +10,28 @@ declare global {
     interface Request {
       userAuthPayload?: UserAuthPayload;
       userAuthRefreshToken?: string;
+      userAuthClientType?: 'web' | 'mobile';
     }
   }
+}
+
+export function authClientTypeHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const clientType = req.headers['hkj-auth-client-type'];
+  switch (clientType) {
+    case 'web':
+      req.userAuthClientType = 'web';
+      break;
+    case 'mobile':
+      req.userAuthClientType = 'mobile';
+      break;
+    default:
+      return next(createHttpError.BadRequest('Invalid hkj-auth-client-type'));
+  }
+  next();
 }
 
 export function authHandler(req: Request, res: Response, next: NextFunction) {
@@ -42,7 +62,7 @@ export function refreshAuthHandler(
 ) {
   let refreshToken: string;
 
-  switch (req.clientType) {
+  switch (req.userAuthClientType) {
     case 'mobile':
       if (!req.headers.authorization) {
         return next(createHttpError.Unauthorized());
