@@ -1,5 +1,7 @@
 import express from 'express';
 import UserService from '../service/user.service';
+import MailerService from '../service/mailer.service';
+import { verify } from 'crypto';
 
 const router = express.Router();
 
@@ -13,13 +15,16 @@ router.post('/', async (req, res) => {
   res.status(201).json(newUser);
 });
 
-// register a new user
 router.post('/register', async (req, res) => {
-  const newUser = await UserService.createUser(req.body);
+  const newUser = await UserService.registerUser(req.body);
   res.status(201).json(newUser);
 });
 
-// User login
+router.post('/verify', async (req, res) => {
+  const verifyEmail = await MailerService.sendOTP(req.body.email);
+  res.status(201).json(verifyEmail);
+});
+
 router.post("/login", async (req, res) => {
   const loginUser = await UserService.loginUser(req.body);
   res.status(201).json(loginUser);  

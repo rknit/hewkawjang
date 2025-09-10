@@ -52,7 +52,19 @@ export const reservationTable = pgTable('reservation', {
 
 export const emailVerificationTable = pgTable('emailVerification', {
   id: serial('id').primaryKey(),
-  email: text('email').notNull().unique(),
+  email: text('email').notNull(),
   otp: text('otp').notNull(),
-  time: timestamp('time').notNull(),
+  sendTime: timestamp('sendTime').notNull(),
+});
+
+export const registerTable = pgTable('users', {
+  id: serial('id').primaryKey(),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  email: text('email').notNull().unique(),
+  phone_no: text('phone_no').notNull(),
+  password: text('password').notNull(),
+  otp: text('otp').notNull(),
+  displayName: text('display_name'),
+  profileUrl: text('profile_url'),
 });

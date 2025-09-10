@@ -4,14 +4,16 @@ import {
   InferSelectModel,
   asc,
   eq,
+  desc,
 } from 'drizzle-orm';
-import { usersTable } from '../db/schema';
+import { registerTable, usersTable, emailVerificationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword, comparePassword } from '../utils/hash';
 
 export type User = InferSelectModel<typeof usersTable>;
 export type NewUser = InferInsertModel<typeof usersTable>;
+export type registerUser = InferInsertModel<typeof registerTable>;
 
 export default class UserService {
   static async getUsers(
@@ -46,6 +48,37 @@ export default class UserService {
     let [newUser] = await db.insert(usersTable).values(data).returning();
     return newUser;
   }
+
+  static async registerUser(data: registerUser): Promise<User> {
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
+    if (dup.length > 0) {
+      throw createHttpError.Conflict('Email already exists');
+    }
+    let query = await db
+      .select({ otp: emailVerificationTable.otp, sendTime: emailVerificationTable.sendTime })
+      .from(emailVerificationTable)
+      .orderBy(desc(emailVerificationTable.id))
+      .where(eq(emailVerificationTable.email, data.email))
+      .limit(1);
+    if (query.length === 0) {
+      throw createHttpError.Unauthorized('Invalid or expired OTP');
+    }
+    const { otp, sendTime } = query[0];
+    const currentTime = new Date();
+    const timeDiff = (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
+    console.log(otp);
+    if (otp !== data.otp || timeDiff > 180) {
+      throw createHttpError.Unauthorized('Invalid or expired OTP');
+    }
+    data.password = await hashPassword(data.password);
+    let [newUser] = await db.insert(usersTable).values(data).returning();
+    return newUser;
+  }
+
   static async loginUser(data: User): Promise<User> {
     let loginUser = await db
       .select()

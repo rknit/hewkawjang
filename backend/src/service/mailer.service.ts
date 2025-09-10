@@ -1,4 +1,7 @@
 import nodemailer from "nodemailer";
+import { db } from '../db';
+import { emailVerificationTable } from '../db/schema';
+import createHttpError from 'http-errors';
 
 export default class MailerService {
   static async sendVerifiedEmail(email: string, OTP: string) {
@@ -23,6 +26,15 @@ export default class MailerService {
     } catch (error) {
       console.error("❌ Error sending email:", error);
     }
+  }
+
+  static async sendOTP(email: string) {
+    const otp = await this.generateOTP();
+    await this.sendVerifiedEmail(email, otp);
+    let timestamp = new Date(Date.now());
+    let data = {"email":email,"otp":otp,"sendTime":timestamp}
+    let [verifyEmail] = await db.insert(emailVerificationTable).values(data).returning();
+    return verifyEmail;
   }
 
   static async generateOTP(length = 6) {
