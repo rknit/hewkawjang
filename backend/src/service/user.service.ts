@@ -4,13 +4,29 @@ import {
   InferSelectModel,
   asc,
   eq,
+  getTableColumns,
 } from 'drizzle-orm';
 import { usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
-import { hashPassword, comparePassword } from '../utils/hash';
+import { hashPassword } from '../utils/hash';
 
-export type User = InferSelectModel<typeof usersTable>;
+// excludes sensitive fields from User type
+type ExcludeFromUser = {
+  password: string;
+  refreshToken: string | null;
+};
+const {
+  password: _p,
+  refreshToken: _r,
+  ...non_sensitive_user_fields
+} = getTableColumns(usersTable);
+
+export type User = Omit<
+  InferSelectModel<typeof usersTable>,
+  keyof ExcludeFromUser
+>;
+
 export type NewUser = InferInsertModel<typeof usersTable>;
 
 export default class UserService {
@@ -21,7 +37,7 @@ export default class UserService {
     let limit = props.limit ?? 10;
 
     let query = db
-      .select()
+      .select(non_sensitive_user_fields)
       .from(usersTable)
       .orderBy(asc(usersTable.id))
       .offset(offset)
@@ -43,21 +59,10 @@ export default class UserService {
       throw createHttpError.Conflict('Email already exists');
     }
     data.password = await hashPassword(data.password);
-    let [newUser] = await db.insert(usersTable).values(data).returning();
+    let [newUser] = await db
+      .insert(usersTable)
+      .values(data)
+      .returning(non_sensitive_user_fields);
     return newUser;
-  }
-  static async loginUser(data: User): Promise<User> {
-    let loginUser = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, data.email));
-    if (loginUser.length === 0) {
-      throw createHttpError.Unauthorized('Invalid email or password');
-    }
-    const isMatch = await comparePassword(data.password, loginUser[0].password);
-    if (!isMatch) {
-      throw createHttpError.Unauthorized('Invalid email or password');
-    }
-    return loginUser[0];
   }
 }
