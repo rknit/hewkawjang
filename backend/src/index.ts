@@ -9,6 +9,7 @@ import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
 import errorHandler from './middleware/error.middleware';
 import { authHandler } from './middleware/auth.middleware';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -24,6 +25,7 @@ app.use(
   }),
 );
 
+app.use(cookieParser());
 app.use(express.json());
 
 app.use('/auth', authRoute);
