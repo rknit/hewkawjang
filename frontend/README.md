@@ -16,6 +16,9 @@ cd frontend
 npm i
 ```
 
+Copy `.env.dev.template` and paste it as `.env` for dev environment
+then fill all empty fields in `.env`
+
 Start the project by running this command
 
 ```bash
