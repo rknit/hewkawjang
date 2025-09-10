@@ -49,3 +49,10 @@ export const reservationTable = pgTable('reservation', {
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
 });
+
+export const emailVerificatoinTable = pgTable('emailVerification', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  otp: text('otp').notNull(),
+  time: timestamp('time').notNull(),
+});
