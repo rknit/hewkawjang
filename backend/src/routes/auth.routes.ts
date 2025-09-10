@@ -1,7 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import AuthService, { LoginUser } from '../service/auth.service';
 import { refreshAuthHandler } from '../middleware/auth.middleware';
 import createHttpError from 'http-errors';
+import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
@@ -12,8 +13,8 @@ router.post('/login', async (req, res) => {
     throw createHttpError.BadRequest('Email and password are required');
   }
 
-  const token = await AuthService.loginUser(req.body);
-  res.status(200).json(token);
+  const tokens = await AuthService.loginUser(req.body);
+  responseTokens(req, res, tokens);
 });
 
 // Token refresh
@@ -27,7 +28,31 @@ router.post('/refresh', refreshAuthHandler, async (req, res) => {
     req.userAuthRefreshToken,
     req.userAuthPayload,
   );
-  res.status(200).json(tokens);
+  responseTokens(req, res, tokens);
 });
+
+function responseTokens(req: Request, res: Response, token: JwtTokens) {
+  switch (req.clientType) {
+    case 'web':
+      // Set refresh token as HttpOnly cookie for web clients
+      res.cookie('refreshToken', token.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+      // Send only access token in response body
+      res.status(200).json({ accessToken: token.accessToken });
+      break;
+
+    case 'mobile':
+      // Send both tokens in response body for mobile clients
+      res.status(200).json(token);
+      break;
+
+    default:
+      throw createHttpError.BadRequest('Unknown client type');
+  }
+}
 
 export default router;

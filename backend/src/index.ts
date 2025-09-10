@@ -9,6 +9,7 @@ import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
 import errorHandler from './middleware/error.middleware';
 import { authHandler } from './middleware/auth.middleware';
+import clientTypeHandler from './middleware/client-type.middleware';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -19,12 +20,13 @@ app.use(
       process.env.NODE_ENV === 'development' ? ['http://localhost:8081'] : [],
     ),
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'hkj-client-type'],
     credentials: true,
   }),
 );
 
 app.use(express.json());
+app.use(clientTypeHandler);
 
 app.use('/auth', authRoute);
 app.use('/users', userRoute);

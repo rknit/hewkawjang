@@ -40,11 +40,25 @@ export function refreshAuthHandler(
   res: Response,
   next: NextFunction,
 ) {
-  if (!req.headers.authorization) {
-    return next(createHttpError.Unauthorized());
+  let refreshToken: string;
+
+  switch (req.clientType) {
+    case 'mobile':
+      if (!req.headers.authorization) {
+        return next(createHttpError.Unauthorized());
+      }
+      refreshToken = req.headers.authorization.replace('Bearer ', '');
+      break;
+    case 'web':
+      if (!req.cookies || !req.cookies.refreshToken) {
+        return next(createHttpError.Unauthorized());
+      }
+      refreshToken = req.cookies.refreshToken;
+      break;
+    default:
+      return next(createHttpError.BadRequest('Invalid hkj-client-type'));
   }
 
-  const refreshToken = req.headers.authorization.replace('Bearer ', '');
   jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       return next(createHttpError.Unauthorized());
