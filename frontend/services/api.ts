@@ -2,12 +2,21 @@ import axios from 'axios';
 import TokenStorage from '@/services/token-storage';
 import { Platform } from 'react-native';
 
+const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
+
 const api = axios.create({
   baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
   timeout: 10000,
 });
 
-export const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
+const refreshApi = axios.create({
+  baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
+  timeout: 10000,
+  headers: {
+    'hkj-auth-client-type': clientType,
+  },
+  withCredentials: true, // For cookies on web
+});
 
 // Request interceptor: attach access token
 api.interceptors.request.use(async (config) => {
@@ -24,12 +33,10 @@ api.interceptors.response.use(undefined, async (error) => {
     const token = await TokenStorage.getRefreshToken();
 
     // Attempt to refresh token
-    const resp = await api.post('/auth/refresh', undefined, {
+    const resp = await refreshApi.post('/auth/refresh', undefined, {
       headers: {
-        'hkj-auth-client-type': clientType,
         Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available
       },
-      withCredentials: true, // For cookies on web
     });
 
     if (resp.status === 200) {

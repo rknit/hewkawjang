@@ -1,5 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
-import { clientType } from '@/services/api';
+import { Platform } from 'react-native';
+
+const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
 
 export default class TokenStorage {
   static async getAccessToken(): Promise<string | null> {
