@@ -6,12 +6,12 @@ const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
 
 const api = axios.create({
   baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
-  timeout: 10000,
+  timeout: 15000,
 });
 
 const refreshApi = axios.create({
   baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'hkj-auth-client-type': clientType,
   },
