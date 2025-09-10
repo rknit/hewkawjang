@@ -16,11 +16,13 @@ export default function errorHandler(
     query: req.query,
   };
 
-  console.error({
-    timestamp: new Date().toISOString(),
-    req: reqDisp,
-    error,
-  }); // Log full error server-side
+  if (process.env.NODE_ENV !== 'test') {
+    console.error({
+      timestamp: new Date().toISOString(),
+      req: reqDisp,
+      error,
+    }); // Log full error server-side
+  }
 
   const isProduction = process.env.NODE_ENV === 'production';
 
