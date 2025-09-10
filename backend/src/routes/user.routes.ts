@@ -10,24 +10,15 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
-router.post('/', async (req, res) => {
-  const newUser = await UserService.createUser(req.body);
-  res.status(201).json(newUser);
-});
-
 router.post('/register', async (req, res) => {
-  const newUser = await UserService.registerUser(req.body);
+  const { otp, ...userData } = req.body;
+  const newUser = await UserService.registerUser(userData, otp);
   res.status(201).json(newUser);
 });
 
 router.post('/verify', async (req, res) => {
   const verifyEmail = await MailerService.sendOTP(req.body.email);
   res.status(201).json(verifyEmail);
-});
-
-router.post("/login", async (req, res) => {
-  const loginUser = await UserService.loginUser(req.body);
-  res.status(201).json(loginUser);  
 });
 
 export default router;

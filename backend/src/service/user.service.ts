@@ -7,7 +7,7 @@ import {
   desc,
   getTableColumns,
 } from 'drizzle-orm';
-import { registerTable, usersTable, emailVerificationTable } from '../db/schema';
+import { usersTable, emailVerificationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
@@ -29,7 +29,6 @@ export type User = Omit<
 >;
 
 export type NewUser = InferInsertModel<typeof usersTable>;
-export type registerUser = InferInsertModel<typeof registerTable>;
 
 export default class UserService {
   static async getUsers(
@@ -67,7 +66,8 @@ export default class UserService {
       .returning(non_sensitive_user_fields);
     return newUser;
   }
-  static async registerUser(data: registerUser): Promise<User> {
+
+  static async registerUser(data: NewUser, otpSend: string): Promise<User> {
     let dup = await db
       .select({ id: usersTable.id })
       .from(usersTable)
@@ -88,27 +88,14 @@ export default class UserService {
     const { otp, sendTime } = query[0];
     const currentTime = new Date();
     const timeDiff = (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
-    console.log(otp);
-    if (otp !== data.otp || timeDiff > 180) {
+    if (otp !== otpSend || timeDiff > 180) {
       throw createHttpError.Unauthorized('Invalid or expired OTP');
     }
     data.password = await hashPassword(data.password);
-    let [newUser] = await db.insert(usersTable).values(data).returning();
+    let [newUser] = await db
+      .insert(usersTable)
+      .values(data)
+      .returning(non_sensitive_user_fields);
     return newUser;
-  }
-
-  static async loginUser(data: User): Promise<User> {
-    let loginUser = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, data.email));
-    if (loginUser.length === 0) {
-      throw createHttpError.Unauthorized('Invalid email or password');
-    }
-    const isMatch = await comparePassword(data.password, loginUser[0].password);
-    if (!isMatch) {
-      throw createHttpError.Unauthorized('Invalid email or password');
-    }
-    return loginUser[0];
   }
 }
