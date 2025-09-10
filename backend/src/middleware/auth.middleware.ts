@@ -72,7 +72,11 @@ export function refreshAuthHandler(
 
   switch (req.userAuthClientType) {
     case 'mobile':
-      if (!req.headers || !req.headers.authorization) {
+      if (
+        !req.headers ||
+        !req.headers.authorization ||
+        !req.headers.authorization.startsWith('Bearer ')
+      ) {
         return next(createHttpError.Unauthorized());
       }
       refreshToken = req.headers.authorization.replace('Bearer ', '');

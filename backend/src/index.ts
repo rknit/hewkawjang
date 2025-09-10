@@ -14,11 +14,10 @@ import cookieParser from 'cookie-parser';
 const app = express();
 const port = process.env.PORT || 8080;
 
+// CORS configuration for web client
 app.use(
   cors({
-    origin: ['https://hewkawjang-backend.vercel.app'].concat(
-      process.env.NODE_ENV === 'development' ? ['http://localhost:8081'] : [],
-    ),
+    origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'hkj-auth-client-type'],
     credentials: true,
