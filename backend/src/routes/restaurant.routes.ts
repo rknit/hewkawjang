@@ -1,5 +1,6 @@
 import express from 'express';
 import RestaurantService from '../service/restaurant.service';
+import { createRestaurantSchema } from "../validators/restaurant.validator";
 
 const router = express.Router();
 
@@ -24,6 +25,26 @@ router.get('/owner/:ownerId', async (req, res) => {
     });
 
     res.json(restaurants);
+});
+
+router.post("/", async (req, res, next) => {
+//  try {
+    // validate request body
+    const parsedData = createRestaurantSchema.parse(req.body);
+
+    // call service
+    const restaurant = await RestaurantService.createRestaurant(parsedData);
+
+    res.status(201).json({
+      message: "Restaurant submitted successfully",
+      restaurant,
+    });
+//   } catch (err) {
+//     if (err instanceof Error) {
+//       return res.status(400).json({ error: err.message });
+//     }
+//    next(err);
+//  }
 });
 
 export default router;

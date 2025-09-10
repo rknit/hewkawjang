@@ -8,6 +8,7 @@ import {
 import { restaurantTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
+import { createRestaurantSchema, CreateRestaurantInput } from "../validators/restaurant.validator";
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 
@@ -47,5 +48,17 @@ export default class RestaurantService {
       .limit(limit);
 
     return await query;
+  }
+
+  static async createRestaurant(data: CreateRestaurantInput) {
+    // validate input (extra safety)
+    const parsed = createRestaurantSchema.parse(data);
+
+    const [restaurant] = await db
+      .insert(restaurantTable)
+      .values(parsed)
+      .returning();
+
+    return restaurant;
   }
 }

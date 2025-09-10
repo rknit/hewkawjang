@@ -29,5 +29,5 @@ export const restaurantTable = pgTable('restaurant', {
   // detail
   openTime: time('open_time'),
   closeTime: time('close_time'),
-  priceRange: integer('priceRange'),
+  priceRange: integer('price_range'),
 });
