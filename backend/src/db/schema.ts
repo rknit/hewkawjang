@@ -50,7 +50,7 @@ export const reservationTable = pgTable('reservation', {
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
 });
 
-export const emailVerificatoinTable = pgTable('emailVerification', {
+export const emailVerificationTable = pgTable('emailVerification', {
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
   otp: text('otp').notNull(),

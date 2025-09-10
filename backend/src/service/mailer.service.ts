@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 
 export default class MailerService {
-  async sendVerifiedEmail(email: string, OTP: string) {
+  static async sendVerifiedEmail(email: string, OTP: string) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -25,7 +25,7 @@ export default class MailerService {
     }
   }
 
-  generateOTP(length = 6) {
+  static async generateOTP(length = 6) {
     return (Math.floor(100000 + Math.random() * 900000 + Math.random())%1000000).toString(); // 6 หลัก
   }
 }
