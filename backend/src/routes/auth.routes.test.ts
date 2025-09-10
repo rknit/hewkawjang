@@ -3,6 +3,7 @@ import request from 'supertest';
 import AuthService from '../service/auth.service';
 import createHttpError from 'http-errors';
 import { refreshAuthHandler } from '../middleware/auth.middleware';
+import { JwtTokens } from '../utils/jwt';
 
 jest.mock('../service/auth.service');
 
@@ -34,9 +35,9 @@ describe('Auth Routes', () => {
     password: 'password123',
   };
 
-  const mockTokens = {
-    access_token: 'mock_access_token',
-    refresh_token: 'mock_refresh_token',
+  const mockTokens: JwtTokens = {
+    accessToken: 'mock_access_token',
+    refreshToken: 'mock_refresh_token',
   };
 
   beforeEach(() => {
@@ -94,8 +95,8 @@ describe('Auth Routes', () => {
   // fail path is tested in auth middleware test suite
   describe('POST /auth/refresh', () => {
     mockRefreshAuthHandler.mockImplementation((req, res, next) => {
-      req.authPayload = { userId: 1 };
-      req.authRefreshToken = 'valid_refresh_token';
+      req.userAuthPayload = { userId: 1 };
+      req.userAuthRefreshToken = 'valid_refresh_token';
       next();
     });
 

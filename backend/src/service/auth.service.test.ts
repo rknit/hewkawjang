@@ -37,8 +37,8 @@ const mockUser = {
 };
 
 const mockTokens: JwtTokens = {
-  access_token: 'mock_access_token',
-  refresh_token: 'mock_refresh_token',
+  accessToken: 'mock_access_token',
+  refreshToken: 'mock_refresh_token',
 };
 
 // Helper function to create database mock chains

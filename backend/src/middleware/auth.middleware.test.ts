@@ -117,7 +117,7 @@ describe('Auth Middleware', () => {
         'test_access_secret',
         expect.any(Function),
       );
-      expect(mockRequest.authPayload).toEqual(validPayload);
+      expect(mockRequest.userAuthPayload).toEqual(validPayload);
       expect(mockNext).toHaveBeenCalledWith();
     });
 
@@ -128,7 +128,7 @@ describe('Auth Middleware', () => {
 
       authHandler(mockRequest as Request, mockResponse as Response, mockNext);
 
-      expect(mockRequest.authPayload).toEqual({ userId: 999 });
+      expect(mockRequest.userAuthPayload).toEqual({ userId: 999 });
       expect(mockNext).toHaveBeenCalledWith();
     });
   });
@@ -214,8 +214,8 @@ describe('Auth Middleware', () => {
         'test_refresh_secret',
         expect.any(Function),
       );
-      expect(mockRequest.authPayload).toEqual(validPayload);
-      expect(mockRequest.authRefreshToken).toEqual(validRefreshToken);
+      expect(mockRequest.userAuthPayload).toEqual(validPayload);
+      expect(mockRequest.userAuthRefreshToken).toEqual(validRefreshToken);
       expect(mockNext).toHaveBeenCalledWith();
     });
 
@@ -230,8 +230,8 @@ describe('Auth Middleware', () => {
         mockNext,
       );
 
-      expect(mockRequest.authPayload).toEqual({ userId: 888 });
-      expect(mockRequest.authRefreshToken).toEqual(validRefreshToken);
+      expect(mockRequest.userAuthPayload).toEqual({ userId: 888 });
+      expect(mockRequest.userAuthRefreshToken).toEqual(validRefreshToken);
       expect(mockNext).toHaveBeenCalledWith();
     });
   });

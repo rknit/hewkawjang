@@ -4,6 +4,16 @@ import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
 import { UserAuthPayload } from '../service/auth.service';
 
+// Extend Express Request interface to include userAuthPayload and userAuthRefreshToken
+declare global {
+  namespace Express {
+    interface Request {
+      userAuthPayload?: UserAuthPayload;
+      userAuthRefreshToken?: string;
+    }
+  }
+}
+
 export function authHandler(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) {
     return next(createHttpError.Unauthorized());
@@ -20,7 +30,7 @@ export function authHandler(req: Request, res: Response, next: NextFunction) {
       return next(createHttpError.Unauthorized());
     }
 
-    req.authPayload = payload;
+    req.userAuthPayload = payload;
     next();
   });
 }
@@ -45,8 +55,8 @@ export function refreshAuthHandler(
       return next(createHttpError.Unauthorized());
     }
 
-    req.authPayload = payload;
-    req.authRefreshToken = refreshToken;
+    req.userAuthPayload = payload;
+    req.userAuthRefreshToken = refreshToken;
     next();
   });
 }

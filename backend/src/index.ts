@@ -2,6 +2,7 @@
 import 'dotenv/config';
 
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import authRoute from './routes/auth.routes';
 import userRoute from './routes/user.routes';
 import restaurantRoute from './routes/restaurant.routes';
@@ -11,6 +12,17 @@ import { authHandler } from './middleware/auth.middleware';
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+app.use(
+  cors({
+    origin: ['https://hewkawjang-backend.vercel.app'].concat(
+      process.env.NODE_ENV === 'development' ? ['http://localhost:8081'] : [],
+    ),
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 
