@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
 import { UserAuthPayload } from '../service/auth.service';
 
-// Extend Express Request interface to include userAuthPayload and userAuthRefreshToken
+// Extend Express Request interface to include userAuth properties
 declare global {
   namespace Express {
     interface Request {
@@ -20,8 +20,12 @@ export function authClientTypeHandler(
   res: Response,
   next: NextFunction,
 ): void {
-  const clientType = req.headers['hkj-auth-client-type'];
-  switch (clientType) {
+  const clientTypeHeader = req.headers['hkj-auth-client-type'];
+  if (!clientTypeHeader) {
+    return next(createHttpError.BadRequest('Missing hkj-auth-client-type'));
+  }
+
+  switch (clientTypeHeader) {
     case 'web':
       req.userAuthClientType = 'web';
       break;
@@ -29,7 +33,7 @@ export function authClientTypeHandler(
       req.userAuthClientType = 'mobile';
       break;
     default:
-      return next(createHttpError.BadRequest('Invalid hkj-auth-client-type'));
+      return next(createHttpError.BadRequest('Invalid client type'));
   }
   next();
 }
@@ -60,11 +64,15 @@ export function refreshAuthHandler(
   res: Response,
   next: NextFunction,
 ) {
+  if (!req.userAuthClientType) {
+    return next(createHttpError.BadRequest('Missing client type'));
+  }
+
   let refreshToken: string;
 
   switch (req.userAuthClientType) {
     case 'mobile':
-      if (!req.headers.authorization) {
+      if (!req.headers || !req.headers.authorization) {
         return next(createHttpError.Unauthorized());
       }
       refreshToken = req.headers.authorization.replace('Bearer ', '');
@@ -75,8 +83,6 @@ export function refreshAuthHandler(
       }
       refreshToken = req.cookies.refreshToken;
       break;
-    default:
-      return next(createHttpError.BadRequest('Invalid hkj-client-type'));
   }
 
   jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, decoded) => {
