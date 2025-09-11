@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { User } from './user.service';
 import UserService from './user.service';
+import ReservationService from './reservation.service';
 
 let mockUsers: User[] = [
   {
@@ -38,6 +39,10 @@ jest.mock('../db', () => ({
   },
   // IMPORTANT: mock client so that it won't error out when SUPABASE_DB_URL is not set in automated tests
   client: jest.fn(),
+}));
+
+jest.mock('./reservation.service', () => ({
+  cancelPendingReservationsByUser: jest.fn(),
 }));
 
 describe('User Service', () => {
@@ -145,6 +150,61 @@ describe('User Service', () => {
       expect(mockWhere).toHaveBeenCalledWith(expect.any(Object)); // Called with inArray condition
       expect(mockOffset).toHaveBeenCalledWith(0); // Default offset
       expect(mockLimit).toHaveBeenCalledWith(10); // Default limit
+    });
+  });
+
+  describe('softDeleteUser', () => {
+    let mockUpdate: jest.Mock;
+    let mockSet: jest.Mock;
+    let mockWhere: jest.Mock;
+    let mockReturning: jest.Mock;
+
+    beforeEach(() => {
+      mockReturning = jest.fn();
+      mockWhere = jest.fn(() => ({ returning: mockReturning }));
+      mockSet = jest.fn((/* setObj */) => ({ where: mockWhere }));
+      mockUpdate = jest.fn((/* usersTable */) => ({ set: mockSet }));
+
+      // Mock the db.update chain
+      (db as any).update = mockUpdate;
+    });
+
+    it('should return null if user does not exist', async () => {
+      mockReturning.mockResolvedValue([]); // Simulate no user updated
+
+      const result = await UserService.softDeleteUser(999);
+
+      expect(result).toBeNull();
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+      expect(mockReturning).toHaveBeenCalled();
+      expect(ReservationService.cancelPendingReservationsByUser).not.toHaveBeenCalled();
+    });
+
+    it('should soft delete user and cancel reservations', async () => {
+      const deletedUser = {
+        id: 1,
+        firstName: 'Deleted',
+        lastName: 'User',
+        email: 'deleted_1@gmail.com',
+        phoneNo: '0000000000',
+        password: '',
+        displayName: 'Deleted User',
+        profileUrl: null,
+        refreshToken: null,
+      };
+      mockReturning.mockResolvedValue([deletedUser]);
+      (ReservationService.cancelPendingReservationsByUser as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await UserService.softDeleteUser(1);
+
+      expect(result).toEqual(deletedUser);
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+      expect(mockReturning).toHaveBeenCalled();
+      expect(ReservationService.cancelPendingReservationsByUser).toHaveBeenCalledWith(1);
     });
   });
 });
