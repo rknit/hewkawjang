@@ -69,12 +69,12 @@ export default class UserService {
 
   static async registerUser(data: NewUser, otpSend: string): Promise<User> {
     let dup = await db
-              .select({ id: usersTable.id })
-              .from(usersTable)
-              .where(eq(usersTable.email, data.email))
-              .limit(1);
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
     if (dup.length > 0) {
-        throw createHttpError.Conflict('Email already exists');
+      throw createHttpError.Conflict('Email already exists');
     }
     let query = await db
       .select({ otp: emailVerificationTable.otp, sendTime: emailVerificationTable.sendTime })

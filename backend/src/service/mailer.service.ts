@@ -33,12 +33,12 @@ export default class MailerService {
 
   static async sendOTP(email: string) {
     let dup = await db
-          .select({ id: usersTable.id })
-          .from(usersTable)
-          .where(eq(usersTable.email, email))
-          .limit(1);
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
     if (dup.length > 0) {
-       throw createHttpError.Conflict('Email already exists');
+      throw createHttpError.Conflict('Email already exists');
     }
     const otp = await this.generateOTP();
     await this.sendVerifiedEmail(email, otp);
