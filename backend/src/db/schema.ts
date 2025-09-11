@@ -43,10 +43,21 @@ export const restaurantTable = pgTable('restaurant', {
 
 export const reservationStatusEnum = pgEnum('reservation_status', [
   'unconfirmed',
+  "expired",
   'confirmed',
   'cancelled',
-  'expired',
+  "rejected",
+  "completed",
+  "uncompleted"
 ]);
+// Unconfirmed: The reservation has been made but not yet confirmed by the restaurant.
+// Expired: The reservation was not confirmed in time and has expired.
+// Confirmed: The restaurant has confirmed the reservation.
+// Cancelled: The user has cancelled the reservation.
+// Rejected: The restaurant has rejected the reservation.
+// Completed: The reservation was fulfilled successfully.
+// Uncompleted: The reservation was not fulfilled (e.g., no-show).
+
 
 export const reservationTable = pgTable('reservation', {
   id: serial('id').primaryKey(),
@@ -57,8 +68,11 @@ export const reservationTable = pgTable('reservation', {
     .notNull()
     .references(() => restaurantTable.id),
   reserveAt: timestamp('reserve_at').notNull(),
+  reservationfee: integer('reservation_fee').default(0),
   numberOfElderly: integer('number_of_elderly').default(0),
   numberOfAdult: integer('number_of_adult').default(0),
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
+  specialRequest: text('special_request'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
