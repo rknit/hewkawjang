@@ -1,7 +1,6 @@
 import express from 'express';
 import UserService from '../service/user.service';
 import MailerService from '../service/mailer.service';
-import { verify } from 'crypto';
 
 const router = express.Router();
 
