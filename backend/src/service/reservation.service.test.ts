@@ -14,6 +14,7 @@ const mockReservations: Reservation[] = [
     numberOfChildren: 1,
     status: 'unconfirmed',
     specialRequest: null,
+    createdAt: new Date(),
   },
   {
     id: 2,
@@ -26,6 +27,7 @@ const mockReservations: Reservation[] = [
     numberOfChildren: 2,
     status: 'confirmed',
     specialRequest: "if possible, i'd like a table by the window",
+    createdAt: new Date(),
   },
   {
     id: 3,
@@ -38,6 +40,7 @@ const mockReservations: Reservation[] = [
     numberOfChildren: 0,
     status: 'unconfirmed',
     specialRequest: null,
+    createdAt: new Date(),
   },
 ];
 
