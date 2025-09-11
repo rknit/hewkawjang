@@ -1,6 +1,9 @@
+import {
+  eq,
+} from 'drizzle-orm';
 import nodemailer from "nodemailer";
 import { db } from '../db';
-import { emailVerificationTable } from '../db/schema';
+import { emailVerificationTable ,usersTable } from '../db/schema';
 import createHttpError from 'http-errors';
 
 export default class MailerService {
@@ -29,6 +32,14 @@ export default class MailerService {
   }
 
   static async sendOTP(email: string) {
+    let dup = await db
+          .select({ id: usersTable.id })
+          .from(usersTable)
+          .where(eq(usersTable.email, email))
+          .limit(1);
+    if (dup.length > 0) {
+       throw createHttpError.Conflict('Email already exists');
+    }
     const otp = await this.generateOTP();
     await this.sendVerifiedEmail(email, otp);
     let timestamp = new Date(Date.now());
