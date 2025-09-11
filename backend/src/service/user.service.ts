@@ -10,6 +10,7 @@ import { usersTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
+import ReservationService from './reservation.service';
 
 // excludes sensitive fields from User type
 type ExcludeFromUser = {
@@ -90,7 +91,7 @@ export default class UserService {
       return null;
 
     // Cancel pending reservations by this user
-    // some code here
+    await ReservationService.cancelPendingReservationsByUser(userId);
 
     return result[0];
   }
