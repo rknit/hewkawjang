@@ -64,3 +64,10 @@ If the command hangs, try changing `SUPABASE_DB_URL` port in `.env` file to `543
 ### Vercel
 
 Don't do anything related to Vercel in backend for now.
+
+### Auth APIs
+
+We use JWT for auth, and due to frontend being multi-platform, we'll have to set this header when sending requests to auth APIs.
+
+On web, set header `hkj-auth-client-type`: `web`
+On mobile, set header `hkj-auth-client-type`: `mobile`

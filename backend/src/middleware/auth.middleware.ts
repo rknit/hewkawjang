@@ -4,6 +4,40 @@ import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
 import { UserAuthPayload } from '../service/auth.service';
 
+// Extend Express Request interface to include userAuth properties
+declare global {
+  namespace Express {
+    interface Request {
+      userAuthPayload?: UserAuthPayload;
+      userAuthRefreshToken?: string;
+      userAuthClientType?: 'web' | 'mobile';
+    }
+  }
+}
+
+export function authClientTypeHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const clientTypeHeader = req.headers['hkj-auth-client-type'];
+  if (!clientTypeHeader) {
+    return next(createHttpError.BadRequest('Missing hkj-auth-client-type'));
+  }
+
+  switch (clientTypeHeader) {
+    case 'web':
+      req.userAuthClientType = 'web';
+      break;
+    case 'mobile':
+      req.userAuthClientType = 'mobile';
+      break;
+    default:
+      return next(createHttpError.BadRequest('Invalid client type'));
+  }
+  next();
+}
+
 export function authHandler(req: Request, res: Response, next: NextFunction) {
   if (!req.headers.authorization) {
     return next(createHttpError.Unauthorized());
@@ -20,7 +54,7 @@ export function authHandler(req: Request, res: Response, next: NextFunction) {
       return next(createHttpError.Unauthorized());
     }
 
-    req.authPayload = payload;
+    req.userAuthPayload = payload;
     next();
   });
 }
@@ -30,11 +64,31 @@ export function refreshAuthHandler(
   res: Response,
   next: NextFunction,
 ) {
-  if (!req.headers.authorization) {
-    return next(createHttpError.Unauthorized());
+  if (!req.userAuthClientType) {
+    return next(createHttpError.BadRequest('Missing client type'));
   }
 
-  const refreshToken = req.headers.authorization.replace('Bearer ', '');
+  let refreshToken: string;
+
+  switch (req.userAuthClientType) {
+    case 'mobile':
+      if (
+        !req.headers ||
+        !req.headers.authorization ||
+        !req.headers.authorization.startsWith('Bearer ')
+      ) {
+        return next(createHttpError.Unauthorized());
+      }
+      refreshToken = req.headers.authorization.replace('Bearer ', '');
+      break;
+    case 'web':
+      if (!req.cookies || !req.cookies.refreshToken) {
+        return next(createHttpError.Unauthorized());
+      }
+      refreshToken = req.cookies.refreshToken;
+      break;
+  }
+
   jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       return next(createHttpError.Unauthorized());
@@ -45,8 +99,8 @@ export function refreshAuthHandler(
       return next(createHttpError.Unauthorized());
     }
 
-    req.authPayload = payload;
-    req.authRefreshToken = refreshToken;
+    req.userAuthPayload = payload;
+    req.userAuthRefreshToken = refreshToken;
     next();
   });
 }
