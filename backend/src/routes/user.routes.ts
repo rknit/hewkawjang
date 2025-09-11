@@ -9,13 +9,13 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
-router.post('/register', async (req, res) => {
+router.post('/verify', async (req, res) => {
   const { otp, ...userData } = req.body;
   const newUser = await UserService.registerUser(userData, otp);
   res.status(201).json(newUser);
 });
 
-router.post('/verify', async (req, res) => {
+router.post('/register', async (req, res) => {
   const verifyEmail = await MailerService.sendOTP(req.body.email);
   res.status(201).json(verifyEmail);
 });
