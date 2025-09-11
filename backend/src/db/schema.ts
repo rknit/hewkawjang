@@ -74,4 +74,5 @@ export const reservationTable = pgTable('reservation', {
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
   specialRequest: text('special_request'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
