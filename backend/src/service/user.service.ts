@@ -65,4 +65,34 @@ export default class UserService {
       .returning(non_sensitive_user_fields);
     return newUser;
   }
+
+  /*
+    In our documentation, it states that user's information should be changed to NULL, but in schema, it is not allowed to be NULL.
+    Therefore, I set default values for soft deleted users. 
+  */
+  static async softDeleteUser(userId: number): Promise<User | null> {
+    const result = await db.update(usersTable)
+      .set({
+        firstName: 'Deleted',
+        lastName: 'User',
+        email: `deleted_${userId}@gmail.com`,
+        phoneNo: '0000000000',
+        password: '',
+        displayName: 'Deleted User',
+        profileUrl: null,
+        refreshToken: null,
+      })
+      .where(eq(usersTable.id, userId))
+      .returning();
+
+    // If no user was affected, return null
+    if(!result || result.length === 0)
+      return null;
+
+    // Cancel pending reservations by this user
+    // some code here
+
+    return result[0];
+  }
 }
+
