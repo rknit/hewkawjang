@@ -8,30 +8,36 @@ const mockReservations: Reservation[] = [
     userId: 42,
     restaurantId: 1,
     reserveAt: new Date(Date.now() + 15 * 60 * 1000), // 15 min later
+    reservationfee: 50,
     numberOfElderly: 1,
     numberOfAdult: 2,
     numberOfChildren: 1,
     status: 'unconfirmed',
+    specialRequest: null,
   },
   {
     id: 2,
     userId: 43,
     restaurantId: 1,
     reserveAt: new Date(Date.now() + 30 * 60 * 1000), // 30 min later
+    reservationfee: 50,
     numberOfElderly: 0,
     numberOfAdult: 3,
     numberOfChildren: 2,
     status: 'confirmed',
+    specialRequest: "if possible, i'd like a table by the window",
   },
   {
     id: 3,
     userId: 44,
     restaurantId: 1,
     reserveAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour later
+    reservationfee: 50,
     numberOfElderly: 1,
     numberOfAdult: 1,
     numberOfChildren: 0,
     status: 'unconfirmed',
+    specialRequest: null,
   },
 ];
 
