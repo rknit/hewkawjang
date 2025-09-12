@@ -1,33 +1,66 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import AuthService, { LoginUser } from '../service/auth.service';
-import { refreshAuthHandler } from '../middleware/auth.middleware';
+import {
+  refreshAuthHandler,
+  authClientTypeHandler,
+} from '../middleware/auth.middleware';
 import createHttpError from 'http-errors';
+import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
 // Login and get tokens
-router.post('/login', async (req, res) => {
-  const { email, password }: LoginUser = req.body;
-  if (!email || !password) {
+router.post('/login', authClientTypeHandler, async (req, res) => {
+  const user: LoginUser = req.body;
+  if (!user.email || !user.password) {
     throw createHttpError.BadRequest('Email and password are required');
   }
 
-  const token = await AuthService.loginUser(req.body);
-  res.status(200).json(token);
+  const tokens = await AuthService.loginUser(user);
+  responseTokens(req, res, tokens);
 });
 
 // Token refresh
-router.post('/refresh', refreshAuthHandler, async (req, res) => {
-  if (!req.authRefreshToken || !req.authPayload) {
-    // This should not happen due to the middleware, but just in case
-    throw createHttpError.InternalServerError();
-  }
+router.post(
+  '/refresh',
+  authClientTypeHandler,
+  refreshAuthHandler,
+  async (req, res) => {
+    if (!req.userAuthRefreshToken || !req.userAuthPayload) {
+      // This should not happen due to the middleware, but just in case
+      throw createHttpError.InternalServerError();
+    }
 
-  const tokens = await AuthService.refreshTokens(
-    req.authRefreshToken,
-    req.authPayload,
-  );
-  res.status(200).json(tokens);
-});
+    const tokens = await AuthService.refreshTokens(
+      req.userAuthRefreshToken,
+      req.userAuthPayload,
+    );
+    responseTokens(req, res, tokens);
+  },
+);
+
+function responseTokens(req: Request, res: Response, token: JwtTokens) {
+  switch (req.userAuthClientType) {
+    case 'web':
+      // Set refresh token as HttpOnly cookie for web clients
+      res.cookie('refreshToken', token.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+      // Send only access token in response body
+      res.status(200).json({ accessToken: token.accessToken });
+      break;
+
+    case 'mobile':
+      // Send both tokens in response body for mobile clients
+      res.status(200).json(token);
+      break;
+
+    default:
+      throw createHttpError.BadRequest('Unknown client type');
+  }
+}
 
 export default router;

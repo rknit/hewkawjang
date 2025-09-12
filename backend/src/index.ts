@@ -2,16 +2,29 @@
 import 'dotenv/config';
 
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import authRoute from './routes/auth.routes';
 import userRoute from './routes/user.routes';
 import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
 import errorHandler from './middleware/error.middleware';
 import { authHandler } from './middleware/auth.middleware';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = process.env.PORT || 8080;
 
+// CORS configuration for web client
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'hkj-auth-client-type'],
+    credentials: true,
+  }),
+);
+
+app.use(cookieParser());
 app.use(express.json());
 
 app.use('/auth', authRoute);

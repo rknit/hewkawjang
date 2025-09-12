@@ -12,25 +12,15 @@ export const ACCESS_TOKEN_SECRET =
 export const REFRESH_TOKEN_SECRET =
   process.env.REFRESH_TOKEN_SECRET ?? 'refresh_secret';
 
-// Extend Express Request interface to include authPayload and authRefreshToken
-declare global {
-  namespace Express {
-    interface Request {
-      authPayload?: any;
-      authRefreshToken?: string;
-    }
-  }
-}
-
 export type JwtTokens = {
-  access_token: string;
-  refresh_token: string;
+  accessToken: string;
+  refreshToken: string;
 };
 
 export function genJwtTokens(payload: any): JwtTokens {
-  const access_token = genJwtAccessToken(payload);
-  const refresh_token = genJwtRefreshToken(payload);
-  return { access_token, refresh_token };
+  const accessToken = genJwtAccessToken(payload);
+  const refreshToken = genJwtRefreshToken(payload);
+  return { accessToken, refreshToken };
 }
 
 function genJwtAccessToken(payload: any): string {

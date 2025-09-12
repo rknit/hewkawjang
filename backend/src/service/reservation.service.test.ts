@@ -41,19 +41,7 @@ const mockReservations: Reservation[] = [
     status: 'unconfirmed',
     specialRequest: null,
     createdAt: new Date(),
-  },
-  {
-    id: 4,
-    userId: 50,
-    restaurantId: 1,
-    reserveAt: new Date(Date.now() + 2*24*60 * 60 * 1000),  
-    reservationfee: 50,
-    numberOfElderly: 1,
-    numberOfAdult: 1,
-    numberOfChildren: 0,
-    status: 'confirmed',
-    specialRequest: null,
-    createdAt: new Date(),
+
   },
   {
     id: 4,
@@ -67,6 +55,7 @@ const mockReservations: Reservation[] = [
     status: 'rejected',
     specialRequest: null,
     createdAt: new Date(Date.now() - 2*24*60 * 60 * 1000),
+
   },
 ];
 

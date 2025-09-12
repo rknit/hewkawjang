@@ -35,7 +35,7 @@ export default class AuthService {
     // Store refresh token in database
     await db
       .update(usersTable)
-      .set({ refreshToken: tokens.refresh_token })
+      .set({ refreshToken: tokens.refreshToken })
       .where(eq(usersTable.id, user.id));
 
     return tokens;
@@ -59,7 +59,7 @@ export default class AuthService {
     // Store refresh token in database
     await db
       .update(usersTable)
-      .set({ refreshToken: tokens.refresh_token })
+      .set({ refreshToken: tokens.refreshToken })
       .where(eq(usersTable.id, user.id));
 
     return tokens;

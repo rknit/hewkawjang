@@ -117,7 +117,7 @@ describe('Auth Middleware', () => {
         'test_access_secret',
         expect.any(Function),
       );
-      expect(mockRequest.authPayload).toEqual(validPayload);
+      expect(mockRequest.userAuthPayload).toEqual(validPayload);
       expect(mockNext).toHaveBeenCalledWith();
     });
 
@@ -128,7 +128,7 @@ describe('Auth Middleware', () => {
 
       authHandler(mockRequest as Request, mockResponse as Response, mockNext);
 
-      expect(mockRequest.authPayload).toEqual({ userId: 999 });
+      expect(mockRequest.userAuthPayload).toEqual({ userId: 999 });
       expect(mockNext).toHaveBeenCalledWith();
     });
   });
@@ -136,33 +136,68 @@ describe('Auth Middleware', () => {
   describe('refreshAuthHandler', () => {
     const validRefreshToken = 'valid_refresh_token_123';
 
-    const testUnauthorizedCases = [
-      {
-        description: 'missing authorization header',
-        headers: {},
-      },
-      {
-        description: 'empty authorization header',
-        headers: { authorization: '' },
-      },
-    ];
+    it('should return BadRequest when missing client type', () => {
+      mockRequest.headers = { authorization: `Bearer ${validRefreshToken}` };
 
-    testUnauthorizedCases.forEach(({ description, headers }) => {
-      it(`should return Unauthorized when ${description}`, () => {
-        mockRequest.headers = headers;
+      refreshAuthHandler(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
 
-        refreshAuthHandler(
-          mockRequest as Request,
-          mockResponse as Response,
-          mockNext,
-        );
-
-        expectUnauthorizedError();
-      });
+      expect(mockNext).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 400,
+          message: 'Missing client type',
+        }),
+      );
     });
 
+    const testUnauthorizedCases = [
+      {
+        description: 'missing authorization header in mobile client',
+        clientType: 'mobile',
+      },
+      {
+        description: 'empty authorization header in mobile client',
+        clientType: 'mobile',
+        headers: {
+          authorization: '',
+        },
+      },
+      {
+        description: 'missing refreshToken cookie in web client',
+        clientType: 'web',
+      },
+      {
+        description: 'empty refreshToken cookie in web client',
+        clientType: 'web',
+        cookies: { refreshToken: '' },
+      },
+    ];
+    testUnauthorizedCases.forEach(
+      ({ description, clientType, headers, cookies }) => {
+        it(`should return Unauthorized when ${description}`, () => {
+          mockRequest.headers = headers;
+          mockRequest.cookies = cookies;
+          mockRequest.userAuthClientType = clientType as 'web' | 'mobile';
+
+          refreshAuthHandler(
+            mockRequest as Request,
+            mockResponse as Response,
+            mockNext,
+          );
+
+          expectUnauthorizedError();
+        });
+      },
+    );
+
     it('should return Unauthorized when JWT verification fails', () => {
-      mockRequest.headers = { authorization: `Bearer ${invalidToken}` };
+      mockRequest.headers = {
+        authorization: `Bearer ${invalidToken}`,
+      };
+      mockRequest.userAuthClientType = 'mobile';
       mockJwtVerifyFailure();
 
       refreshAuthHandler(
@@ -183,10 +218,12 @@ describe('Auth Middleware', () => {
       { payload: invalidPayload, description: 'missing userId' },
       { payload: null, description: 'null payload' },
     ];
-
     invalidPayloadCases.forEach(({ payload, description }) => {
       it(`should return Unauthorized when decoded payload has ${description}`, () => {
-        mockRequest.headers = { authorization: `Bearer ${validRefreshToken}` };
+        mockRequest.headers = {
+          authorization: `Bearer ${validRefreshToken}`,
+        };
+        mockRequest.userAuthClientType = 'mobile';
         mockJwtVerifySuccess(payload);
 
         refreshAuthHandler(
@@ -199,8 +236,9 @@ describe('Auth Middleware', () => {
       });
     });
 
-    it('should set authPayload, authRefreshToken and call next() for valid refresh token', () => {
-      mockRequest.headers = { authorization: `Bearer ${validRefreshToken}` };
+    it('should set authPayload, authRefreshToken and call next() for valid refresh token in web client', () => {
+      mockRequest.cookies = { refreshToken: validRefreshToken };
+      mockRequest.userAuthClientType = 'web';
       mockJwtVerifySuccess(validPayload);
 
       refreshAuthHandler(
@@ -214,14 +252,40 @@ describe('Auth Middleware', () => {
         'test_refresh_secret',
         expect.any(Function),
       );
-      expect(mockRequest.authPayload).toEqual(validPayload);
-      expect(mockRequest.authRefreshToken).toEqual(validRefreshToken);
+      expect(mockRequest.userAuthPayload).toEqual(validPayload);
+      expect(mockRequest.userAuthRefreshToken).toEqual(validRefreshToken);
+      expect(mockNext).toHaveBeenCalledWith();
+    });
+
+    it('should set authPayload, authRefreshToken and call next() for valid refresh token in mobile client', () => {
+      mockRequest.headers = {
+        authorization: `Bearer ${validRefreshToken}`,
+      };
+      mockRequest.userAuthClientType = 'mobile';
+      mockJwtVerifySuccess(validPayload);
+
+      refreshAuthHandler(
+        mockRequest as Request,
+        mockResponse as Response,
+        mockNext,
+      );
+
+      expect(mockJwt.verify).toHaveBeenCalledWith(
+        validRefreshToken,
+        'test_refresh_secret',
+        expect.any(Function),
+      );
+      expect(mockRequest.userAuthPayload).toEqual(validPayload);
+      expect(mockRequest.userAuthRefreshToken).toEqual(validRefreshToken);
       expect(mockNext).toHaveBeenCalledWith();
     });
 
     it('should extract payload with only userId from refresh token data', () => {
       const refreshTokenWithExtraData = { userId: 888, extraData: 'test' };
-      mockRequest.headers = { authorization: `Bearer ${validRefreshToken}` };
+      mockRequest.headers = {
+        authorization: `Bearer ${validRefreshToken}`,
+      };
+      mockRequest.userAuthClientType = 'mobile';
       mockJwtVerifySuccess(refreshTokenWithExtraData);
 
       refreshAuthHandler(
@@ -230,8 +294,8 @@ describe('Auth Middleware', () => {
         mockNext,
       );
 
-      expect(mockRequest.authPayload).toEqual({ userId: 888 });
-      expect(mockRequest.authRefreshToken).toEqual(validRefreshToken);
+      expect(mockRequest.userAuthPayload).toEqual({ userId: 888 });
+      expect(mockRequest.userAuthRefreshToken).toEqual(validRefreshToken);
       expect(mockNext).toHaveBeenCalledWith();
     });
   });
