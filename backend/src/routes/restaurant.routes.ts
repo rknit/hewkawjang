@@ -31,4 +31,9 @@ router.get('/reject', async (req, res) => {
   res.status(201).json(users);
 });
 
+router.get('/update/status', async (req, res) => {
+  const users = await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
+  res.status(201).json(users);
+});
+
 export default router;
