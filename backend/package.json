@@ -27,7 +27,8 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "cross-env": "^10.0.0"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2",
@@ -35,7 +36,6 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "cross-env": "^10.0.0",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
