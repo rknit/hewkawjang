@@ -139,7 +139,7 @@ describe('Reservation Service', () => {
       db.update = mockUpdate;
     }           
     it('should cancel a valid reservation', async () => {
-      const reservationToCancel = mockReservations[3];
+      const reservationToCancel = mockReservations[2]; // unconfirmed reservation more than 24 hours away
       setupSelectMock([reservationToCancel]);
       setupUpdateMock();
       await expect(ReservationService.cancleReservation({
