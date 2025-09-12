@@ -16,12 +16,12 @@ export default function errorHandler(
     query: req.query,
   };
 
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV === 'development') {
     console.error({
       timestamp: new Date().toISOString(),
       req: reqDisp,
       error,
-    }); // Log full error server-side
+    }); // Log full error server-side in development
   }
 
   const isProduction = process.env.NODE_ENV === 'production';
