@@ -16,8 +16,8 @@ router.post('/verify', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  const verifyEmail = await MailerService.sendOTP(req.body.email);
-  res.status(201).json(verifyEmail);
+  await MailerService.sendOTP(req.body.email);
+  res.status(201);
 });
 
 export default router;

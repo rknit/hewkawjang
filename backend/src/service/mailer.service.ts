@@ -31,7 +31,7 @@ export default class MailerService {
     }
   }
 
-  static async sendOTP(email: string) {
+  static async sendOTP(email: string): Promise<void> {
     let dup = await db
       .select({ id: usersTable.id })
       .from(usersTable)
@@ -44,8 +44,7 @@ export default class MailerService {
     await this.sendVerifiedEmail(email, otp);
     let timestamp = new Date(Date.now());
     let data = {"email":email,"otp":otp,"sendTime":timestamp}
-    let [verifyEmail] = await db.insert(emailVerificationTable).values(data).returning();
-    return verifyEmail;
+    await db.insert(emailVerificationTable).values(data);
   }
 
   static async generateOTP(length = 6) {
