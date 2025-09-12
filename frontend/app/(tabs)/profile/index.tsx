@@ -99,7 +99,7 @@ function ProfileImage(props: { user: User | null }) {
           <Entypo name="pencil" size={24} color="black" />
         </View>
       </Pressable>
-      <Text className="text-lg sm:text-xl lg:text-2xl text-black bg-gray-100 text-center px-4 py-2 rounded-md">
+      <Text className="text-lg sm:text-xl lg:text-2xl text-black text-center px-4 py-2 rounded-md">
         {name}
       </Text>
     </View>
