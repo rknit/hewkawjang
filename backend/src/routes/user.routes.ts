@@ -1,5 +1,6 @@
 import express from 'express';
 import UserService from '../service/user.service';
+import MailerService from '../service/mailer.service';
 import { authHandler } from '../middleware/auth.middleware';
 
 const router = express.Router();
@@ -9,10 +10,15 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
-// register a new user
-router.post('/register', async (req, res) => {
-  const newUser = await UserService.createUser(req.body);
+router.post('/verify', async (req, res) => {
+  const { otp, ...userData } = req.body;
+  const newUser = await UserService.registerUser(userData, otp);
   res.status(201).json(newUser);
+});
+
+router.post('/register', async (req, res) => {
+  await MailerService.sendOTP(req.body.email);
+  res.status(201);
 });
 
 // Soft delete the authenticated user

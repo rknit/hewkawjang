@@ -1,5 +1,6 @@
 import express from 'express';
 import RestaurantService from '../service/restaurant.service';
+import { authHandler } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
@@ -24,6 +25,16 @@ router.get('/owner/:ownerId', async (req, res) => {
     });
 
     res.json(restaurants);
+});
+
+router.get('/reject',authHandler ,async (req, res) => {
+  await RestaurantService.rejectReservation(req.body.id);
+  res.status(200);
+});
+
+router.get('/update/status',authHandler ,async (req, res) => {
+  await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
+  res.status(200);
 });
 
 export default router;
