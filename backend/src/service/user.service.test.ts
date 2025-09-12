@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { User } from './user.service';
 import UserService from './user.service';
+import { usersTable, reservationTable } from '../db/schema';
 
 let mockUsers: User[] = [
   {
@@ -145,6 +146,99 @@ describe('User Service', () => {
       expect(mockWhere).toHaveBeenCalledWith(expect.any(Object)); // Called with inArray condition
       expect(mockOffset).toHaveBeenCalledWith(0); // Default offset
       expect(mockLimit).toHaveBeenCalledWith(10); // Default limit
+    });
+  });
+
+  describe('softDeleteUser', () => {
+    let mockUpdate: jest.Mock;
+    let mockSet: jest.Mock;
+    let mockWhere: jest.Mock;
+    let mockReturning: jest.Mock;
+    let mockSelect: jest.Mock;
+    let mockReservationWhere: jest.Mock;
+    let mockReservationSet: jest.Mock;
+    let mockReservationUpdateWhere: jest.Mock;
+
+    beforeEach(() => {
+      mockReturning = jest.fn();
+      mockWhere = jest.fn(() => ({ returning: mockReturning }));
+      mockSet = jest.fn(() => ({ where: mockWhere }));
+      
+      mockReservationWhere = jest.fn();
+      mockSelect = jest.fn(() => ({ from: () => ({ where: mockReservationWhere }) }));
+      
+      mockReservationUpdateWhere = jest.fn();
+      mockReservationSet = jest.fn(() => ({ where: mockReservationUpdateWhere }));
+      
+      mockUpdate = jest.fn((table) => {
+        if (table === usersTable) {
+          return { set: mockSet };
+        }
+        if (table === reservationTable) {
+          return { set: mockReservationSet };
+        }
+        throw new Error('Unexpected table passed to update');
+      });
+      
+      const tx = {
+        update: mockUpdate,
+        select: mockSelect,
+      };
+
+      // mock db.transaction to execute callback with tx
+      (db as any).transaction = jest.fn((cb: any) => cb(tx));
+    });
+
+    it('should return null if user does not exist', async () => {
+      mockReturning.mockResolvedValue([]); // Simulate no user updated
+
+      const result = await UserService.softDeleteUser(999);
+
+      expect(result).toBeNull();
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+      expect(mockReturning).toHaveBeenCalled();
+      expect(mockSelect).not.toHaveBeenCalled(); // no reservation query
+    });
+
+    it('should soft delete user and cancel reservations', async () => {
+      const deletedUser = {
+        id: 1,
+        firstName: 'Deleted',
+        lastName: 'User',
+        email: 'deleted_1@gmail.com',
+        phoneNo: '0000000000',
+        password: '',
+        displayName: 'Deleted User',
+        profileUrl: null,
+        refreshToken: null,
+      };
+
+      mockReturning.mockResolvedValue([deletedUser]);
+      // Mock reservations returned for cancellation
+      const reservations = [
+        { id: 101, status: 'unconfirmed', reservationfee: 200 },
+        { id: 102, status: 'unconfirmed', reservationfee: 500 },
+        { id: 103, status: 'confirmed', reservationfee: 300 },
+      ];
+      mockReservationWhere.mockResolvedValue(reservations);
+
+      const result = await UserService.softDeleteUser(1);
+
+      expect(result).toEqual(deletedUser);
+
+      // User soft delete assertions
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
+      expect(mockWhere).toHaveBeenCalled();
+      expect(mockReturning).toHaveBeenCalled();
+    
+      // Reservation cancellation assertions
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockReservationWhere).toHaveBeenCalled();
+      expect(mockReservationSet).toHaveBeenCalledTimes(reservations.length);
+      expect(mockReservationUpdateWhere).toHaveBeenCalledTimes(reservations.length);
     });
   });
 });

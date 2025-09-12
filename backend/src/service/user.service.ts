@@ -4,13 +4,16 @@ import {
   InferSelectModel,
   asc,
   eq,
+  and,
+  or,
   desc,
   getTableColumns,
 } from 'drizzle-orm';
-import { usersTable, emailVerificationTable } from '../db/schema';
+import { usersTable, emailVerificationTable, reservationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
+import ReservationService from './reservation.service';
 
 // excludes sensitive fields from User type
 type ExcludeFromUser = {
@@ -98,4 +101,51 @@ export default class UserService {
       .returning(non_sensitive_user_fields);
     return newUser;
   }
+
+  // Change the value to default "deleted" values since the schema reject null
+  static async softDeleteUser(userId: number): Promise<User | null> {
+    return await db.transaction(async (tx) => {
+      // Soft delete user
+      const result = await tx.update(usersTable)
+        .set({
+          firstName: 'Deleted',
+          lastName: 'User',
+          email: `deleted_${userId}@gmail.com`,
+          phoneNo: '0000000000',
+          password: '',
+          displayName: 'Deleted User',
+          profileUrl: null,
+          refreshToken: null,
+        })
+        .where(eq(usersTable.id, userId))
+        .returning();
+
+      if (!result || result.length === 0) return null;
+
+      // Find all unconfirmed reservations
+      const reservations = await tx
+        .select()
+        .from(reservationTable)
+        .where(
+          and(
+            eq(reservationTable.userId, userId),
+            or(
+              eq(reservationTable.status, 'unconfirmed'),
+              eq(reservationTable.status, 'confirmed')
+            )
+          )
+        );
+
+      // Force cancel them one by one (even if violate the 24-hour constraint)
+      for (const r of reservations) {
+        await tx
+          .update(reservationTable)
+          .set({ status: 'cancelled' })
+          .where(eq(reservationTable.id, r.id));
+      }
+
+      return result[0];
+    });
+  }
 }
+
