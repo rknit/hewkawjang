@@ -90,9 +90,6 @@ export default class UserService {
     if(!result || result.length === 0)
       return null;
 
-    // Cancel pending reservations by this user
-    await ReservationService.cancelPendingReservationsByUser(userId);
-
     return result[0];
   }
 }
