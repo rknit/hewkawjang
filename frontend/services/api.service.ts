@@ -1,10 +1,10 @@
 import axios from 'axios';
-import TokenStorage from '@/services/token-storage';
+import TokenStorage from '@/services/token-storage.service';
 import { Platform } from 'react-native';
 
 const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
 
-const api = axios.create({
+const ApiService = axios.create({
   baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
   timeout: 15000,
 });
@@ -19,7 +19,7 @@ const refreshApi = axios.create({
 });
 
 // Request interceptor: attach access token
-api.interceptors.request.use(async (config) => {
+ApiService.interceptors.request.use(async (config) => {
   const token = await TokenStorage.getAccessToken();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -28,7 +28,7 @@ api.interceptors.request.use(async (config) => {
 });
 
 // Response interceptor: handle 401 Unauthorized
-api.interceptors.response.use(undefined, async (error) => {
+ApiService.interceptors.response.use(undefined, async (error) => {
   if (error.response?.status === 401) {
     const token = await TokenStorage.getRefreshToken();
 
@@ -54,11 +54,11 @@ api.interceptors.response.use(undefined, async (error) => {
     }
 
     // Successfully refreshed tokens, retry original request
-    return api(error.config);
+    return ApiService(error.config);
   }
 
   // TODO: handle other status codes globally if needed
   return Promise.reject(error);
 });
 
-export default api;
+export default ApiService;

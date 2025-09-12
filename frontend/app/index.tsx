@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Button, Text, View } from 'react-native';
 
 export default function Index() {
   return (
@@ -6,6 +7,9 @@ export default function Index() {
       <Text className="text-xl font-bold text-blue-500">
         Welcome to Nativewind!
       </Text>
+
+      {/* FIXME: for testing purpose */}
+      <Button title="Go to Profile" onPress={() => router.push('/profile')} />
     </View>
   );
 }

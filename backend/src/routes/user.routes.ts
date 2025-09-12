@@ -10,6 +10,13 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
+router.get('/me', authHandler, async (req, res) => {
+  const user = await UserService.getUsers({
+    ids: [req.userAuthPayload?.userId!],
+  });
+  res.json(user);
+});
+
 router.post('/verify', async (req, res) => {
   const { otp, ...userData } = req.body;
   const newUser = await UserService.registerUser(userData, otp);
