@@ -90,5 +90,15 @@ describe('Reservation Routes', () => {
         });
     });
     
+    it('should return 400 if cancleReservation throws an error', async () => {
+      ReservationService.cancleReservation = jest.fn().mockRejectedValue(new Error('Some error'));
+      await request(app)
+        .post('/reservations/cancel')
+        .send({ reservationId: 1, userId: 42, restaurantId: 1 })
+        .expect(400)
+        .then((response) => {
+          expect(response.body.error).toBe('Some error');
+        });
+    });
   });
 });
