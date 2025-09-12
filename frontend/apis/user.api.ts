@@ -24,10 +24,10 @@ export async function tmpLogin() {
   }
 }
 
-export async function fetchUserProfile(): Promise<User> {
+export async function fetchCurrentUser(): Promise<User> {
   try {
-    const res = await ApiService.get('/user/profile');
-    return UserSchema.parse(res.data);
+    const res = await ApiService.get('/users/me');
+    return UserSchema.parse(res.data[0]);
   } catch (error) {
     throw normalizeApiError(error);
   }
