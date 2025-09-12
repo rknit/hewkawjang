@@ -1,7 +1,6 @@
 import { db } from '../db';
 import { User } from './user.service';
 import UserService from './user.service';
-import ReservationService from './reservation.service';
 import { usersTable, reservationTable } from '../db/schema';
 
 let mockUsers: User[] = [
@@ -221,6 +220,7 @@ describe('User Service', () => {
       const reservations = [
         { id: 101, status: 'unconfirmed', reservationfee: 200 },
         { id: 102, status: 'unconfirmed', reservationfee: 500 },
+        { id: 103, status: 'confirmed', reservationfee: 300 },
       ];
       mockReservationWhere.mockResolvedValue(reservations);
 

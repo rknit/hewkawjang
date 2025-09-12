@@ -5,6 +5,7 @@ import {
   asc,
   eq,
   and,
+  or,
   desc,
   getTableColumns,
 } from 'drizzle-orm';
@@ -128,7 +129,10 @@ export default class UserService {
         .where(
           and(
             eq(reservationTable.userId, userId),
-            eq(reservationTable.status, 'unconfirmed')
+            or(
+              eq(reservationTable.status, 'unconfirmed'),
+              eq(reservationTable.status, 'confirmed')
+            )
           )
         );
 
