@@ -1,21 +1,42 @@
-import { fetchCurrentUser, tmpLogin } from '@/apis/user.api';
-import { User } from '@/types/user.type';
+import { User, UserSchema } from '@/types/user.type';
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Entypo from '@expo/vector-icons/Entypo';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import ApiService from '@/services/api.service';
+import TokenStorage from '@/services/token-storage.service';
 
 export default function ProfileScreen() {
   useEffect(() => {
-    tmpLogin();
+    let doLogin = async () => {
+      const platform = Platform.OS === 'web' ? 'web' : 'mobile';
+
+      const res = await ApiService.post(
+        '/auth/login',
+        {
+          email: 'j.doe@gmail.com',
+          password: 'janerat',
+        },
+        {
+          headers: { 'hkj-auth-client-type': platform },
+          withCredentials: true,
+        },
+      );
+
+      let { accessToken, refreshToken } = res.data;
+      TokenStorage.setAccessToken(accessToken);
+      if (refreshToken) TokenStorage.setRefreshToken(refreshToken);
+    };
+    doLogin();
   }, []);
 
   let [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     let fetchProfile = async () => {
-      let user = await fetchCurrentUser();
+      const res = await ApiService.get('/users/me');
+      let user = UserSchema.parse(res.data[0]);
       setUser(user);
     };
     fetchProfile();
@@ -71,7 +92,7 @@ export default function ProfileScreen() {
           </Text>
           <Pressable
             onPress={deleteAccount}
-            className="bg-[#DE0E0E] px-2 py-2 rounded-md self-start flex flex-row gap-1"
+            className="bg-[#DE0E0E] px-2 py-2 rounded-md self-start flex flex-row gap-1 justify-center items-center"
           >
             <AntDesign name="warning" size={24} color="white" />
             <Text className="text-center text-sm sm:text-base font-bold text-white">
