@@ -37,7 +37,7 @@ router.post('/cancel', authHandler, async (req, res) => {
     userId,
     restaurantId,
   });
-  return res.status(200);
+  return res.sendStatus(200);
 });
 
 export default router;
