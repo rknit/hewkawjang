@@ -20,6 +20,11 @@ export const usersTable = pgTable('users', {
   refreshToken: text('refresh_token'),
 });
 
+export const restaurantStatusEnum = pgEnum('restaurant_status', [
+  'open',
+  'closed',
+]);
+
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
   ownerId: integer('owner_id').references(() => usersTable.id),
@@ -39,6 +44,7 @@ export const restaurantTable = pgTable('restaurant', {
   openTime: time('open_time'),
   closeTime: time('close_time'),
   priceRange: integer('priceRange'),
+  status: restaurantStatusEnum('status').notNull().default('closed'),
 });
 
 export const reservationStatusEnum = pgEnum('reservation_status', [
