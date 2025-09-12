@@ -28,13 +28,13 @@ router.get('/owner/:ownerId', async (req, res) => {
 });
 
 router.get('/reject',authHandler ,async (req, res) => {
-  const users = await RestaurantService.rejectReservation(req.body.id);
-  res.status(201).json(users);
+  await RestaurantService.rejectReservation(req.body.id);
+  res.status(200);
 });
 
 router.get('/update/status',authHandler ,async (req, res) => {
-  const users = await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
-  res.status(201).json(users);
+  await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
+  res.status(200);
 });
 
 export default router;

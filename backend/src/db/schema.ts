@@ -23,8 +23,6 @@ export const usersTable = pgTable('users', {
 export const restaurantStatusEnum = pgEnum('restaurant_status', [
   'open',
   'closed',
-  'pending',
-  'suspended',
 ]);
 
 export const restaurantTable = pgTable('restaurant', {

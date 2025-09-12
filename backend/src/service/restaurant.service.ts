@@ -52,21 +52,17 @@ export default class RestaurantService {
     return await query;
   }
 
-  static async rejectReservation(reservationId: number): Promise<Reservation> {
-    const reservation = await db
+  static async rejectReservation(reservationId: number): Promise<void> {
+    await db
       .update(reservationTable)
       .set({status: 'rejected'})
       .where(eq(reservationTable.id, reservationId))
-      .returning();
-    return reservation[0];
   }
 
-  static async updateRestaurantStatus(restaurantId: number, newStatus: RestaurantStatus): Promise<Restaurant> {
-    const restaurant = await db
+  static async updateRestaurantStatus(restaurantId: number, newStatus: RestaurantStatus): Promise<void> {
+    await db
       .update(restaurantTable)
       .set({status: newStatus})
       .where(eq(restaurantTable.id, restaurantId))
-      .returning();
-    return restaurant[0];
   }
 }
