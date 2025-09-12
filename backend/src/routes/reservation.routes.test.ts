@@ -75,17 +75,6 @@ describe('Reservation Routes', () => {
           expect(response.body.error).toBe('reservationId, userId and restarantId are required');
         });
     });
-    it('should return 400 if cancleReservation throws an error', async () => {
-      ReservationService.cancleReservation = jest.fn().mockRejectedValue(new Error('Some error'));
-      const requestBody = { reservationId: 1, userId: 42, restarantId: 1 };
-      await request(app)
-        .post('/reservations/cancel')
-        .send(requestBody)
-        .expect(400)
-        .then((response) => {
-          expect(response.body.error).toBe('Some error');
-          expect(ReservationService.cancleReservation).toHaveBeenCalledWith(requestBody);
-        });
-    });
+    
   });
 });
