@@ -4,12 +4,12 @@
   "scripts": {
     "start": "npx nodemon src/index.ts",
     "build": "rimraf dist && tsc",
-    "dev": "npm run sync:db && NODE_ENV=development npm run start",
-    "prod": "npm run build && NODE_ENV=production node dist/index.js",
+    "dev": "npm run sync:db && cross-env NODE_ENV=development npm run start",
+    "prod": "npm run build && cross-env NODE_ENV=production node dist/index.js",
     "sync:db": "drizzle-kit push",
-    "test": "NODE_ENV=test jest",
-    "test:watch": "NODE_ENV=test jest --watch",
-    "test:cov": "NODE_ENV=test jest --coverage"
+    "test": "cross-env NODE_ENV=test jest",
+    "test:watch": "cross-env NODE_ENV=test jest --watch",
+    "test:cov": "cross-env NODE_ENV=test jest --coverage"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -35,6 +35,7 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "cross-env": "^10.0.0",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
     "express": "^5.1.0",
