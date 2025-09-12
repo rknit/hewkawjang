@@ -29,7 +29,7 @@ app.use(express.json());
 
 app.use('/auth', authRoute);
 app.use('/users', userRoute);
-app.use('/restaurants', authHandler, restaurantRoute);
+app.use('/restaurants', restaurantRoute);
 app.use('/reservations', reservationRoute);
 
 app.get('/', (_: Request, res: Response) => {
@@ -37,7 +37,7 @@ app.get('/', (_: Request, res: Response) => {
 });
 
 app.use((_: Request, res: Response) => {
-  res.status(404).send('Not Found');
+  res.status(404).send ('Not Found');
 });
 
 // make sure error handler is the last middleware
