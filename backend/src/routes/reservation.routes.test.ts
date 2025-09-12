@@ -1,6 +1,7 @@
 import app from '..'; // your Express app
 import request from 'supertest';
 import ReservationService, { Reservation } from '../service/reservation.service';
+import { create } from 'domain';
 
 jest.mock('../service/reservation.service');
 
@@ -54,15 +55,28 @@ describe('Reservation Routes', () => {
 
   describe('POST /api/reservations/cancel', () => {
     it('should return 200 and call cancleReservation', async () => {
-      ReservationService.cancleReservation = jest.fn().mockResolvedValue(undefined);
-      const requestBody = { reservationId: 1, userId: 42, restarantId: 1 };
+      const mockReservations = [
+        {
+          id: 1,
+          userId: 42,
+          restaurantId: 1,
+          reserveAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days later
+          numberOfElderly: 1,
+          numberOfAdult: 2,
+          numberOfChildren: 1,
+          status: 'unconfirmed',
+          createdAt: new Date(),
+        },
+      ];
+      ReservationService.cancleReservation = jest.fn().mockResolvedValue(mockReservations);
+      
       await request(app)
         .post('/reservations/cancel')
-        .send(requestBody)
+        .send({ reservationId: 1, userId: 42, restaurantId: 1 })
         .expect(200)
         .then((response) => {
           expect(response.body).toEqual({ message: 'Reservation cancelled successfully' });
-          expect(ReservationService.cancleReservation).toHaveBeenCalledWith(requestBody);
+          expect(ReservationService.cancleReservation).toHaveBeenCalledWith({ reservationId: 1, userId: 42, restaurantId: 1 });
         });
     });
 
