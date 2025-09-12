@@ -51,14 +51,12 @@ export default class RestaurantService {
   }
 
   static async createRestaurant(data: CreateRestaurantInput) {
-    // validate input (extra safety)
-    const parsed = createRestaurantSchema.parse(data);
-
     const [restaurant] = await db
       .insert(restaurantTable)
-      .values(parsed)
+      .values(data as InferInsertModel<typeof restaurantTable>)
       .returning();
 
     return restaurant;
   }
+
 }
