@@ -33,7 +33,7 @@ const mockReservations: Reservation[] = [
     id: 3,
     userId: 44,
     restaurantId: 1,
-    reserveAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour later
+    reserveAt: new Date(Date.now() + 7*24*60 * 60 * 1000), // 7 days later
     reservationfee: 50,
     numberOfElderly: 1,
     numberOfAdult: 1,
