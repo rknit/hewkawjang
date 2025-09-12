@@ -33,7 +33,7 @@ const mockReservations: Reservation[] = [
     id: 3,
     userId: 44,
     restaurantId: 1,
-    reserveAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour later
+    reserveAt: new Date(Date.now() + 7*24*60 * 60 * 1000), // 7 days later
     reservationfee: 50,
     numberOfElderly: 1,
     numberOfAdult: 1,
@@ -41,6 +41,21 @@ const mockReservations: Reservation[] = [
     status: 'unconfirmed',
     specialRequest: null,
     createdAt: new Date(),
+
+  },
+  {
+    id: 4,
+    userId: 50,
+    restaurantId: 1,
+    reserveAt: new Date(Date.now() + 2*24*60 * 60 * 1000),  
+    reservationfee: 50,
+    numberOfElderly: 1,
+    numberOfAdult: 1,
+    numberOfChildren: 0,
+    status: 'rejected',
+    specialRequest: null,
+    createdAt: new Date(Date.now() - 2*24*60 * 60 * 1000),
+
   },
 ];
 
@@ -51,6 +66,17 @@ jest.mock('../db', () => ({
   },
   client: jest.fn(),
 }));
+
+jest.mock('../middleware/auth.middleware', () => ({
+  authHandler: (req: any, _res: any, next: any) => {
+    
+    req.userAuthPayload = { userId: 42 };
+    next();
+  },
+  authClientTypeHandler: (_req: any, _res: any, next: any) => next(),
+  refreshAuthHandler: (_req: any, _res: any, next: any) => next(),
+}));
+
 
 describe('Reservation Service', () => {
   beforeEach(() => {
@@ -102,4 +128,75 @@ describe('Reservation Service', () => {
       expect(mockOffset).toHaveBeenCalledWith(2);
     });
   });
+
+  describe('cancelReservation', () => {
+    let mockSelect: jest.Mock;
+    let mockFrom: jest.Mock;
+    let mockWhere: jest.Mock;
+    let mockUpdate: jest.Mock;
+    let mockSet: jest.Mock;
+    let mockWhereUpdate: jest.Mock;
+
+    function setupSelectMock(returnValue: Reservation[]) {
+      mockWhere = jest.fn().mockResolvedValue(returnValue); // last step returns reservations
+      mockFrom = jest.fn().mockReturnValue({ where: mockWhere });
+      mockSelect = jest.fn().mockReturnValue({ from: mockFrom });
+      db.select = mockSelect;
+    }
+    function setupUpdateMock() {
+      mockWhereUpdate = jest.fn().mockResolvedValue(undefined); // last step returns void
+      mockSet = jest.fn().mockReturnValue({ where: mockWhereUpdate });
+      mockUpdate = jest.fn().mockReturnValue({ set: mockSet });
+      db.update = mockUpdate;
+    }           
+    it('should cancel a valid reservation', async () => {
+      const reservationToCancel = mockReservations[2]; // unconfirmed reservation more than 24 hours away
+      setupSelectMock([reservationToCancel]);
+      setupUpdateMock();
+      await expect(ReservationService.cancelReservation({
+        reservationId: reservationToCancel.id,
+        userId: reservationToCancel.userId,
+        restaurantId: reservationToCancel.restaurantId,
+      })).resolves.toBeUndefined();
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFrom).toHaveBeenCalledWith(reservationTable);
+      expect(mockWhere).toHaveBeenCalledWith(
+        expect.any(Object) // Loosen the assertion for drizzle
+      );
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalledWith({ status: 'cancelled' });
+      expect(mockWhereUpdate).toHaveBeenCalledWith(
+        expect.any(Object) // Loosen the assertion for drizzle
+      );
+    });
+
+    it('should throw if reservation not found', async () => {
+      setupSelectMock([]);
+      await expect(ReservationService.cancelReservation({
+        reservationId: 999,
+        userId: 1,
+        restaurantId: 1,
+      })).rejects.toThrow('Reservation not found');
+    });
+    it('should throw if trying to cancel within 24 hours', async () => {
+      const reservationToCancel = mockReservations[0];
+      setupSelectMock([reservationToCancel]);
+      await expect(ReservationService.cancelReservation({
+        reservationId: reservationToCancel.id,
+        userId: reservationToCancel.userId,
+        restaurantId: reservationToCancel.restaurantId,
+      })).rejects.toThrow('Cannot cancel reservation within 24 hours');
+    });
+    it('should throw if reservation status is not unconfirmed or confirmed', async () => {
+      const reservationToCancel = mockReservations[3];
+      setupSelectMock([reservationToCancel]);
+      await expect(ReservationService.cancelReservation({
+        reservationId: reservationToCancel.id,
+        userId: reservationToCancel.userId,
+        restaurantId: reservationToCancel.restaurantId,
+      })).rejects.toThrow('Reservation status must be unconfirmed or confirmed to cancel');
+    });
+  });
+   
+     
 });
