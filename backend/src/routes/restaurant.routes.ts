@@ -26,4 +26,9 @@ router.get('/owner/:ownerId', async (req, res) => {
     res.json(restaurants);
 });
 
+router.get('/reject', async (req, res) => {
+  const users = await RestaurantService.rejectReservation(req.body);
+  res.status(201).json(users);
+});
+
 export default router;

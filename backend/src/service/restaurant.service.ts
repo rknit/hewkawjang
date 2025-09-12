@@ -5,11 +5,12 @@ import {
   asc,
   eq,
 } from 'drizzle-orm';
-import { restaurantTable } from '../db/schema';
+import { restaurantTable, reservationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
+export type Reservation = InferInsertModel<typeof reservationTable>;
 
 export default class RestaurantService {
   static async getRestaurants(
@@ -47,5 +48,14 @@ export default class RestaurantService {
       .limit(limit);
 
     return await query;
+  }
+
+  static async rejectReservation(restaurantId: number): Promise<Reservation> {
+    const reservation = await db
+      .update(reservationTable)
+      .set({status: 'rejected'})
+      .where(eq(reservationTable.restaurantId, restaurantId))
+      .returning();
+    return reservation[0];
   }
 }
