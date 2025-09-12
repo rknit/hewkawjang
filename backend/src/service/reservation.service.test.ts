@@ -194,7 +194,7 @@ describe('Reservation Service', () => {
         reservationId: reservationToCancel.id,
         userId: reservationToCancel.userId,
         restaurantId: reservationToCancel.restaurantId,
-      })).rejects.toThrow('Cannot cancel reservation that is not unconfirmed or confirmed');
+      })).rejects.toThrow('Reservation status must be unconfirmed or confirmed to cancel');
     });
   });
    

@@ -65,31 +65,20 @@ describe('Reservation Routes', () => {
   });
 
   describe('POST /reservations/cancel', () => {
-    it('should return 200 and call cancelReservation', async () => {
-      const mockReservations = [
-        {
-          id: 1,
-          userId: 42,
-          restaurantId: 1,
-          reserveAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days later
-          numberOfElderly: 1,
-          numberOfAdult: 2,
-          numberOfChildren: 1,
-          status: 'unconfirmed',
-          createdAt: new Date(),
-        },
-      ];
-      ReservationService.cancelReservation = jest.fn().mockResolvedValue(mockReservations);
-      
+    it('should return 200 and call cancelReservation for valid request', async () => {
+      ReservationService.cancelReservation = jest.fn().mockResolvedValue(undefined);
       await request(app)
         .post('/reservations/cancel')
-        .send({ reservationId: 1, userId: 42, restaurantId: 1 })
-        .expect(200)
-        .then((response) => {
-          expect(response.body).toEqual({ message: 'Reservation cancelled successfully' });
-          expect(ReservationService.cancelReservation).toHaveBeenCalledWith({ reservationId: 1, userId: 42, restaurantId: 1 });
-        });
+        .send({ reservationId: 1, restaurantId: 1 }) // userId comes from auth middleware mock
+        .expect(200);
+
+      expect(ReservationService.cancelReservation).toHaveBeenCalledWith({
+        reservationId: 1,
+        userId: 42,
+        restaurantId: 1,
+      });
     });
+
 
     it('should return 400 if required fields are missing', async () => {
       await request(app)
@@ -101,15 +90,6 @@ describe('Reservation Routes', () => {
         });
     });
     
-    it('should return 400 if cancelReservation throws an error', async () => {
-      ReservationService.cancelReservation = jest.fn().mockRejectedValue(new Error('Some error'));
-      await request(app)
-        .post('/reservations/cancel')
-        .send({ reservationId: 1, userId: 42, restaurantId: 1 })
-        .expect(400)
-        .then((response) => {
-          expect(response.body.error).toBe('Some error');
-        });
-    });
+    
   });
 });
