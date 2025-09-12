@@ -4,10 +4,11 @@ import {
   InferSelectModel,
   asc,
   eq,
+  and,
   desc,
   getTableColumns,
 } from 'drizzle-orm';
-import { usersTable, emailVerificationTable } from '../db/schema';
+import { usersTable, emailVerificationTable, reservationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
@@ -102,25 +103,45 @@ export default class UserService {
 
   // Change the value to default "deleted" values since the schema reject null
   static async softDeleteUser(userId: number): Promise<User | null> {
-    const result = await db.update(usersTable)
-      .set({
-        firstName: 'Deleted',
-        lastName: 'User',
-        email: `deleted_${userId}@gmail.com`,
-        phoneNo: '0000000000',
-        password: '',
-        displayName: 'Deleted User',
-        profileUrl: null,
-        refreshToken: null,
-      })
-      .where(eq(usersTable.id, userId))
-      .returning();
+    return await db.transaction(async (tx) => {
+      // Soft delete user
+      const result = await tx.update(usersTable)
+        .set({
+          firstName: 'Deleted',
+          lastName: 'User',
+          email: `deleted_${userId}@gmail.com`,
+          phoneNo: '0000000000',
+          password: '',
+          displayName: 'Deleted User',
+          profileUrl: null,
+          refreshToken: null,
+        })
+        .where(eq(usersTable.id, userId))
+        .returning();
 
-    // If no user was affected, return null
-    if(!result || result.length === 0)
-      return null;
+      if (!result || result.length === 0) return null;
 
-    return result[0];
+      // Find all unconfirmed reservations
+      const reservations = await tx
+        .select()
+        .from(reservationTable)
+        .where(
+          and(
+            eq(reservationTable.userId, userId),
+            eq(reservationTable.status, 'unconfirmed')
+          )
+        );
+
+      // Cancel them one by one
+      for (const r of reservations) {
+        await tx
+          .update(reservationTable)
+          .set({ status: 'cancelled' })
+          .where(eq(reservationTable.id, r.id));
+      }
+
+      return result[0];
+    });
   }
 }
 
