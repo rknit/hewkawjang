@@ -20,6 +20,24 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
   responseTokens(req, res, tokens);
 });
 
+// Logout
+router.post('/logout', authClientTypeHandler, async (req, res) => {
+  if (!req.userAuthPayload) {
+    throw createHttpError.Unauthorized('User not authenticated');
+  }
+
+  await AuthService.logoutUser(req.userAuthPayload);
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  res.status(200).json({message: 'Logged out successfully',});
+});
+
+
 // Token refresh
 router.post(
   '/refresh',
