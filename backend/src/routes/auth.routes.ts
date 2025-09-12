@@ -3,6 +3,7 @@ import AuthService, { LoginUser } from '../service/auth.service';
 import {
   refreshAuthHandler,
   authClientTypeHandler,
+  authHandler,
 } from '../middleware/auth.middleware';
 import createHttpError from 'http-errors';
 import { JwtTokens } from '../utils/jwt';
@@ -21,7 +22,7 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
 });
 
 // Logout
-router.post('/logout', authClientTypeHandler, async (req, res) => {
+router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
   if (!req.userAuthPayload) {
     throw createHttpError.Unauthorized('User not authenticated');
   }
