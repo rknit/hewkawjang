@@ -6,9 +6,7 @@
 - npm
 - [expo orbit](https://expo.dev/orbit) (for mobile development)
 
-## How to develop on Frontend
-
-Set up frontend project
+## How to setup Frontend
 
 ```bash
 # make sure you're in the 'frontend' directory
