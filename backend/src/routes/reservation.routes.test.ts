@@ -9,12 +9,23 @@ jest.mock('../db', () => ({
   client: jest.fn(),
 }));
 
+jest.mock('../middleware/auth.middleware', () => ({
+  authHandler: (req: any, _res: any, next: any) => {
+    
+    req.userAuthPayload = { userId: 42 };
+    next();
+  },
+  authClientTypeHandler: (_req: any, _res: any, next: any) => next(),
+  refreshAuthHandler: (_req: any, _res: any, next: any) => next(),
+}));
+
+
 describe('Reservation Routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('GET /api/reservations/unconfirmed/inspect', () => {
+  describe('GET /reservations/unconfirmed/inspect', () => {
     it('should return 200 and call getUnconfirmedReservationsByRestaurant', async () => {
       const mockReservations = [
         {
@@ -53,8 +64,8 @@ describe('Reservation Routes', () => {
     });
   });
 
-  describe('POST /api/reservations/cancel', () => {
-    it('should return 200 and call cancleReservation', async () => {
+  describe('POST /reservations/cancel', () => {
+    it('should return 200 and call cancelReservation', async () => {
       const mockReservations = [
         {
           id: 1,
@@ -68,7 +79,7 @@ describe('Reservation Routes', () => {
           createdAt: new Date(),
         },
       ];
-      ReservationService.cancleReservation = jest.fn().mockResolvedValue(mockReservations);
+      ReservationService.cancelReservation = jest.fn().mockResolvedValue(mockReservations);
       
       await request(app)
         .post('/reservations/cancel')
@@ -76,7 +87,7 @@ describe('Reservation Routes', () => {
         .expect(200)
         .then((response) => {
           expect(response.body).toEqual({ message: 'Reservation cancelled successfully' });
-          expect(ReservationService.cancleReservation).toHaveBeenCalledWith({ reservationId: 1, userId: 42, restaurantId: 1 });
+          expect(ReservationService.cancelReservation).toHaveBeenCalledWith({ reservationId: 1, userId: 42, restaurantId: 1 });
         });
     });
 
@@ -90,8 +101,8 @@ describe('Reservation Routes', () => {
         });
     });
     
-    it('should return 400 if cancleReservation throws an error', async () => {
-      ReservationService.cancleReservation = jest.fn().mockRejectedValue(new Error('Some error'));
+    it('should return 400 if cancelReservation throws an error', async () => {
+      ReservationService.cancelReservation = jest.fn().mockRejectedValue(new Error('Some error'));
       await request(app)
         .post('/reservations/cancel')
         .send({ reservationId: 1, userId: 42, restaurantId: 1 })

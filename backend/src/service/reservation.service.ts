@@ -29,7 +29,7 @@ export default class ReservationService {
     return reservations;
   }
 
-  static async cancleReservation(data: { reservationId: number; userId: number; restaurantId: number }): Promise<void> {
+  static async cancelReservation(data: { reservationId: number; userId: number; restaurantId: number }): Promise<void> {
     let reservationId = data.reservationId;
     let userId = data.userId;
     let restarantId = data.restaurantId;

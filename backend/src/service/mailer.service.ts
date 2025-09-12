@@ -1,7 +1,13 @@
+import {
+  eq,
+} from 'drizzle-orm';
 import nodemailer from "nodemailer";
+import { db } from '../db';
+import { emailVerificationTable ,usersTable } from '../db/schema';
+import createHttpError from 'http-errors';
 
 export default class MailerService {
-  async sendVerifiedEmail(email: string, OTP: string) {
+  static async sendVerifiedEmail(email: string, OTP: string) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -25,7 +31,24 @@ export default class MailerService {
     }
   }
 
-  generateOTP(length = 6) {
+  static async sendOTP(email: string) {
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+    if (dup.length > 0) {
+      throw createHttpError.Conflict('Email already exists');
+    }
+    const otp = await this.generateOTP();
+    await this.sendVerifiedEmail(email, otp);
+    let timestamp = new Date(Date.now());
+    let data = {"email":email,"otp":otp,"sendTime":timestamp}
+    let [verifyEmail] = await db.insert(emailVerificationTable).values(data).returning();
+    return verifyEmail;
+  }
+
+  static async generateOTP(length = 6) {
     return (Math.floor(100000 + Math.random() * 900000 + Math.random())%1000000).toString(); // 6 หลัก
   }
 }

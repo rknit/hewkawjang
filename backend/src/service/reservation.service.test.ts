@@ -67,6 +67,17 @@ jest.mock('../db', () => ({
   client: jest.fn(),
 }));
 
+jest.mock('../middleware/auth.middleware', () => ({
+  authHandler: (req: any, _res: any, next: any) => {
+    
+    req.userAuthPayload = { userId: 42 };
+    next();
+  },
+  authClientTypeHandler: (_req: any, _res: any, next: any) => next(),
+  refreshAuthHandler: (_req: any, _res: any, next: any) => next(),
+}));
+
+
 describe('Reservation Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -118,7 +129,7 @@ describe('Reservation Service', () => {
     });
   });
 
-  describe('cancleReservation', () => {
+  describe('cancelReservation', () => {
     let mockSelect: jest.Mock;
     let mockFrom: jest.Mock;
     let mockWhere: jest.Mock;
@@ -142,7 +153,7 @@ describe('Reservation Service', () => {
       const reservationToCancel = mockReservations[2]; // unconfirmed reservation more than 24 hours away
       setupSelectMock([reservationToCancel]);
       setupUpdateMock();
-      await expect(ReservationService.cancleReservation({
+      await expect(ReservationService.cancelReservation({
         reservationId: reservationToCancel.id,
         userId: reservationToCancel.userId,
         restaurantId: reservationToCancel.restaurantId,
@@ -161,7 +172,7 @@ describe('Reservation Service', () => {
 
     it('should throw if reservation not found', async () => {
       setupSelectMock([]);
-      await expect(ReservationService.cancleReservation({
+      await expect(ReservationService.cancelReservation({
         reservationId: 999,
         userId: 1,
         restaurantId: 1,
@@ -170,7 +181,7 @@ describe('Reservation Service', () => {
     it('should throw if trying to cancel within 24 hours', async () => {
       const reservationToCancel = mockReservations[0];
       setupSelectMock([reservationToCancel]);
-      await expect(ReservationService.cancleReservation({
+      await expect(ReservationService.cancelReservation({
         reservationId: reservationToCancel.id,
         userId: reservationToCancel.userId,
         restaurantId: reservationToCancel.restaurantId,
@@ -179,7 +190,7 @@ describe('Reservation Service', () => {
     it('should throw if reservation status is not unconfirmed or confirmed', async () => {
       const reservationToCancel = mockReservations[3];
       setupSelectMock([reservationToCancel]);
-      await expect(ReservationService.cancleReservation({
+      await expect(ReservationService.cancelReservation({
         reservationId: reservationToCancel.id,
         userId: reservationToCancel.userId,
         restaurantId: reservationToCancel.restaurantId,
