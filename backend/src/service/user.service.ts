@@ -4,9 +4,10 @@ import {
   InferSelectModel,
   asc,
   eq,
+  desc,
   getTableColumns,
 } from 'drizzle-orm';
-import { usersTable } from '../db/schema';
+import { usersTable, emailVerificationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
@@ -57,6 +58,38 @@ export default class UserService {
       .limit(1);
     if (dup.length > 0) {
       throw createHttpError.Conflict('Email already exists');
+    }
+    data.password = await hashPassword(data.password);
+    let [newUser] = await db
+      .insert(usersTable)
+      .values(data)
+      .returning(non_sensitive_user_fields);
+    return newUser;
+  }
+
+  static async registerUser(data: NewUser, otpSend: string): Promise<User> {
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
+    if (dup.length > 0) {
+      throw createHttpError.Conflict('Email already exists');
+    }
+    let query = await db
+      .select({ otp: emailVerificationTable.otp, sendTime: emailVerificationTable.sendTime })
+      .from(emailVerificationTable)
+      .orderBy(desc(emailVerificationTable.id))
+      .where(eq(emailVerificationTable.email, data.email))
+      .limit(1);
+    if (query.length === 0) {
+      throw createHttpError.Unauthorized('Invalid or expired OTP');
+    }
+    const { otp, sendTime } = query[0];
+    const currentTime = new Date();
+    const timeDiff = (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
+    if (otp !== otpSend || timeDiff > 180) {
+      throw createHttpError.Unauthorized('Invalid or expired OTP');
     }
     data.password = await hashPassword(data.password);
     let [newUser] = await db

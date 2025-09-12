@@ -76,3 +76,10 @@ export const reservationTable = pgTable('reservation', {
   specialRequest: text('special_request'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export const emailVerificationTable = pgTable('emailVerification', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull(),
+  otp: text('otp').notNull(),
+  sendTime: timestamp('sendTime').notNull(),
+});
