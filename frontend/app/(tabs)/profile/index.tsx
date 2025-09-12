@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Entypo from '@expo/vector-icons/Entypo';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function ProfileScreen() {
   useEffect(() => {
@@ -27,43 +28,57 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       className="w-full"
-      contentContainerStyle={{ minHeight: '100%' }}
+      contentContainerStyle={{
+        minHeight: '100%',
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'white',
+      }}
     >
       {/* Header */}
-      <View className="w-full justify-center items-center pt-8 pb-4 px-4 sm:px-8 md:px-16 lg:px-24">
-        <Text className="text-center text-xl sm:text-2xl md:text-3xl font-bold">
-          My Profile
-        </Text>
+      <View className="w-full pt-8 pb-4 px-4 sm:px-8 md:px-16 lg:px-24">
+        <View className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12 w-full">
+          <View className="col-span-1 flex items-center justify-center lg:justify-start">
+            <Text className="text-xl sm:text-2xl md:text-3xl font-bold">
+              My Profile
+            </Text>
+          </View>
+          <View className="col-span-1 lg:col-span-3" />
+        </View>
       </View>
-      <View className="border-b-2 border-gray-200 w-[90%] self-center" />
+      <View className="border-b-2 border-gray-300 w-[90%] self-center" />
 
-      {/* Profile Info */}
-      <View className="pt-8 pb-8">
+      {/* Profile Info - Flexible content area */}
+      <View className="flex-1 pt-8 pb-8">
         <View className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12 w-full px-4 sm:px-8 md:px-16 lg:px-24">
           <ProfileImage user={user} />
           <UserInfo user={user} />
         </View>
       </View>
 
-      {/* Delete Account (Footer) */}
-      <View className="border-b-2 border-gray-200 w-[90%] self-center" />
-      <View className="pt-4" />
-      <View className="w-full pt-8 pb-8 px-4 sm:px-8 md:px-16 lg:px-24">
-        <Text className="text-lg sm:text-xl font-bold mb-2">
-          Delete Account
-        </Text>
-        <Text className="text-sm sm:text-base text-gray-600 mb-4">
-          if you no longer wish to use HewKawJang, you can permanently delete
-          your account.
-        </Text>
-        <Pressable
-          onPress={deleteAccount}
-          className="bg-red-500 p-4 rounded-md self-start"
-        >
-          <Text className="text-center text-sm sm:text-base font-bold text-white">
+      {/* Delete Account (Footer) - Sticks to bottom when space available */}
+      <View>
+        <View className="border-b-2 border-gray-300 w-[90%] self-center" />
+        <View className="pt-4" />
+        <View className="w-full pt-8 pb-8 px-4 sm:px-8 md:px-16 lg:px-24">
+          <Text className="text-lg sm:text-xl font-bold mb-2">
             Delete Account
           </Text>
-        </Pressable>
+          <Text className="text-sm sm:text-base text-gray-600 mb-4">
+            if you no longer wish to use HewKawJang, you can permanently delete
+            your account.
+          </Text>
+          <Pressable
+            onPress={deleteAccount}
+            className="bg-[#DE0E0E] px-2 py-2 rounded-md self-start flex flex-row gap-1"
+          >
+            <AntDesign name="warning" size={24} color="white" />
+            <Text className="text-center text-sm sm:text-base font-bold text-white">
+              Delete Account
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
@@ -116,9 +131,9 @@ function UserInfo(props: { user: User | null }) {
 
       <Pressable
         onPress={saveChange}
-        className="bg-gray-200 p-4 rounded-md self-start mt-4"
+        className="bg-[#AD754C] py-2 px-8 rounded-md self-start mt-4"
       >
-        <Text className="text-center text-sm sm:text-base font-bold px-4">
+        <Text className="text-center text-sm sm:text-base font-bold text-white">
           Save Profile
         </Text>
       </Pressable>
@@ -132,7 +147,7 @@ function EditableField(props: { label: string; value: string }) {
       <Text className="text-sm sm:text-base font-medium text-gray-700">
         {props.label}
       </Text>
-      <Text className="text-sm sm:text-base text-black bg-gray-100 w-full p-3 rounded-md border border-gray-200">
+      <Text className="text-sm sm:text-base text-black bg-gray-100 w-full px-3 py-1 rounded-md border border-gray-200">
         {props.value}
       </Text>
     </View>
