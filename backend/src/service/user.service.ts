@@ -132,7 +132,7 @@ export default class UserService {
           )
         );
 
-      // Cancel them one by one
+      // Force cancel them one by one (even if violate the 24-hour constraint)
       for (const r of reservations) {
         await tx
           .update(reservationTable)
