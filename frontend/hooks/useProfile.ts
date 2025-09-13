@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { User } from '@/types/user.type';
-import ApiService from '@/services/api.service';
-import TokenStorage from '@/services/token-storage.service';
 import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
 
 export interface UserFormData {
@@ -35,34 +32,6 @@ export const useProfile = () => {
     phoneNo: '',
     email: '',
   });
-
-  // FIXME: Temporary auto-login for development purposes
-  useEffect(() => {
-    const doLogin = async () => {
-      try {
-        const platform = Platform.OS === 'web' ? 'web' : 'mobile';
-
-        const res = await ApiService.post(
-          '/auth/login',
-          {
-            email: 'j.doe@gmail.com',
-            password: 'janerat',
-          },
-          {
-            headers: { 'hkj-auth-client-type': platform },
-            withCredentials: true,
-          },
-        );
-
-        const { accessToken, refreshToken } = res.data;
-        TokenStorage.setAccessToken(accessToken);
-        if (refreshToken) TokenStorage.setRefreshToken(refreshToken);
-      } catch (error) {
-        console.error('Auto-login failed:', error);
-      }
-    };
-    doLogin();
-  }, []);
 
   // Fetch current user data
   useEffect(() => {
