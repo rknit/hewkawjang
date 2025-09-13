@@ -39,23 +39,23 @@ router.get('/update/status',authHandler ,async (req, res) => {
 });
 
 router.post("/", async (req, res, next) => {
-//  try {
-    // validate request body
-    const parsedData = createRestaurantSchema.parse(req.body);
+  try {
+  // validate request body
+  const parsedData = createRestaurantSchema.parse(req.body);
 
-    // call service
-    const restaurant = await RestaurantService.createRestaurant(parsedData);
+  // call service
+  const restaurant = await RestaurantService.createRestaurant(parsedData);
 
-    res.status(201).json({
-      message: "Restaurant submitted successfully",
-      restaurant,
-    });
-//   } catch (err) {
-//     if (err instanceof Error) {
-//       return res.status(400).json({ error: err.message });
-//     }
-//    next(err);
-//  }
+  res.status(201).json({
+    message: "Restaurant submitted successfully",
+    restaurant,
+  });
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.status(400).json({ error: "Bad request because some fields are missing or invalid." });
+    }
+   next(err);
+ }
 });
 
 export default router;
