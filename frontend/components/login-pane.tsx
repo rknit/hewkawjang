@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import TextField from './text-field';
+import SimpleAlert from './simple-alert';
 import { login } from '@/apis/auth.api';
-import { normalizeError } from '@/utils/api-error';
+import { isAxiosError } from 'axios';
 
 interface LoginPaneProps {
   onClose?: () => void;
@@ -21,6 +22,8 @@ export default function LoginPane({
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {},
   );
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -46,10 +49,29 @@ export default function LoginPane({
     try {
       await login(email, password);
       onLoginSuccess?.();
-    } catch (error) {
-      Alert.alert('Login Failed', 'An error occurred during login');
-    } finally {
       setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      if (isAxiosError(error)) {
+        let errorMessage = 'Login failed. Please try again.';
+
+        if (error.response?.data?.error) {
+          // Backend sends error as { error: { message: "...", ... } }
+          if (typeof error.response.data.error === 'string') {
+            errorMessage = error.response.data.error;
+          } else if (error.response.data.error.message) {
+            errorMessage = error.response.data.error.message;
+          }
+        } else if (error.response?.status === 401) {
+          errorMessage = 'Invalid email or password';
+        }
+
+        setAlertMessage(errorMessage);
+        setShowAlert(true);
+      } else {
+        setAlertMessage('An unexpected error occurred. Please try again.');
+        setShowAlert(true);
+      }
     }
   };
 
@@ -117,6 +139,19 @@ export default function LoginPane({
           <Text className="text-[#8B5A3C] font-semibold">Sign up</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Alert Box */}
+      {showAlert && (
+        <View className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <SimpleAlert
+            title="Login Error"
+            message={alertMessage}
+            buttonText="OK"
+            onClose={() => setShowAlert(false)}
+            type="error"
+          />
+        </View>
+      )}
     </View>
   );
 }
