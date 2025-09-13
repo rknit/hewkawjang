@@ -64,4 +64,32 @@ export default class ReservationService {
       .set({ status: 'cancelled' })
       .where(eq(reservationTable.id, reservationId));
   }
+
+    static async createReservation(data: {
+    userId: number;
+    restaurantId: number;
+    reserveAt: Date;
+    numberOfAdult?: number;
+    numberOfChildren?: number;
+    numberOfElderly?: number;
+    specialRequest?: string;
+  }) {
+    const inserted = await db
+      .insert(reservationTable)
+      .values({
+        userId: data.userId,
+        restaurantId: data.restaurantId,
+        reserveAt: data.reserveAt,
+        numberOfAdult: data.numberOfAdult ?? 0,
+        numberOfChildren: data.numberOfChildren ?? 0,
+        numberOfElderly: data.numberOfElderly ?? 0,
+        specialRequest: data.specialRequest ?? null,
+        status: 'unconfirmed',
+      })
+      .returning();
+
+    return inserted[0];
+  }
 }
+
+

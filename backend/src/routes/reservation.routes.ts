@@ -41,3 +41,39 @@ router.post('/cancel', authHandler, async (req, res) => {
 });
 
 export default router;
+
+
+router.post('/create', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload?.userId;
+    const { restaurantId, reserveAt,
+            numberOfAdult, numberOfChildren,
+            numberOfElderly, specialRequest } = req.body;
+
+    if (!userId || !restaurantId || !reserveAt) {
+      return res.status(400).json({ error: 'userId, restaurantId and reserveAt are required' });
+    }
+
+    // Must be at least 30 minutes ahead
+    const reserveTime = new Date(reserveAt);
+    if (reserveTime.getTime() - Date.now() < 30 * 60 * 1000) {
+      return res
+        .status(400)
+        .json({ error: 'Reservation must be made at least 30 minutes in advance' });
+    }
+
+    const reservation = await ReservationService.createReservation({
+      userId,
+      restaurantId,
+      reserveAt: reserveTime,
+      numberOfAdult,
+      numberOfChildren,
+      numberOfElderly,
+      specialRequest,
+    });
+
+    return res.status(201).json(reservation);
+  } catch (err) {
+    next(err);
+  }
+});
