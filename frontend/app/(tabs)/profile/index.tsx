@@ -1,4 +1,4 @@
-import { User, UserSchema } from '@/types/user.type';
+import { User } from '@/types/user.type';
 import { useEffect, useState } from 'react';
 import {
   View,
@@ -13,8 +13,11 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ApiService from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
+import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
+import { router } from 'expo-router';
 
 export default function ProfileScreen() {
+  // FIXME: Temporary auto-login for testing purpose
   useEffect(() => {
     let doLogin = async () => {
       const platform = Platform.OS === 'web' ? 'web' : 'mobile';
@@ -39,18 +42,16 @@ export default function ProfileScreen() {
   }, []);
 
   let [user, setUser] = useState<User | null>(null);
-
   useEffect(() => {
-    let fetchProfile = async () => {
-      const res = await ApiService.get('/users/me');
-      let user = UserSchema.parse(res.data);
-      setUser(user);
-    };
-    fetchProfile();
+    fetchCurrentUser().then((u) => setUser(u));
   }, []);
 
-  const deleteAccount = () => {
-    alert('TODO: Delete Account');
+  const deleteAccount = async () => {
+    await deleteCurrentUser().then((success) => {
+      if (success) {
+        router.replace('/');
+      }
+    });
   };
 
   return (
@@ -139,16 +140,16 @@ function ProfileImage(props: { user: User | null }) {
 }
 
 function UserInfo(props: { user: User | null }) {
-  const saveChange = () => {
-    alert('TODO: Save Change');
-  };
-
   const [name, setName] = useState('Loading...');
   const [firstName, setFirstName] = useState('Loading...');
   const [lastName, setLastName] = useState('Loading...');
   const [phoneNo, setPhoneNo] = useState('Loading...');
   const [email, setEmail] = useState('Loading...');
   const [isLoading, setIsLoading] = useState(true);
+
+  const saveChange = () => {
+    alert('TODO: Save Change');
+  };
 
   useEffect(() => {
     if (props.user) {
@@ -232,7 +233,7 @@ function EditableField(props: {
         className={`text-sm sm:text-base w-full px-3 py-1 rounded-md border ${
           isDisabled
             ? 'text-gray-500 bg-gray-50 border-gray-200 cursor-not-allowed'
-            : 'text-black bg-gray-100 border-gray-200'
+            : 'text-black bg-[#FEF9F3] border-gray-200'
         }`}
       />
     </View>

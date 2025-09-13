@@ -1,6 +1,7 @@
 import axios from 'axios';
 import TokenStorage from '@/services/token-storage.service';
 import { Platform } from 'react-native';
+import { router } from 'expo-router';
 
 const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
 
@@ -50,7 +51,8 @@ ApiService.interceptors.response.use(undefined, async (error) => {
       ]);
     } else {
       // TODO: logout user and redirect to login
-      return Promise.reject(error);
+      router.replace('/');
+      return Promise.reject(new Error('Unable to refresh token'));
     }
 
     // Successfully refreshed tokens, retry original request
