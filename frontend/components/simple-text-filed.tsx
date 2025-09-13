@@ -1,4 +1,4 @@
-import { Text, TextInput, View, TextInputProps } from 'react-native';
+import { TextInput, View, TextInputProps } from 'react-native';
 
 interface SimpleTextFieldProps extends TextInputProps {
   value: string;

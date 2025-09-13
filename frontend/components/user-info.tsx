@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import TextField from '@/components/text-field';
+import UserProfileTextField from '@/components/user-profile-text-field';
 import { UserFormData } from '@/hooks/useProfile';
 
 interface UserInfoProps {
@@ -19,32 +19,32 @@ export default function UserInfo({
   return (
     <View className="col-span-1 lg:col-span-3 gap-4">
       <View className="flex flex-col gap-4">
-        <TextField
+        <UserProfileTextField
           label="Display Name"
           value={userForm.displayName}
           onValueChange={(value) => onFieldChange('displayName', value)}
           disabled={isLoading}
         />
         <View className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <TextField
+          <UserProfileTextField
             label="First Name"
             value={userForm.firstName}
             onValueChange={(value) => onFieldChange('firstName', value)}
             disabled={isLoading}
           />
-          <TextField
+          <UserProfileTextField
             label="Last Name"
             value={userForm.lastName}
             onValueChange={(value) => onFieldChange('lastName', value)}
             disabled={isLoading}
           />
-          <TextField
+          <UserProfileTextField
             label="Phone Number"
             value={userForm.phoneNo}
             onValueChange={(value) => onFieldChange('phoneNo', value)}
             disabled={isLoading}
           />
-          <TextField
+          <UserProfileTextField
             label="Email"
             value={userForm.email}
             onValueChange={(value) => onFieldChange('email', value)}
