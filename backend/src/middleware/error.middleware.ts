@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import createHttpError from 'http-errors';
+import * as z from 'zod';
 
 export default function errorHandler(
   error: any,
@@ -26,12 +27,26 @@ export default function errorHandler(
 
   const isProduction = process.env.NODE_ENV === 'production';
 
+  if (error instanceof z.ZodError) {
+    // Handle Zod validation errors
+    return res.status(400).json({
+      error: {
+        message: 'Validation Error',
+        ...(isProduction
+          ? {}
+          : { error: error, req: reqDisp, stack: error.stack }), // Only show stack in development
+      },
+    });
+  }
+
   // If the error is an HTTP error, use its status and message
   if (createHttpError.isHttpError(error)) {
     res.status(error.status).json({
       error: {
         message: error.message,
-        ...(isProduction ? {} : { req: reqDisp, stack: error.stack }), // Only show stack in development
+        ...(isProduction
+          ? {}
+          : { error: error, req: reqDisp, stack: error.stack }), // Only show stack in development
       },
     });
     return;
@@ -41,7 +56,9 @@ export default function errorHandler(
   res.status(500).json({
     error: {
       message: 'Internal Server Error',
-      ...(isProduction ? {} : { req: reqDisp, stack: error.stack }), // Only show stack in development
+      ...(isProduction
+        ? {}
+        : { error: error, req: reqDisp, stack: error.stack }), // Only show stack in development
     },
   });
 }

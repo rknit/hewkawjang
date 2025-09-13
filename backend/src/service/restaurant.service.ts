@@ -4,15 +4,19 @@ import {
   InferSelectModel,
   asc,
   eq,
+  and,
 } from 'drizzle-orm';
-import { restaurantTable, reservationTable, restaurantStatusEnum} from '../db/schema';
+import { restaurantTable, reservationTable } from '../db/schema';
 import { db } from '../db';
+import {
+  CreateRestaurantInput,
+  UpdateRestaurantInfo,
+} from '../validators/restaurant.validator';
 import createHttpError from 'http-errors';
-import { createRestaurantSchema, CreateRestaurantInput } from "../validators/restaurant.validator";
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
-export type RestaurantStatus = NewRestaurant["status"];
+export type RestaurantStatus = NewRestaurant['status'];
 export type Reservation = InferInsertModel<typeof reservationTable>;
 
 export default class RestaurantService {
@@ -35,9 +39,11 @@ export default class RestaurantService {
     return await query;
   }
 
-  static async getRestaurantsByOwner(
-    props: { ownerId: number; offset?: number; limit?: number },
-  ): Promise<Restaurant[]> {
+  static async getRestaurantsByOwner(props: {
+    ownerId: number;
+    offset?: number;
+    limit?: number;
+  }): Promise<Restaurant[]> {
     let ownerId = props.ownerId;
     let offset = props.offset ?? 0;
     let limit = props.limit ?? 10;
@@ -62,18 +68,43 @@ export default class RestaurantService {
     return restaurant;
   }
 
-
   static async rejectReservation(reservationId: number): Promise<void> {
     await db
       .update(reservationTable)
-      .set({status: 'rejected'})
-      .where(eq(reservationTable.id, reservationId))
+      .set({ status: 'rejected' })
+      .where(eq(reservationTable.id, reservationId));
   }
 
-  static async updateRestaurantStatus(restaurantId: number, newStatus: RestaurantStatus): Promise<void> {
+  static async updateRestaurantStatus(
+    restaurantId: number,
+    newStatus: RestaurantStatus,
+  ): Promise<void> {
     await db
       .update(restaurantTable)
-      .set({status: newStatus})
-      .where(eq(restaurantTable.id, restaurantId))
+      .set({ status: newStatus })
+      .where(eq(restaurantTable.id, restaurantId));
+  }
+
+  static async updateRestaurantInfo(
+    data: UpdateRestaurantInfo,
+  ): Promise<Restaurant> {
+    const [updatedRestaurant] = await db
+      .update(restaurantTable)
+      .set(data)
+      .where(
+        and(
+          eq(restaurantTable.id, data.id),
+          eq(restaurantTable.ownerId, data.ownerId),
+        ),
+      )
+      .returning();
+
+    if (!updatedRestaurant) {
+      throw createHttpError.NotFound(
+        'Restaurant not found or not owned by user',
+      );
+    }
+
+    return updatedRestaurant;
   }
 }
