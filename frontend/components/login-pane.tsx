@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import TextField from './text-field';
 import SimpleAlert from './simple-alert';
 import { login } from '@/apis/auth.api';
@@ -89,9 +89,11 @@ export default function LoginPane({
 
       {/* Mascot Image */}
       <View className="items-center mb-8">
-        <View className="w-24 h-24 bg-yellow-100 rounded-full items-center justify-center">
-          <Text className="text-4xl">🐱</Text>
-        </View>
+        <Image
+          source={require('../assets/images/sign-in-img.png')}
+          style={{ width: 200, height: 200 }}
+          resizeMode="contain"
+        />
       </View>
 
       {/* Email Field */}
