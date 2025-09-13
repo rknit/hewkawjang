@@ -163,13 +163,17 @@ describe('User Service', () => {
       mockReturning = jest.fn();
       mockWhere = jest.fn(() => ({ returning: mockReturning }));
       mockSet = jest.fn(() => ({ where: mockWhere }));
-      
+
       mockReservationWhere = jest.fn();
-      mockSelect = jest.fn(() => ({ from: () => ({ where: mockReservationWhere }) }));
-      
+      mockSelect = jest.fn(() => ({
+        from: () => ({ where: mockReservationWhere }),
+      }));
+
       mockReservationUpdateWhere = jest.fn();
-      mockReservationSet = jest.fn(() => ({ where: mockReservationUpdateWhere }));
-      
+      mockReservationSet = jest.fn(() => ({
+        where: mockReservationUpdateWhere,
+      }));
+
       mockUpdate = jest.fn((table) => {
         if (table === usersTable) {
           return { set: mockSet };
@@ -179,7 +183,7 @@ describe('User Service', () => {
         }
         throw new Error('Unexpected table passed to update');
       });
-      
+
       const tx = {
         update: mockUpdate,
         select: mockSelect,
@@ -233,12 +237,84 @@ describe('User Service', () => {
       expect(mockSet).toHaveBeenCalled();
       expect(mockWhere).toHaveBeenCalled();
       expect(mockReturning).toHaveBeenCalled();
-    
+
       // Reservation cancellation assertions
       expect(mockSelect).toHaveBeenCalled();
       expect(mockReservationWhere).toHaveBeenCalled();
       expect(mockReservationSet).toHaveBeenCalledTimes(reservations.length);
-      expect(mockReservationUpdateWhere).toHaveBeenCalledTimes(reservations.length);
+      expect(mockReservationUpdateWhere).toHaveBeenCalledTimes(
+        reservations.length,
+      );
+    });
+  });
+
+  describe('updateUser', () => {
+    let mockSelect: jest.Mock;
+    let mockFrom: jest.Mock;
+    let mockWhere: jest.Mock;
+    let mockUpdate: jest.Mock;
+    let mockSet: jest.Mock;
+    let mockWhereUpdate: jest.Mock;
+
+    beforeEach(() => {
+      mockWhere = jest.fn();
+      mockFrom = jest.fn().mockReturnValue({ where: mockWhere });
+      mockSelect = jest.fn().mockReturnValue({ from: mockFrom });
+      db.select = mockSelect;
+      mockWhereUpdate = jest.fn();
+      mockSet = jest.fn().mockReturnValue({ where: mockWhereUpdate });
+      mockUpdate = jest.fn().mockReturnValue({ set: mockSet });
+      db.update = mockUpdate;
+    });
+
+    it('should throw NotFound if user does not exist', async () => {
+      mockWhere.mockResolvedValue([]); // Simulate no user found
+      await expect(
+        UserService.updateUser({
+          id: 999,
+          firstName: 'Test',
+          lastName: 'User',
+          email: '111111@gmail.com',
+          phoneNo: '1234567890',
+          displayName: 'Test User',
+          profileUrl: 'dsafsasdf',
+          password: '111',
+        }),
+      ).rejects.toThrow('User not found');
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFrom).toHaveBeenCalledWith(usersTable);
+      expect(mockWhere).toHaveBeenCalledWith(expect.any(Object));
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+    it('should update user profile and return 200', async () => {
+      mockWhere.mockResolvedValue([mockUsers[0]]); // Simulate user found
+      const profileData = {
+        id: 1,
+        firstName: 'New',
+        lastName: 'Name',
+        email: '11111111111@gmail.com',
+        phoneNo: '1234567890',
+        displayName: 'New Name',
+        profileUrl: 'dsafsasdf',
+        password: '111',
+      };
+
+      await expect(
+        UserService.updateUser(profileData),
+      ).resolves.toBeUndefined();
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockFrom).toHaveBeenCalledWith(usersTable);
+      expect(mockWhere).toHaveBeenCalledWith(expect.any(Object));
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalledWith({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        email: profileData.email,
+        phoneNo: profileData.phoneNo,
+        displayName: profileData.displayName,
+        profileUrl: profileData.profileUrl,
+      });
+      expect(mockWhereUpdate).toHaveBeenCalledWith(expect.any(Object));
     });
   });
 });

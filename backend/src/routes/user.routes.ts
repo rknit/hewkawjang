@@ -11,9 +11,12 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/me', authHandler, async (req, res) => {
-  const user = await UserService.getUsers({
+  const [user] = await UserService.getUsers({
     ids: [req.userAuthPayload?.userId!],
   });
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
   res.json(user);
 });
 
@@ -25,7 +28,12 @@ router.post('/verify', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   await MailerService.sendOTP(req.body.email);
-  res.status(201);
+  res.status(201).send();
+});
+
+router.post('/updateProfile', async (req, res) => {
+  await UserService.updateUser(req.body);
+  res.sendStatus(200);
 });
 
 // Soft delete the authenticated user
@@ -37,14 +45,16 @@ router.delete('/me', authHandler, async (req, res) => {
   }
 
   const result = await UserService.softDeleteUser(userId);
-    
+
   if (!result) {
     // Since there is no function that really deletes a user in db, so this case probably not gonna happen
-    return res.status(404).json({ message: 'User not found or already removed' });
+    return res
+      .status(404)
+      .json({ message: 'User not found or already removed' });
   }
 
-  res.json({ 
-    message: 'User soft deleted successfully' 
+  res.json({
+    message: 'User soft deleted successfully',
   });
 });
 

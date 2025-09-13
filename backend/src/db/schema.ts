@@ -6,6 +6,7 @@ import {
   integer,
   timestamp,
   pgEnum,
+  boolean,
 } from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
@@ -18,6 +19,7 @@ export const usersTable = pgTable('users', {
   displayName: text('display_name'),
   profileUrl: text('profile_url'),
   refreshToken: text('refresh_token'),
+  isDeleted: boolean('is_deleted').notNull().default(false),
 });
 
 export const restaurantStatusEnum = pgEnum('restaurant_status', [
@@ -56,12 +58,12 @@ export const restaurantTable = pgTable('restaurant', {
 
 export const reservationStatusEnum = pgEnum('reservation_status', [
   'unconfirmed',
-  "expired",
+  'expired',
   'confirmed',
   'cancelled',
-  "rejected",
-  "completed",
-  "uncompleted"
+  'rejected',
+  'completed',
+  'uncompleted',
 ]);
 // Unconfirmed: The reservation has been made but not yet confirmed by the restaurant.
 // Expired: The reservation was not confirmed in time and has expired.
@@ -70,7 +72,6 @@ export const reservationStatusEnum = pgEnum('reservation_status', [
 // Rejected: The restaurant has rejected the reservation.
 // Completed: The reservation was fulfilled successfully.
 // Uncompleted: The reservation was not fulfilled (e.g., no-show).
-
 
 export const reservationTable = pgTable('reservation', {
   id: serial('id').primaryKey(),

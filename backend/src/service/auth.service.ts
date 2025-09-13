@@ -41,6 +41,19 @@ export default class AuthService {
     return tokens;
   }
 
+  static async logoutUser(data: UserAuthPayload): Promise<void> {
+    const result = await db
+      .update(usersTable)
+      .set({ refreshToken: null })
+      .where(eq(usersTable.id, data.userId))
+      .returning({ id: usersTable.id });
+
+    if (result.length === 0) {
+      throw createHttpError.NotFound('User not found or already logged out');
+    }
+  }
+
+
   static async refreshTokens(
     refreshToken: string,
     data: UserAuthPayload,

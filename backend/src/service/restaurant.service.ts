@@ -74,6 +74,16 @@ export default class RestaurantService {
   }
 
 
+  static async createRestaurant(data: CreateRestaurantInput) {
+    const [restaurant] = await db
+      .insert(restaurantTable)
+      .values(data as InferInsertModel<typeof restaurantTable>)
+      .returning();
+
+    return restaurant;
+  }
+
+
   static async rejectReservation(reservationId: number): Promise<void> {
     await db
       .update(reservationTable)

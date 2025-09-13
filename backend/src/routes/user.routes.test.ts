@@ -93,8 +93,26 @@ describe('User Routes', () => {
         .delete('/users/me')
         .expect(200)
         .then((res) => {
-          expect(res.body).toEqual({ message: 'User soft deleted successfully' });
+          expect(res.body).toEqual({
+            message: 'User soft deleted successfully',
+          });
           expect(UserService.softDeleteUser).toHaveBeenCalledWith(42);
+        });
+    });
+  });
+
+  describe('POST /users/updateProfile', () => {
+    it('should update user profile and return 200', async () => {
+      (UserService.updateUser as jest.Mock).mockResolvedValue(true);
+      const profileData = { id: 42, name: 'New Name', email: 'fff@gmail.com' };
+
+      await request(app)
+        .post('/users/updateProfile')
+        .send(profileData)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toEqual({});
+          expect(UserService.updateUser).toHaveBeenCalledWith(profileData);
         });
     });
   });

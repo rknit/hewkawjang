@@ -50,4 +50,29 @@ export default class TokenStorage {
         throw new Error('Unknown client type');
     }
   }
+
+  static async removeAccessToken(): Promise<void> {
+    switch (clientType) {
+      case 'web':
+        localStorage.removeItem('accessToken');
+        return;
+      case 'mobile':
+        await SecureStore.deleteItemAsync('accessToken');
+        return;
+      default:
+        throw new Error('Unknown client type');
+    }
+  }
+
+  static async removeRefreshToken(): Promise<void> {
+    switch (clientType) {
+      case 'web':
+        return; // Refresh token handled via HttpOnly cookie
+      case 'mobile':
+        await SecureStore.deleteItemAsync('refreshToken');
+        return;
+      default:
+        throw new Error('Unknown client type');
+    }
+  }
 }
