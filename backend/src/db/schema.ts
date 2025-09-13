@@ -1,15 +1,29 @@
-import { pgTable, serial, text , time, integer} from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  time,
+  integer,
+  timestamp,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email').notNull().unique(),
-  phone_no: text('phone_no').notNull(),
+  phoneNo: text('phone_no').notNull(),
   password: text('password').notNull(),
   displayName: text('display_name'),
   profileUrl: text('profile_url'),
+  refreshToken: text('refresh_token'),
 });
+
+export const restaurantStatusEnum = pgEnum('restaurant_status', [
+  'open',
+  'closed',
+]);
 
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
@@ -29,5 +43,49 @@ export const restaurantTable = pgTable('restaurant', {
   // detail
   openTime: time('open_time'),
   closeTime: time('close_time'),
-  priceRange: integer('price_range'),
+  priceRange: integer('priceRange'),
+  status: restaurantStatusEnum('status').notNull().default('closed'),
+});
+
+export const reservationStatusEnum = pgEnum('reservation_status', [
+  'unconfirmed',
+  "expired",
+  'confirmed',
+  'cancelled',
+  "rejected",
+  "completed",
+  "uncompleted"
+]);
+// Unconfirmed: The reservation has been made but not yet confirmed by the restaurant.
+// Expired: The reservation was not confirmed in time and has expired.
+// Confirmed: The restaurant has confirmed the reservation.
+// Cancelled: The user has cancelled the reservation.
+// Rejected: The restaurant has rejected the reservation.
+// Completed: The reservation was fulfilled successfully.
+// Uncompleted: The reservation was not fulfilled (e.g., no-show).
+
+
+export const reservationTable = pgTable('reservation', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => usersTable.id),
+  restaurantId: integer('restaurant_id')
+    .notNull()
+    .references(() => restaurantTable.id),
+  reserveAt: timestamp('reserve_at').notNull(),
+  reservationfee: integer('reservation_fee').default(0),
+  numberOfElderly: integer('number_of_elderly').default(0),
+  numberOfAdult: integer('number_of_adult').default(0),
+  numberOfChildren: integer('number_of_children').default(0),
+  status: reservationStatusEnum('status').notNull().default('unconfirmed'),
+  specialRequest: text('special_request'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const emailVerificationTable = pgTable('emailVerification', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull(),
+  otp: text('otp').notNull(),
+  sendTime: timestamp('sendTime').notNull(),
 });

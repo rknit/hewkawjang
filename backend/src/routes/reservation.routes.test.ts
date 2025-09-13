@@ -1,0 +1,95 @@
+import app from '..'; // your Express app
+import request from 'supertest';
+import ReservationService, { Reservation } from '../service/reservation.service';
+import { create } from 'domain';
+
+jest.mock('../service/reservation.service');
+
+jest.mock('../db', () => ({
+  client: jest.fn(),
+}));
+
+jest.mock('../middleware/auth.middleware', () => ({
+  authHandler: (req: any, _res: any, next: any) => {
+    
+    req.userAuthPayload = { userId: 42 };
+    next();
+  },
+  authClientTypeHandler: (_req: any, _res: any, next: any) => next(),
+  refreshAuthHandler: (_req: any, _res: any, next: any) => next(),
+}));
+
+
+describe('Reservation Routes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('GET /reservations/unconfirmed/inspect', () => {
+    it('should return 200 and call getUnconfirmedReservationsByRestaurant', async () => {
+      const mockReservations = [
+        {
+          id: 1,
+          userId: 42,
+          restaurantId: 1,
+          reserveAt: new Date().toISOString(),
+          numberOfElderly: 1,
+          numberOfAdult: 2,
+          numberOfChildren: 1,
+          status: 'unconfirmed',
+        },
+      ];
+
+      ReservationService.getUnconfirmedReservationsByRestaurant = jest.fn().mockResolvedValue(mockReservations);
+
+      await request(app)
+        .get('/reservations/unconfirmed/inspect')
+        .query({ restaurantId: 1 })
+        .expect(200)
+        .then((response) => {
+          expect(response.body).toEqual(mockReservations);
+          expect(
+            ReservationService.getUnconfirmedReservationsByRestaurant
+          ).toHaveBeenCalledWith({ restaurantId: 1, offset: undefined});
+        });
+    });
+
+    it('should return 400 if restaurantId is missing/not a number', async () => {
+      await request(app)
+        .get('/reservations/unconfirmed/inspect')
+        .expect(400)
+        .then((response) => {
+          expect(response.body.error).toBe('restaurantId must be a number');
+        });
+    });
+  });
+
+  describe('POST /reservations/cancel', () => {
+    it('should return 200 and call cancelReservation for valid request', async () => {
+      ReservationService.cancelReservation = jest.fn().mockResolvedValue(undefined);
+      await request(app)
+        .post('/reservations/cancel')
+        .send({ reservationId: 1, restaurantId: 1 }) // userId comes from auth middleware mock
+        .expect(200);
+
+      expect(ReservationService.cancelReservation).toHaveBeenCalledWith({
+        reservationId: 1,
+        userId: 42,
+        restaurantId: 1,
+      });
+    });
+
+
+    it('should return 400 if required fields are missing', async () => {
+      await request(app)
+        .post('/reservations/cancel')
+        .send({ reservationId: 1, userId: 42 }) // missing restarantId
+        .expect(400)
+        .then((response) => {
+          expect(response.body.error).toBe('reservationId, userId and restarantId are required');
+        });
+    });
+    
+    
+  });
+});

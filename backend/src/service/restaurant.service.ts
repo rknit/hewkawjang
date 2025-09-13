@@ -5,12 +5,15 @@ import {
   asc,
   eq,
 } from 'drizzle-orm';
-import { restaurantTable } from '../db/schema';
+import { restaurantTable, reservationTable, restaurantStatusEnum} from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { createRestaurantSchema, CreateRestaurantInput } from "../validators/restaurant.validator";
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
+export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
+export type RestaurantStatus = NewRestaurant["status"];
+export type Reservation = InferInsertModel<typeof reservationTable>;
 
 export default class RestaurantService {
   static async getRestaurants(
@@ -59,4 +62,18 @@ export default class RestaurantService {
     return restaurant;
   }
 
+
+  static async rejectReservation(reservationId: number): Promise<void> {
+    await db
+      .update(reservationTable)
+      .set({status: 'rejected'})
+      .where(eq(reservationTable.id, reservationId))
+  }
+
+  static async updateRestaurantStatus(restaurantId: number, newStatus: RestaurantStatus): Promise<void> {
+    await db
+      .update(restaurantTable)
+      .set({status: newStatus})
+      .where(eq(restaurantTable.id, restaurantId))
+  }
 }
