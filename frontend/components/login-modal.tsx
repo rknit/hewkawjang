@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Modal } from 'react-native';
-import SimpleTextField from './simple-text-filed';
+import { View, Image } from 'react-native';
+import BaseModal from './base-modal';
+import FormField from './form-field';
+import FormButton from './form-button';
+import PressableText from './pressable-text';
 import SimpleAlert from './simple-alert';
 import { login } from '@/apis/auth.api';
 import { isAxiosError } from 'axios';
@@ -26,6 +29,20 @@ export default function LoginModal({
   );
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+
+  const resetComponent = () => {
+    setEmail('');
+    setPassword('');
+    setIsLoading(false);
+    setErrors({});
+    setShowAlert(false);
+    setAlertMessage('');
+  };
+
+  const handleClose = () => {
+    resetComponent();
+    onClose?.();
+  };
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -78,99 +95,73 @@ export default function LoginModal({
   };
 
   return (
-    <Modal
+    <BaseModal
       visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
+      onClose={handleClose}
+      showCloseButton={!!onClose}
     >
-      <View className="flex-1 bg-white/70 justify-center items-center">
-        <View className="bg-white border-[#E05910] rounded-2xl p-6 mx-4 shadow-lg max-w-md w-full border">
-          {/* Close button */}
-          {onClose && (
-            <TouchableOpacity
-              onPress={onClose}
-              className="absolute top-4 right-4 z-10"
-            >
-              <Text className="text-2xl text-gray-500">{'×'}</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Mascot Image */}
-          <View className="items-center mb-8">
-            <Image
-              source={require('../assets/images/sign-in-img.png')}
-              style={{ width: 200, height: 200 }}
-              resizeMode="contain"
-            />
-          </View>
-
-          {/* Email Field */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-medium mb-2">Email *</Text>
-            <SimpleTextField
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            {errors.email && (
-              <Text className="text-red-500 text-sm mt-1">{errors.email}</Text>
-            )}
-          </View>
-
-          {/* Password Field */}
-          <View className="mb-6">
-            <Text className="text-gray-700 font-medium mb-2">Password *</Text>
-            <SimpleTextField
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              secureTextEntry
-            />
-            {errors.password && (
-              <Text className="text-red-500 text-sm mt-1">
-                {errors.password}
-              </Text>
-            )}
-          </View>
-
-          {/* Login Button */}
-          <TouchableOpacity
-            onPress={handleLogin}
-            disabled={isLoading}
-            className={`bg-[#8B5A3C] rounded-lg py-3 px-4 mb-6 ${
-              isLoading ? 'opacity-50' : ''
-            }`}
-          >
-            <Text className="text-white text-center font-semibold text-lg">
-              {isLoading ? 'Logging in...' : 'Log in'}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Sign up link */}
-          <View className="flex-row justify-center">
-            <Text className="text-gray-600">Don&apos;t have an account? </Text>
-            <TouchableOpacity onPress={onSignUpPress}>
-              <Text className="text-[#8B5A3C] font-semibold">Sign up</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Alert Box */}
-          {showAlert && (
-            <View className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <SimpleAlert
-                title="Login Error"
-                message={alertMessage}
-                buttonText="OK"
-                onClose={() => setShowAlert(false)}
-                type="error"
-              />
-            </View>
-          )}
-        </View>
+      {/* Mascot Image */}
+      <View className="items-center mb-8">
+        <Image
+          source={require('../assets/images/sign-in-img.png')}
+          style={{ width: 200, height: 200 }}
+          resizeMode="contain"
+        />
       </View>
-    </Modal>
+
+      {/* Email Field */}
+      <FormField
+        label="Email"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Enter your email"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        error={errors.email}
+        required
+      />
+
+      {/* Password Field */}
+      <View className="mb-6">
+        <FormField
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Enter your password"
+          secureTextEntry
+          error={errors.password}
+          required
+        />
+      </View>
+
+      {/* Login Button */}
+      <FormButton
+        title="Log in"
+        onPress={handleLogin}
+        disabled={isLoading}
+        isLoading={isLoading}
+        loadingText="Logging in..."
+      />
+
+      {/* Sign up link */}
+      <PressableText
+        text="Don't have an account?"
+        linkText="Sign up"
+        onPress={onSignUpPress || (() => {})}
+      />
+
+      {/* Alert Box */}
+      {showAlert && (
+        <View className="absolute inset-0 flex items-center justify-center">
+          <SimpleAlert
+            title="Login Error"
+            message={alertMessage}
+            buttonText="OK"
+            onClose={() => setShowAlert(false)}
+            type="error"
+          />
+        </View>
+      )}
+    </BaseModal>
   );
 }
