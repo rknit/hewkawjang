@@ -94,7 +94,7 @@ export default class RestaurantService {
       .where(
         and(
           eq(restaurantTable.id, data.id),
-          eq(restaurantTable.ownerId, data.ownerId),
+          eq(restaurantTable.ownerId, data.ownerId!),
         ),
       )
       .returning();

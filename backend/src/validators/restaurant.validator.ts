@@ -30,6 +30,6 @@ export type UpdateRestaurant = z.infer<typeof updateRestaurantSchema>;
 
 export const updateRestaurantInfoSchema = updateRestaurantSchema.required({
   id: true,
-  ownerId: true,
+  ownerId: true, // to verify ownership
 });
 export type UpdateRestaurantInfo = z.infer<typeof updateRestaurantInfoSchema>;

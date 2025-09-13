@@ -64,6 +64,9 @@ router.post('/', async (req, res, next) => {
 });
 
 router.put('/', authHandler, async (req, res) => {
+  if (req.body) {
+    req.body.ownerId = req.userAuthPayload!.userId; // from auth middleware
+  }
   const info = updateRestaurantInfoSchema.parse(req.body);
   const updated = await RestaurantService.updateRestaurantInfo(info);
   res.status(200).json(updated);
