@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Modal } from 'react-native';
 import SimpleTextField from './simple-text-filed';
 import SimpleAlert from './simple-alert';
 import { login } from '@/apis/auth.api';
 import { isAxiosError } from 'axios';
 
-interface LoginPaneProps {
+interface LoginModalProps {
+  visible: boolean;
   onClose?: () => void;
   onSignUpPress?: () => void;
   onLoginSuccess?: () => void;
 }
 
-export default function LoginPane({
+export default function LoginModal({
+  visible,
   onClose,
   onSignUpPress,
   onLoginSuccess,
-}: LoginPaneProps) {
+}: LoginModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -76,7 +78,13 @@ export default function LoginPane({
   };
 
   return (
-    <View className="flex-1 bg-white/70 justify-center items-center">
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View className="flex-1 bg-white/70 justify-center items-center">
       <View className="bg-white border-[#E05910] rounded-2xl p-6 mx-4 shadow-lg max-w-md w-full border">
         {/* Close button */}
         {onClose && (
@@ -161,5 +169,6 @@ export default function LoginPane({
         )}
       </View>
     </View>
+    </Modal>
   );
 }

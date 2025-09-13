@@ -1,8 +1,8 @@
 import { login } from '@/apis/auth.api';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, Text, View, Modal } from 'react-native';
-import LoginPane from '@/components/login-pane';
+import { Button, Text, View } from 'react-native';
+import LoginModal from '@/components/login-modal';
 
 export default function Index() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -38,18 +38,12 @@ export default function Index() {
       <Button title="Sign In" onPress={() => setShowLoginModal(true)} />
 
       {/* Login Modal */}
-      <Modal
+      <LoginModal
         visible={showLoginModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowLoginModal(false)}
-      >
-        <LoginPane
-          onClose={() => setShowLoginModal(false)}
-          onLoginSuccess={handleLoginSuccess}
-          onSignUpPress={handleSignUpPress}
-        />
-      </Modal>
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+        onSignUpPress={handleSignUpPress}
+      />
     </View>
   );
 }
