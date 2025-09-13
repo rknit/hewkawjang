@@ -85,9 +85,7 @@ export default class RestaurantService {
       .where(eq(restaurantTable.id, restaurantId));
   }
 
-  static async updateRestaurantInfo(
-    data: UpdateRestaurantInfo,
-  ): Promise<Restaurant> {
+  static async updateInfo(data: UpdateRestaurantInfo): Promise<Restaurant> {
     const [updatedRestaurant] = await db
       .update(restaurantTable)
       .set(data)
