@@ -78,11 +78,9 @@ export const reservationTable = pgTable('reservation', {
     .references(() => restaurantTable.id),
   reserveAt: timestamp('reserve_at').notNull(),
   reservationfee: integer('reservation_fee').default(0),
-  numberOfElderly: integer('number_of_elderly').default(0),
   numberOfAdult: integer('number_of_adult').default(0),
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
-  specialRequest: text('special_request'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
