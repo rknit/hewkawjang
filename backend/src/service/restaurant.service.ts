@@ -74,16 +74,6 @@ export default class RestaurantService {
   }
 
 
-  static async createRestaurant(data: CreateRestaurantInput) {
-    const [restaurant] = await db
-      .insert(restaurantTable)
-      .values(data as InferInsertModel<typeof restaurantTable>)
-      .returning();
-
-    return restaurant;
-  }
-
-
   static async rejectReservation(reservationId: number): Promise<void> {
     await db
       .update(reservationTable)
@@ -114,4 +104,28 @@ export default class RestaurantService {
 
     return updated;
   }
+
+  static async deactivateRestaurant(restaurantId: number) {
+    return await db.transaction(async (tx) => {
+      const [updatedRestaurant] = await tx
+        .update(restaurantTable)
+        .set({ activation: 'inactive' })
+        .where(eq(restaurantTable.id, restaurantId))
+        .returning();
+
+      if (!updatedRestaurant) {
+        throw createHttpError(404, "Restaurant not found");
+      }
+
+      // Cancel all reservations in one query
+      await tx
+        .update(reservationTable)
+        .set({ status: 'cancelled' })
+        .where(eq(reservationTable.restaurantId, restaurantId));
+
+      return updatedRestaurant;
+    });
+  }
+
+
 }

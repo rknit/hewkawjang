@@ -101,17 +101,14 @@ router.patch('/:id/deactivate', authHandler, async (req, res, next) => {
       return res.status(403).json({ error: 'Forbidden: not owner' });
     }
 
-    const updated = await RestaurantService.updateRestaurantActivation(
-      restaurantId,
-      'inactive', // deactivate
-    );
+    const updated = await RestaurantService.deactivateRestaurant(restaurantId);
 
     res.status(200).json({
-      message: 'Restaurant deactivated successfully',
+      message: 'Restaurant deactivated successfully and all reservations cancelled',
       restaurant: updated,
     });
   } catch (err) {
-    next(err); // let the global error middleware handle it
+    next(err);
   }
 });
 
