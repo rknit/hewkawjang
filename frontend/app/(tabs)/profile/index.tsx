@@ -1,76 +1,24 @@
-import { User } from '@/types/user.type';
-import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Image,
-  Platform,
-  Modal,
-} from 'react-native';
-import EvilIcons from '@expo/vector-icons/EvilIcons';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import ApiService from '@/services/api.service';
-import TokenStorage from '@/services/token-storage.service';
-import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
-import { router } from 'expo-router';
-import AlertBox from '@/components/alert-box';
-import TextField from '@/components/text-field';
+import React from 'react';
+import { View, Text, ScrollView } from 'react-native';
+import { useProfile } from '@/hooks/useProfile';
+import ProfileImage from '@/components/profile-image';
+import UserInfo from '@/components/user-info';
+import DeleteAccountSection from '@/components/delete-account-section';
 
 export default function ProfileScreen() {
-  // FIXME: Temporary auto-login for testing purpose
-  useEffect(() => {
-    let doLogin = async () => {
-      const platform = Platform.OS === 'web' ? 'web' : 'mobile';
-
-      const res = await ApiService.post(
-        '/auth/login',
-        {
-          email: 'j.doe@gmail.com',
-          password: 'janerat',
-        },
-        {
-          headers: { 'hkj-auth-client-type': platform },
-          withCredentials: true,
-        },
-      );
-
-      let { accessToken, refreshToken } = res.data;
-      TokenStorage.setAccessToken(accessToken);
-      if (refreshToken) TokenStorage.setRefreshToken(refreshToken);
-    };
-    doLogin();
-  }, []);
-
-  let [user, setUser] = useState<User | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isDeleteChecked, setIsDeleteChecked] = useState(false);
-
-  useEffect(() => {
-    fetchCurrentUser().then((u) => setUser(u));
-  }, []);
-
-  const handleDeleteButtonPress = () => {
-    setShowDeleteModal(true);
-    setIsDeleteChecked(false);
-  };
-
-  const confirmDeleteAccount = async () => {
-    if (!isDeleteChecked) return;
-
-    setShowDeleteModal(false);
-    await deleteCurrentUser().then((success) => {
-      if (success) {
-        router.replace('/');
-      }
-    });
-  };
-
-  const cancelDeleteAccount = () => {
-    setShowDeleteModal(false);
-    setIsDeleteChecked(false);
-  };
+  const {
+    user,
+    isLoading,
+    userForm,
+    deleteModal,
+    updateFormField,
+    saveProfile,
+    changeProfileImage,
+    handleDeleteButtonPress,
+    confirmDeleteAccount,
+    cancelDeleteAccount,
+    setIsDeleteChecked,
+  } = useProfile();
 
   return (
     <ScrollView
@@ -95,162 +43,25 @@ export default function ProfileScreen() {
       {/* Profile Info - Flexible content area */}
       <View className="pt-8 pb-8">
         <View className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12 w-full px-4 sm:px-8 md:px-16 lg:px-24">
-          <ProfileImage user={user} />
-          <UserInfo user={user} />
-        </View>
-      </View>
-
-      {/* Delete Account (Footer) - Sticks to bottom when space available */}
-      <View>
-        <View className="border-b-2 border-gray-300 w-11/12 self-center" />
-        <View className="pt-4" />
-        <View className="w-full pt-8 pb-8 px-4 sm:px-8 md:px-16 lg:px-24">
-          <Text className="text-lg sm:text-xl font-bold mb-2">
-            Delete Account
-          </Text>
-          <Text className="text-sm sm:text-base text-gray-600 mb-4">
-            if you no longer wish to use HewKawJang, you can permanently delete
-            your account.
-          </Text>
-          <Pressable
-            onPress={handleDeleteButtonPress}
-            className="bg-[#DE0E0E] px-2 py-2 rounded-md self-start flex flex-row gap-1 justify-center items-center"
-          >
-            <AntDesign name="warning" size={24} color="white" />
-            <Text className="text-center text-sm sm:text-base font-bold text-white">
-              Delete Account
-            </Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Delete Account Modal */}
-      <Modal
-        visible={showDeleteModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={cancelDeleteAccount}
-      >
-        <View className="flex-1 bg-white/50 justify-center items-center">
-          <AlertBox
-            title="Delete Account"
-            message="Are you sure you want to delete the account linked to"
-            email={user?.email}
-            confirmText="Delete My Account"
-            cancelText="Cancel"
-            showCheckbox={true}
-            checkboxText="I understand that I won't be able to recover my account."
-            onConfirm={confirmDeleteAccount}
-            onCancel={cancelDeleteAccount}
-            isChecked={isDeleteChecked}
-            onCheckboxChange={setIsDeleteChecked}
+          <ProfileImage user={user} onChangeProfile={changeProfileImage} />
+          <UserInfo
+            userForm={userForm}
+            isLoading={isLoading}
+            onFieldChange={updateFormField}
+            onSave={saveProfile}
           />
         </View>
-      </Modal>
+      </View>
+
+      {/* Delete Account Section */}
+      <DeleteAccountSection
+        user={user}
+        deleteModal={deleteModal}
+        onDeleteButtonPress={handleDeleteButtonPress}
+        onConfirmDelete={confirmDeleteAccount}
+        onCancelDelete={cancelDeleteAccount}
+        onCheckboxChange={setIsDeleteChecked}
+      />
     </ScrollView>
-  );
-}
-
-function ProfileImage(props: { user: User | null }) {
-  const changeProfile = () => {
-    alert('TODO: Change Profile Image');
-  };
-
-  const name = props.user?.displayName ?? props.user?.firstName ?? 'Loading...';
-
-  const profileImage =
-    props.user?.profileUrl ?? require('./default_profile.png');
-
-  return (
-    <View className="col-span-1 flex flex-col gap-4 items-center pt-4">
-      <Pressable onPress={changeProfile} className="relative">
-        <Image
-          source={profileImage}
-          resizeMode="cover"
-          style={{ width: 160, height: 160 }}
-          className="rounded-full"
-        />
-        <View className="absolute -bottom-4 -right-4">
-          <EvilIcons name="pencil" size={48} color="gray" />
-        </View>
-      </Pressable>
-      <Text className="text-lg sm:text-xl lg:text-2xl text-black text-center px-4 py-2 rounded-md">
-        {name}
-      </Text>
-    </View>
-  );
-}
-
-function UserInfo(props: { user: User | null }) {
-  const [name, setName] = useState('Loading...');
-  const [firstName, setFirstName] = useState('Loading...');
-  const [lastName, setLastName] = useState('Loading...');
-  const [phoneNo, setPhoneNo] = useState('Loading...');
-  const [email, setEmail] = useState('Loading...');
-  const [isLoading, setIsLoading] = useState(true);
-
-  const saveChange = () => {
-    alert('TODO: Save Change');
-  };
-
-  useEffect(() => {
-    if (props.user) {
-      setName(props.user?.displayName ?? props.user?.firstName ?? 'Loading...');
-      setFirstName(props.user?.firstName ?? 'Loading...');
-      setLastName(props.user?.lastName ?? 'Loading...');
-      setPhoneNo(props.user?.phoneNo ?? 'Loading...');
-      setEmail(props.user?.email ?? 'Loading...');
-      setIsLoading(false);
-    } else {
-      setIsLoading(true);
-    }
-  }, [props.user]);
-
-  return (
-    <View className="col-span-1 lg:col-span-3 gap-4">
-      <View className="flex flex-col gap-4">
-        <TextField
-          label="Display Name"
-          value={name}
-          onValueChange={setName}
-          disabled={isLoading}
-        />
-        <View className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <TextField
-            label="First Name"
-            value={firstName}
-            onValueChange={setFirstName}
-            disabled={isLoading}
-          />
-          <TextField
-            label="Last Name"
-            value={lastName}
-            onValueChange={setLastName}
-            disabled={isLoading}
-          />
-          <TextField
-            label="Phone Number"
-            value={phoneNo}
-            onValueChange={setPhoneNo}
-            disabled={isLoading}
-          />
-          <TextField
-            label="Email"
-            value={email}
-            onValueChange={setEmail}
-            disabled={isLoading}
-          />
-        </View>
-      </View>
-
-      <Pressable
-        onPress={saveChange}
-        className="bg-[#AD754C] py-2 px-8 rounded-md self-start mt-4"
-      >
-        <Text className="text-center text-sm sm:text-base font-bold text-white">
-          Save Profile
-        </Text>
-      </Pressable>
-    </View>
   );
 }
