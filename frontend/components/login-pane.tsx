@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import TextField from './text-field';
+import SimpleTextField from './simple-text-filed';
 import SimpleAlert from './simple-alert';
 import { login } from '@/apis/auth.api';
 import { isAxiosError } from 'axios';
@@ -97,29 +97,33 @@ export default function LoginPane({
       </View>
 
       {/* Email Field */}
-      <TextField
-        label="Email"
-        value={email}
-        onValueChange={setEmail}
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        error={errors.email}
-        containerClassName="mb-4"
-        required
-      />
+      <View className="mb-4">
+        <Text className="text-gray-700 font-medium mb-2">Email *</Text>
+        <SimpleTextField
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Enter your email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        {errors.email && (
+          <Text className="text-red-500 text-sm mt-1">{errors.email}</Text>
+        )}
+      </View>
 
       {/* Password Field */}
-      <TextField
-        label="Password"
-        value={password}
-        onValueChange={setPassword}
-        placeholder="Enter your password"
-        secureTextEntry
-        error={errors.password}
-        containerClassName="mb-6"
-        required
-      />
+      <View className="mb-6">
+        <Text className="text-gray-700 font-medium mb-2">Password *</Text>
+        <SimpleTextField
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Enter your password"
+          secureTextEntry
+        />
+        {errors.password && (
+          <Text className="text-red-500 text-sm mt-1">{errors.password}</Text>
+        )}
+      </View>
 
       {/* Login Button */}
       <TouchableOpacity
