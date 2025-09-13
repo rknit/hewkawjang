@@ -1,10 +1,13 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import React, { useState } from 'react';
 import SignUpModal from './signup-modal';
-import { Link } from '@react-navigation/native';
+import LoginModal from './login-modal';
 
 export default function NavBarGuest() {
-  const [modalVisible, setModalVisible] = useState(false);
+  const [signUpModalVisible, setSignUpModalVisible] = useState(false);
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [loginHovered, setLoginHovered] = useState(false);
+  const [signUpHovered, setSignUpHovered] = useState(false);
 
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16">
@@ -18,17 +21,58 @@ export default function NavBarGuest() {
       <View className="flex-1" />
 
       {/* Navigation links on the right */}
-      <View className="flex-row space-x-6 pr-6">
-        {/* FIXME: Add Link to Clickon*/}
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Text className="text-black    text-base">Login/Sign Up</Text>
+      <View className="flex-row items-center space-x-1 pr-6">
+        <TouchableOpacity
+          onPress={() => setLoginModalVisible(true)}
+          onPressIn={() => setLoginHovered(true)}
+          onPressOut={() => setLoginHovered(false)}
+          {...({
+            onMouseEnter: () => setLoginHovered(true),
+            onMouseLeave: () => setLoginHovered(false),
+          } as any)}
+        >
+          <Text
+            className="text-black text-base decoration-2"
+            style={{ textDecorationLine: loginHovered ? 'underline' : 'none' }}
+          >
+            Login
+          </Text>
+        </TouchableOpacity>
+
+        <Text className="text-black text-base">/</Text>
+
+        <TouchableOpacity
+          onPress={() => setSignUpModalVisible(true)}
+          onPressIn={() => setSignUpHovered(true)}
+          onPressOut={() => setSignUpHovered(false)}
+          {...({
+            onMouseEnter: () => setSignUpHovered(true),
+            onMouseLeave: () => setSignUpHovered(false),
+          } as any)}
+        >
+          <Text
+            className="text-black text-base decoration-2"
+            style={{ textDecorationLine: signUpHovered ? 'underline' : 'none' }}
+          >
+            Sign Up
+          </Text>
         </TouchableOpacity>
       </View>
 
+      {/* Login Modal */}
+      <LoginModal
+        visible={loginModalVisible}
+        onClose={() => setLoginModalVisible(false)}
+        onSignUpPress={() => {
+          setLoginModalVisible(false);
+          setSignUpModalVisible(true);
+        }}
+      />
+
       {/* Sign Up Modal */}
       <SignUpModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        visible={signUpModalVisible}
+        onClose={() => setSignUpModalVisible(false)}
       />
     </View>
   );
