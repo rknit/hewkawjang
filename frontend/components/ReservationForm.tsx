@@ -29,13 +29,12 @@ import { reservationTheme as brand, calendarTheme } from '@/utils/theme';
 import { login } from '@/apis/auth.api';
 
 export default function ReservationPane({
-  visible=true,
+  visible = true,
   onClose,
 }: {
   visible: boolean;
   onClose: () => void;
 }) {
- 
   const now = new Date();
   const [adults, setAdults] = useState<number>(2);
   const [seniors, setSeniors] = useState<number>(0);
@@ -130,7 +129,7 @@ export default function ReservationPane({
         restaurantId: restaurant.id,
         reserveAt: reserveAt.toISOString(),
         numberOfAdult: adults,
-        numberOfChildren: children
+        numberOfChildren: children,
       };
 
       await createReservation(payload);
