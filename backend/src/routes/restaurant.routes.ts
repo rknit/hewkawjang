@@ -1,7 +1,10 @@
 import express from 'express';
 import RestaurantService from '../service/restaurant.service';
 import { authHandler } from '../middleware/auth.middleware';
-import { createRestaurantSchema } from "../validators/restaurant.validator";
+import {
+  createRestaurantSchema,
+  updateRestaurantInfoSchema,
+} from '../validators/restaurant.validator';
 
 const router = express.Router();
 
@@ -38,24 +41,35 @@ router.get('/update/status', authHandler, async (req, res) => {
   res.status(200).send();
 });
 
-router.post("/", async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
-  // validate request body
-  const parsedData = createRestaurantSchema.parse(req.body);
+    // validate request body
+    const parsedData = createRestaurantSchema.parse(req.body);
 
-  // call service
-  const restaurant = await RestaurantService.createRestaurant(parsedData);
+    // call service
+    const restaurant = await RestaurantService.createRestaurant(parsedData);
 
-  res.status(201).json({
-    message: "Restaurant submitted successfully",
-    restaurant,
-  });
+    res.status(201).json({
+      message: 'Restaurant submitted successfully',
+      restaurant,
+    });
   } catch (err) {
     if (err instanceof Error) {
-      return res.status(400).json({ error: "Bad request because some fields are missing or invalid." });
+      return res.status(400).json({
+        error: 'Bad request because some fields are missing or invalid.',
+      });
     }
-   next(err);
- }
+    next(err);
+  }
+});
+
+router.put('/', authHandler, async (req, res) => {
+  if (req.body) {
+    req.body.ownerId = req.userAuthPayload!.userId; // from auth middleware
+  }
+  const info = updateRestaurantInfoSchema.parse(req.body);
+  const updated = await RestaurantService.updateInfo(info);
+  res.status(200).json(updated);
 });
 
 export default router;
