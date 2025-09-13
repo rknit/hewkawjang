@@ -55,13 +55,9 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      className="w-full"
+      className="w-full bg-white"
       contentContainerStyle={{
-        minHeight: '100%',
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: 'white',
+        paddingBottom: 20,
       }}
     >
       {/* Header */}
@@ -75,10 +71,10 @@ export default function ProfileScreen() {
           <View className="col-span-1 lg:col-span-3" />
         </View>
       </View>
-      <View className="border-b-2 border-gray-300 w-[90%] self-center" />
+      <View className="border-b-2 border-gray-300 w-11/12 self-center" />
 
       {/* Profile Info - Flexible content area */}
-      <View className="flex-1 pt-8 pb-8">
+      <View className="pt-8 pb-8">
         <View className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12 w-full px-4 sm:px-8 md:px-16 lg:px-24">
           <ProfileImage user={user} />
           <UserInfo user={user} />
@@ -87,7 +83,7 @@ export default function ProfileScreen() {
 
       {/* Delete Account (Footer) - Sticks to bottom when space available */}
       <View>
-        <View className="border-b-2 border-gray-300 w-[90%] self-center" />
+        <View className="border-b-2 border-gray-300 w-11/12 self-center" />
         <View className="pt-4" />
         <View className="w-full pt-8 pb-8 px-4 sm:px-8 md:px-16 lg:px-24">
           <Text className="text-lg sm:text-xl font-bold mb-2">
@@ -120,14 +116,19 @@ function ProfileImage(props: { user: User | null }) {
   const name = props.user?.displayName ?? props.user?.firstName ?? 'Loading...';
 
   const profileImage =
-    props.user?.profileUrl ?? require('./default_profile.svg');
+    props.user?.profileUrl ?? require('./default_profile.png');
 
   return (
     <View className="col-span-1 flex flex-col gap-4 items-center pt-4">
       <Pressable onPress={changeProfile} className="relative">
-        <Image source={profileImage} className="" />
-        <View className="absolute bottom-[-1rem] right-[-1rem]">
-          <EvilIcons name="pencil" size={'3rem' as any} color="gray" />
+        <Image
+          source={profileImage}
+          resizeMode="cover"
+          style={{ width: 160, height: 160 }}
+          className="rounded-full"
+        />
+        <View className="absolute -bottom-4 -right-4">
+          <EvilIcons name="pencil" size={48} color="gray" />
         </View>
       </Pressable>
       <Text className="text-lg sm:text-xl lg:text-2xl text-black text-center px-4 py-2 rounded-md">
