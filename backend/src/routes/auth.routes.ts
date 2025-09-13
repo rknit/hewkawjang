@@ -3,6 +3,7 @@ import AuthService, { LoginUser } from '../service/auth.service';
 import {
   refreshAuthHandler,
   authClientTypeHandler,
+  authHandler,
 } from '../middleware/auth.middleware';
 import createHttpError from 'http-errors';
 import { JwtTokens } from '../utils/jwt';
@@ -19,6 +20,24 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
   const tokens = await AuthService.loginUser(user);
   responseTokens(req, res, tokens);
 });
+
+// Logout
+router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
+  if (!req.userAuthPayload) {
+    throw createHttpError.Unauthorized('User not authenticated');
+  }
+
+  await AuthService.logoutUser(req.userAuthPayload);
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  res.status(200).json({message: 'Logged out successfully',});
+});
+
 
 // Token refresh
 router.post(
