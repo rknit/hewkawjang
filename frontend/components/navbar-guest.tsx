@@ -53,6 +53,10 @@ export default function NavBarGuest() {
       <SignUpModal
         visible={signUpModalVisible}
         onClose={() => setSignUpModalVisible(false)}
+        onLoginPress={() => {
+          setSignUpModalVisible(false);
+          setLoginModalVisible(true);
+        }}
       />
     </View>
   );

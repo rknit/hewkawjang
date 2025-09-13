@@ -8,9 +8,14 @@ import PressableText from './pressable-text';
 interface SignUpModalProps {
   visible: boolean;
   onClose: () => void;
+  onLoginPress?: () => void;
 }
 
-export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
+export default function SignUpModal({
+  visible,
+  onClose,
+  onLoginPress,
+}: SignUpModalProps) {
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [phone, setPhone] = useState('');
@@ -128,10 +133,7 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
       <PressableText
         text="Already have an account?"
         linkText="Login"
-        onPress={() => {
-          /* TODO: Handle login navigation */
-          alert('Navigate to Login');
-        }}
+        onPress={onLoginPress || (() => {})}
       />
     </BaseModal>
   );
