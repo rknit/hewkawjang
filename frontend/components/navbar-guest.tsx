@@ -1,7 +1,11 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import SignUpModal from './signup-modal';
 import { Link } from '@react-navigation/native';
 
 export default function NavBarGuest() {
+  const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16">
       {/* Logo on the left edge */}
@@ -16,10 +20,16 @@ export default function NavBarGuest() {
       {/* Navigation links on the right */}
       <View className="flex-row space-x-6 pr-6">
         {/* FIXME: Add Link to Clickon*/}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Text className="text-black    text-base">Login/Sign Up</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Sign Up Modal */}
+      <SignUpModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
   );
 }
