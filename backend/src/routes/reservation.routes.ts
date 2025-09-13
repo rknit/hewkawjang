@@ -47,8 +47,7 @@ router.post('/create', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload?.userId;
     const { restaurantId, reserveAt,
-            numberOfAdult, numberOfChildren,
-            numberOfElderly, specialRequest } = req.body;
+            numberOfAdult, numberOfChildren } = req.body;
 
     if (!userId || !restaurantId || !reserveAt) {
       return res.status(400).json({ error: 'userId, restaurantId and reserveAt are required' });
@@ -68,8 +67,7 @@ router.post('/create', authHandler, async (req, res, next) => {
       reserveAt: reserveTime,
       numberOfAdult,
       numberOfChildren,
-      numberOfElderly,
-      specialRequest,
+ 
     });
 
     return res.status(201).json(reservation);
