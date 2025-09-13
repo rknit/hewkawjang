@@ -13,47 +13,19 @@ import { fetchCurrentUser } from '@/apis/user.api';
 import { User } from '@/types/user.type';
 import { fetchRestaurants } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
-
-// --- Helpers
-const pad = (n: number) => String(n).padStart(2, '0');
-
-function addMinutes(date: Date, minutes: number) {
-  const d = new Date(date);
-  d.setMinutes(d.getMinutes() + minutes);
-  return d;
-}
-
-function startOfDay(date: Date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function formatDateISO(d: Date) {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-// Build minute options in 15-min steps
-const MINUTE_STEPS = [0, 15, 30, 45];
-
-// Theme colors
-const brand = {
-  bg: '#ffffff',
-  surface: '#ffffff',
-  primary: '#ff6a00',
-  text: '#2e2a26',
-  subtext: '#80756a',
-  border: '#ff6a00',
-  modalBorder: '#ff6a00',
-};
+import { createReservation } from '@/apis/reservation.api';
+import {
+  pad,
+  addMinutes,
+  startOfDay,
+  isSameDay,
+  formatDateISO,
+  MINUTE_STEPS,
+  getValidHours,
+  getValidMinutes,
+  getDefaultMinute,
+} from '@/utils/date-time';
+import { reservationTheme as brand, calendarTheme } from '@/utils/theme';
 
 export default function ReservationPane({
   visible,
@@ -74,10 +46,7 @@ export default function ReservationPane({
 
   // time (HH and mm columns)
   const [hour, setHour] = useState<number>(() => now.getHours());
-  const [minute, setMinute] = useState<number>(() => {
-    const m = now.getMinutes();
-    return MINUTE_STEPS.reduce((prev, step) => (m <= step ? step : prev), 45);
-  });
+  const [minute, setMinute] = useState<number>(() => getDefaultMinute(now));
 
   // Dropdown visibility states
   const [showHourDropdown, setShowHourDropdown] = useState<boolean>(false);
@@ -91,37 +60,23 @@ export default function ReservationPane({
     const picked = new Date(`${date}T${pad(hour)}:${pad(minute)}:00`);
     if (isSameDay(picked, earliest) && picked < earliest) {
       const eh = earliest.getHours();
-      const em = MINUTE_STEPS.reduce(
-        (prev, step) => (earliest.getMinutes() <= step ? step : prev),
-        45,
-      );
+      const em = getDefaultMinute(earliest);
       setHour(eh);
       setMinute(em);
     }
   }, [date, hour, minute, earliest]);
 
   // list of valid hours for chosen date
-  const validHours = useMemo(() => {
-    const todayISO = formatDateISO(now);
-    if (date === todayISO) {
-      const startHour = earliest.getHours();
-      return Array.from(
-        { length: Math.max(1, 24 - startHour) },
-        (_, i) => startHour + i,
-      );
-    }
-    return Array.from({ length: 24 }, (_, i) => i);
-  }, [date, earliest, now]);
+  const validHours = useMemo(
+    () => getValidHours(date, earliest, now),
+    [date, earliest, now],
+  );
 
   // list of valid minutes depending on hour when date is today
-  const validMinutes = useMemo(() => {
-    const todayISO = formatDateISO(now);
-    if (date === todayISO && hour === earliest.getHours()) {
-      const m = earliest.getMinutes();
-      return MINUTE_STEPS.filter((step) => step >= m);
-    }
-    return MINUTE_STEPS;
-  }, [date, hour, earliest, now]);
+  const validMinutes = useMemo(
+    () => getValidMinutes(date, hour, earliest, now),
+    [date, hour, earliest, now],
+  );
 
   // keep minute valid when hour changes
   useEffect(() => {
@@ -157,18 +112,29 @@ export default function ReservationPane({
     setShowConfirmation(true);
   }
 
-  function onConfirmReservation() {
-    const payload = {
-      date,
-      time: `${pad(hour)}:${pad(minute)}`,
-      adults,
-      seniors,
-      children,
-      guests: totalGuests,
-    };
-    Alert.alert('📩 ส่งคำขอจองเรียบร้อย', JSON.stringify(payload, null, 2));
-    setShowConfirmation(false);
-    onClose();
+  async function onConfirmReservation() {
+    try {
+      if (!restaurant) {
+        Alert.alert('Error', 'No restaurant selected');
+        return;
+      }
+
+      const reserveAt = new Date(`${date}T${pad(hour)}:${pad(minute)}:00`);
+      const payload = {
+        restaurantId: restaurant.id,
+        reserveAt: reserveAt.toISOString(),
+        numberOfAdult: adults,
+        numberOfChildren: children
+      };
+
+      await createReservation(payload);
+      Alert.alert('Success', 'Reservation created successfully');
+      setShowConfirmation(false);
+      onClose();
+    } catch (error) {
+      console.error('Failed to create reservation:', error);
+      Alert.alert('Error', 'Failed to create reservation. Please try again.');
+    }
   }
 
   function onCancelConfirmation() {
@@ -345,14 +311,7 @@ export default function ReservationPane({
                           selectedColor: brand.primary,
                         },
                       }}
-                      theme={{
-                        backgroundColor: '#FEF9F3',
-                        calendarBackground: '#FEF9F3',
-                        todayTextColor: brand.primary,
-                        arrowColor: brand.primary,
-                        selectedDayBackgroundColor: brand.primary,
-                        selectedDayTextColor: '#ffffff',
-                      }}
+                      theme={calendarTheme}
                     />
                   </View>
                 </View>

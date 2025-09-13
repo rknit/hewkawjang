@@ -4,7 +4,7 @@ import { normalizeError } from '@/utils/api-error';
 
 export async function fetchUnconfirmedReservations(
   restaurantId: number,
-  offset?: number
+  offset?: number,
 ): Promise<Reservation[] | null> {
   try {
     const res = await ApiService.get('/reservations/unconfirmed/inspect', {
@@ -34,9 +34,15 @@ export async function createReservation(payload: {
   }
 }
 
-export async function cancelReservation(reservationId: number, restaurantId: number): Promise<boolean> {
+export async function cancelReservation(
+  reservationId: number,
+  restaurantId: number,
+): Promise<boolean> {
   try {
-    await ApiService.post('/reservations/cancel', { reservationId, restaurantId });
+    await ApiService.post('/reservations/cancel', {
+      reservationId,
+      restaurantId,
+    });
     return true;
   } catch (error) {
     normalizeError(error);

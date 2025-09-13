@@ -7,6 +7,7 @@
     "dev": "npm run sync:db && cross-env NODE_ENV=development npm run start",
     "prod": "npm run build && cross-env NODE_ENV=production node dist/index.js",
     "sync:db": "drizzle-kit push",
+    "seed:db": "ts-node src/db/seed.ts",
     "test": "cross-env NODE_ENV=test jest",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:cov": "cross-env NODE_ENV=test jest --coverage"
@@ -28,12 +29,12 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "cross-env": "^10.0.0"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2",
     "@types/cors": "^2.8.19",
+    "@types/pg": "^8.15.5",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -43,6 +44,7 @@
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.6",
+    "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "zod": "^4.1.5"
   }
