@@ -7,7 +7,6 @@ import {
   ScrollView,
   Image,
   Platform,
-  TextInput,
   Modal,
 } from 'react-native';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
@@ -17,6 +16,7 @@ import TokenStorage from '@/services/token-storage.service';
 import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
 import { router } from 'expo-router';
 import AlertBox from '@/components/alert-box';
+import TextField from '@/components/text-field';
 
 export default function ProfileScreen() {
   // FIXME: Temporary auto-login for testing purpose
@@ -209,35 +209,35 @@ function UserInfo(props: { user: User | null }) {
   return (
     <View className="col-span-1 lg:col-span-3 gap-4">
       <View className="flex flex-col gap-4">
-        <EditableField
+        <TextField
           label="Display Name"
           value={name}
-          setValue={setName}
+          onValueChange={setName}
           disabled={isLoading}
         />
         <View className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <EditableField
+          <TextField
             label="First Name"
             value={firstName}
-            setValue={setFirstName}
+            onValueChange={setFirstName}
             disabled={isLoading}
           />
-          <EditableField
+          <TextField
             label="Last Name"
             value={lastName}
-            setValue={setLastName}
+            onValueChange={setLastName}
             disabled={isLoading}
           />
-          <EditableField
+          <TextField
             label="Phone Number"
             value={phoneNo}
-            setValue={setPhoneNo}
+            onValueChange={setPhoneNo}
             disabled={isLoading}
           />
-          <EditableField
+          <TextField
             label="Email"
             value={email}
-            setValue={setEmail}
+            onValueChange={setEmail}
             disabled={isLoading}
           />
         </View>
@@ -251,38 +251,6 @@ function UserInfo(props: { user: User | null }) {
           Save Profile
         </Text>
       </Pressable>
-    </View>
-  );
-}
-
-function EditableField(props: {
-  label: string;
-  value: string;
-  setValue: (val: string) => void;
-  disabled?: boolean;
-}) {
-  const [isFocused, setIsFocused] = useState(false);
-  const isDisabled = props.disabled ?? false;
-
-  return (
-    <View className="flex flex-col gap-2">
-      <Text className="text-sm sm:text-base font-medium text-gray-700">
-        {props.label}
-      </Text>
-      <TextInput
-        value={props.value}
-        onChangeText={(t) => props.setValue(t)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        editable={!isDisabled}
-        className={`text-sm sm:text-base w-full px-3 py-1 rounded-md border ${
-          isDisabled
-            ? 'text-gray-500 bg-gray-50 border-gray-200 cursor-not-allowed'
-            : isFocused
-              ? 'text-black bg-[#FEF9F3] border-[#8B5A3C]'
-              : 'text-black bg-[#FEF9F3] border-[#AD754C]'
-        }`}
-      />
     </View>
   );
 }
