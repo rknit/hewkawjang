@@ -3,6 +3,7 @@ import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
 import { UserAuthPayload } from '../service/auth.service';
+import UserService from '../service/user.service';
 
 // Extend Express Request interface to include userAuth properties
 declare global {
@@ -44,7 +45,7 @@ export function authHandler(req: Request, res: Response, next: NextFunction) {
   }
 
   const accessToken = req.headers.authorization.replace('Bearer ', '');
-  jwt.verify(accessToken, ACCESS_TOKEN_SECRET, (err, decoded) => {
+  jwt.verify(accessToken, ACCESS_TOKEN_SECRET, async (err, decoded) => {
     if (err) {
       return next(createHttpError.Unauthorized());
     }
@@ -55,6 +56,16 @@ export function authHandler(req: Request, res: Response, next: NextFunction) {
     }
 
     req.userAuthPayload = payload;
+
+    try {
+      const isDeleted = await UserService.isUserDeleted(payload.userId);
+      if (isDeleted) {
+        return next(createHttpError.Unauthorized('User account is deleted'));
+      }
+    } catch (error) {
+      return next(error);
+    }
+
     next();
   });
 }
@@ -89,7 +100,7 @@ export function refreshAuthHandler(
       break;
   }
 
-  jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, decoded) => {
+  jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, decoded) => {
     if (err) {
       return next(createHttpError.Unauthorized());
     }
@@ -101,6 +112,16 @@ export function refreshAuthHandler(
 
     req.userAuthPayload = payload;
     req.userAuthRefreshToken = refreshToken;
+
+    try {
+      const isDeleted = await UserService.isUserDeleted(payload.userId);
+      if (isDeleted) {
+        return next(createHttpError.Unauthorized('User account is deleted'));
+      }
+    } catch (error) {
+      return next(error);
+    }
+
     next();
   });
 }

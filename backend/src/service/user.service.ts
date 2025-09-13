@@ -9,7 +9,11 @@ import {
   desc,
   getTableColumns,
 } from 'drizzle-orm';
-import { usersTable, emailVerificationTable, reservationTable } from '../db/schema';
+import {
+  usersTable,
+  emailVerificationTable,
+  reservationTable,
+} from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
@@ -80,7 +84,10 @@ export default class UserService {
       throw createHttpError.Conflict('Email already exists');
     }
     let query = await db
-      .select({ otp: emailVerificationTable.otp, sendTime: emailVerificationTable.sendTime })
+      .select({
+        otp: emailVerificationTable.otp,
+        sendTime: emailVerificationTable.sendTime,
+      })
       .from(emailVerificationTable)
       .orderBy(desc(emailVerificationTable.id))
       .where(eq(emailVerificationTable.email, data.email))
@@ -90,7 +97,8 @@ export default class UserService {
     }
     const { otp, sendTime } = query[0];
     const currentTime = new Date();
-    const timeDiff = (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
+    const timeDiff =
+      (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
     if (otp !== otpSend || timeDiff > 180) {
       throw createHttpError.Unauthorized('Invalid or expired OTP');
     }
@@ -106,7 +114,8 @@ export default class UserService {
   static async softDeleteUser(userId: number): Promise<User | null> {
     return await db.transaction(async (tx) => {
       // Soft delete user
-      const result = await tx.update(usersTable)
+      const result = await tx
+        .update(usersTable)
         .set({
           firstName: 'Deleted',
           lastName: 'User',
@@ -116,6 +125,7 @@ export default class UserService {
           displayName: 'Deleted User',
           profileUrl: null,
           refreshToken: null,
+          isDeleted: true,
         })
         .where(eq(usersTable.id, userId))
         .returning();
@@ -131,9 +141,9 @@ export default class UserService {
             eq(reservationTable.userId, userId),
             or(
               eq(reservationTable.status, 'unconfirmed'),
-              eq(reservationTable.status, 'confirmed')
-            )
-          )
+              eq(reservationTable.status, 'confirmed'),
+            ),
+          ),
         );
 
       // Force cancel them one by one (even if violate the 24-hour constraint)
@@ -147,5 +157,16 @@ export default class UserService {
       return result[0];
     });
   }
-}
 
+  static async isUserDeleted(id: number): Promise<boolean> {
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
+    if (!user) {
+      throw createHttpError.NotFound('User not found');
+    }
+    return user.isDeleted;
+  }
+}
