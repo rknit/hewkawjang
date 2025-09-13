@@ -1,8 +1,15 @@
 import { User, UserSchema } from '@/types/user.type';
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Entypo from '@expo/vector-icons/Entypo';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Image,
+  Platform,
+  TextInput,
+} from 'react-native';
+import EvilIcons from '@expo/vector-icons/EvilIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import ApiService from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
@@ -36,7 +43,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     let fetchProfile = async () => {
       const res = await ApiService.get('/users/me');
-      let user = UserSchema.parse(res.data[0]);
+      let user = UserSchema.parse(res.data);
       setUser(user);
     };
     fetchProfile();
@@ -110,14 +117,17 @@ function ProfileImage(props: { user: User | null }) {
     alert('TODO: Change Profile Image');
   };
 
-  let name = props.user?.displayName ?? props.user?.firstName ?? 'Loading...';
+  const name = props.user?.displayName ?? props.user?.firstName ?? 'Loading...';
+
+  const profileImage =
+    props.user?.profileUrl ?? require('./default_profile.svg');
 
   return (
     <View className="col-span-1 flex flex-col gap-4 items-center pt-4">
       <Pressable onPress={changeProfile} className="relative">
-        <FontAwesome5 name="user-circle" color="black" size={120} />
-        <View className="absolute bottom-1 right-1">
-          <Entypo name="pencil" size={24} color="black" />
+        <Image source={profileImage} className="" />
+        <View className="absolute bottom-[-1rem] right-[-1rem]">
+          <EvilIcons name="pencil" size={'3rem' as any} color="gray" />
         </View>
       </Pressable>
       <Text className="text-lg sm:text-xl lg:text-2xl text-black text-center px-4 py-2 rounded-md">
@@ -132,21 +142,60 @@ function UserInfo(props: { user: User | null }) {
     alert('TODO: Save Change');
   };
 
-  let name = props.user?.displayName ?? props.user?.firstName ?? 'Loading...';
-  let firstName = props.user?.firstName ?? 'Loading...';
-  let lastName = props.user?.lastName ?? 'Loading...';
-  let phoneNo = props.user?.phoneNo ?? 'Loading...';
-  let email = props.user?.email ?? 'Loading...';
+  const [name, setName] = useState('Loading...');
+  const [firstName, setFirstName] = useState('Loading...');
+  const [lastName, setLastName] = useState('Loading...');
+  const [phoneNo, setPhoneNo] = useState('Loading...');
+  const [email, setEmail] = useState('Loading...');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (props.user) {
+      setName(props.user?.displayName ?? props.user?.firstName ?? 'Loading...');
+      setFirstName(props.user?.firstName ?? 'Loading...');
+      setLastName(props.user?.lastName ?? 'Loading...');
+      setPhoneNo(props.user?.phoneNo ?? 'Loading...');
+      setEmail(props.user?.email ?? 'Loading...');
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
+  }, [props.user]);
 
   return (
     <View className="col-span-1 lg:col-span-3 gap-4">
       <View className="flex flex-col gap-4">
-        <EditableField label="Display Name" value={name} />
+        <EditableField
+          label="Display Name"
+          value={name}
+          setValue={setName}
+          disabled={isLoading}
+        />
         <View className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <EditableField label="First Name" value={firstName} />
-          <EditableField label="Last Name" value={lastName} />
-          <EditableField label="Phone Number" value={phoneNo} />
-          <EditableField label="Email" value={email} />
+          <EditableField
+            label="First Name"
+            value={firstName}
+            setValue={setFirstName}
+            disabled={isLoading}
+          />
+          <EditableField
+            label="Last Name"
+            value={lastName}
+            setValue={setLastName}
+            disabled={isLoading}
+          />
+          <EditableField
+            label="Phone Number"
+            value={phoneNo}
+            setValue={setPhoneNo}
+            disabled={isLoading}
+          />
+          <EditableField
+            label="Email"
+            value={email}
+            setValue={setEmail}
+            disabled={isLoading}
+          />
         </View>
       </View>
 
@@ -162,15 +211,29 @@ function UserInfo(props: { user: User | null }) {
   );
 }
 
-function EditableField(props: { label: string; value: string }) {
+function EditableField(props: {
+  label: string;
+  value: string;
+  setValue: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const isDisabled = props.disabled ?? false;
+
   return (
     <View className="flex flex-col gap-2">
       <Text className="text-sm sm:text-base font-medium text-gray-700">
         {props.label}
       </Text>
-      <Text className="text-sm sm:text-base text-black bg-gray-100 w-full px-3 py-1 rounded-md border border-gray-200">
-        {props.value}
-      </Text>
+      <TextInput
+        value={props.value}
+        onChangeText={(t) => props.setValue(t)}
+        editable={!isDisabled}
+        className={`text-sm sm:text-base w-full px-3 py-1 rounded-md border ${
+          isDisabled
+            ? 'text-gray-500 bg-gray-50 border-gray-200 cursor-not-allowed'
+            : 'text-black bg-gray-100 border-gray-200'
+        }`}
+      />
     </View>
   );
 }
