@@ -44,13 +44,11 @@ export default function Index() {
         animationType="fade"
         onRequestClose={() => setShowLoginModal(false)}
       >
-        <View className="flex-1 bg-black/50 justify-center items-center">
-          <LoginPane
-            onClose={() => setShowLoginModal(false)}
-            onLoginSuccess={handleLoginSuccess}
-            onSignUpPress={handleSignUpPress}
-          />
-        </View>
+        <LoginPane
+          onClose={() => setShowLoginModal(false)}
+          onLoginSuccess={handleLoginSuccess}
+          onSignUpPress={handleSignUpPress}
+        />
       </Modal>
     </View>
   );

@@ -34,14 +34,14 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
       transparent
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-center items-center bg-black/50">
-        <View className="bg-white rounded-lg w-11/12 max-w-md p-6 relative">
+      <View className="flex-1 justify-center items-center bg-white/70">
+        <View className="bg-white border border-[#E05910] shadow-lg rounded-lg w-11/12 max-w-md p-6 relative">
           {/* Exit icon (X) */}
           <Pressable
             onPress={onClose}
             style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}
           >
-            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>×</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{'×'}</Text>
           </Pressable>
 
           {/* Sign Up content */}
@@ -103,7 +103,7 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
             </Pressable>
 
             <Text className="text-xs flex-row flex-wrap text-center">
-              I've read and accept the{' '}
+              {"I've read and accept the"}
               <Text
                 className="underline text-black"
                 onPress={() =>
