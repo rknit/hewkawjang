@@ -16,7 +16,7 @@ export default function NavBarUser() {
       <TouchableOpacity onPress={() => router.push('/')}>
         <Image
           source={require('../assets/images/logo.png')}
-          style={{ width: 64, height: 64, marginLeft: 15 }}
+          style={{ width: 64, height: 64, marginLeft: 15, marginBottom: 1 }}
         />
       </TouchableOpacity>
 
