@@ -169,4 +169,27 @@ export default class UserService {
     }
     return user.isDeleted;
   }
+
+  static async updateUser(data: NewUser): Promise<void> {
+    let query = await db
+      .select({ lastName: usersTable.lastName })
+      .from(usersTable)
+      .where(eq(usersTable.id, data.id!));
+
+    if (query.length === 0) {
+      throw createHttpError.NotFound('User not found');
+    }
+
+    await db
+      .update(usersTable)
+      .set({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phoneNo: data.phoneNo,
+        displayName: data.displayName,
+        profileUrl: data.profileUrl,
+      })
+      .where(eq(usersTable.id, data.id!));
+  }
 }
