@@ -1,14 +1,5 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  Pressable,
-  TextInput,
-  TouchableOpacity,
-  Linking,
-} from 'react-native';
-import SimpleButton from './simple-button';
+import { View, Text, Modal, TouchableOpacity, Linking } from 'react-native';
 import SimpleTextField from './simple-text-filed';
 
 interface SignUpModalProps {
@@ -30,41 +21,48 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-center items-center bg-white/70">
-        <View className="bg-white border border-[#E05910] shadow-lg rounded-lg w-11/12 max-w-md p-6 relative">
-          {/* Exit icon (X) */}
-          <Pressable
+      <View className="flex-1 bg-white/70 justify-center items-center">
+        <View className="bg-white border-[#E05910] rounded-2xl p-6 mx-4 shadow-lg max-w-md w-full border relative">
+          {/* Close button */}
+          <TouchableOpacity
             onPress={onClose}
-            style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}
+            className="absolute top-4 right-4 z-10"
           >
-            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{'×'}</Text>
-          </Pressable>
+            <Text className="text-2xl text-gray-500">{'×'}</Text>
+          </TouchableOpacity>
 
           {/* Sign Up content */}
           <Text className="text-xl font-bold mb-6 text-center">Sign Up</Text>
-          <View className="mb-2">
-            {/* Firstname */}
-            <Text className={`text-xs mb-1 text-black'}`}>Firstname</Text>
+
+          {/* Firstname */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-medium mb-2">Firstname *</Text>
             <SimpleTextField
               value={firstname}
               onChangeText={setFirstname}
               placeholder="Enter your firstname"
             />
+          </View>
 
-            {/* Lastname */}
-            <Text className={`text-xs mb-1 text-black'}`}>Lastname</Text>
+          {/* Lastname */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-medium mb-2">Lastname *</Text>
             <SimpleTextField
               value={lastname}
               onChangeText={setLastname}
               placeholder="Enter your lastname"
             />
+          </View>
 
-            {/* Phone Number */}
-            <Text className={`text-xs mb-1 text-black'}`}>Phone Number</Text>
+          {/* Phone Number */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-medium mb-2">
+              Phone Number *
+            </Text>
             <SimpleTextField
               value={phone}
               onChangeText={setPhone}
@@ -72,9 +70,11 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
               keyboardType="phone-pad"
               maxLength={10}
             />
+          </View>
 
-            {/* Email */}
-            <Text className={`text-xs mb-1 text-black'}`}>Email</Text>
+          {/* Email */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-medium mb-2">Email *</Text>
             <SimpleTextField
               value={email}
               onChangeText={setEmail}
@@ -82,9 +82,11 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
               keyboardType="email-address"
               autoCapitalize="none"
             />
+          </View>
 
-            {/* Password */}
-            <Text className={`text-xs mb-1 text-black'}`}>Password</Text>
+          {/* Password */}
+          <View className="mb-6">
+            <Text className="text-gray-700 font-medium mb-2">Password *</Text>
             <SimpleTextField
               value={password}
               onChangeText={setPassword}
@@ -95,12 +97,12 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
 
           {/* Checkbox and Privacy Policy */}
           <View className="flex-row items-center justify-center mb-4">
-            <Pressable
+            <TouchableOpacity
               onPress={() => setChecked(!checked)}
               className={`w-5 h-5 border rounded mr-2 items-center justify-center ${checked ? 'bg-black border-black' : 'bg-white border-black'}`}
             >
               {checked && <Text className="text-white font-bold">✓</Text>}
-            </Pressable>
+            </TouchableOpacity>
 
             <Text className="text-xs flex-row flex-wrap text-center">
               {"I've read and accept the"}
@@ -116,24 +118,29 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
           </View>
 
           {/* Sign Up Button */}
-          <SimpleButton
-            title="Sign Up"
+          <TouchableOpacity
             onPress={() => {
               // TODO: Handle sign up logic
             }}
             disabled={!allFilled}
-            className="mb-3"
-          />
+            className={`bg-[#8B5A3C] rounded-lg py-3 px-4 mb-6 ${
+              !allFilled ? 'opacity-50' : ''
+            }`}
+          >
+            <Text className="text-white text-center font-semibold text-lg">
+              Sign Up
+            </Text>
+          </TouchableOpacity>
 
           {/* Already have an account? Login */}
-          <View className="flex-row justify-center items-center">
-            <Text className="text-xs">Already have an account? </Text>
+          <View className="flex-row justify-center">
+            <Text className="text-gray-600">Already have an account? </Text>
             <TouchableOpacity
               onPress={() => {
                 /* TODO: Handle login navigation */
               }}
             >
-              <Text className="font-bold text-xs">Login</Text>
+              <Text className="text-[#8B5A3C] font-semibold">Login</Text>
             </TouchableOpacity>
           </View>
         </View>
