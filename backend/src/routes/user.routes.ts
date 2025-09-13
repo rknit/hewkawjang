@@ -31,6 +31,11 @@ router.post('/register', async (req, res) => {
   res.status(201).send();
 });
 
+router.post('/updateProfile', async (req, res) => {
+  await UserService.updateUser(req.body);
+  res.sendStatus(200);
+});
+
 // Soft delete the authenticated user
 router.delete('/me', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
