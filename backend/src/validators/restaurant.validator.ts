@@ -26,7 +26,7 @@ export const createRestaurantSchema = z.object({
 export type CreateRestaurantInput = z.infer<typeof createRestaurantSchema>;
 
 export const updateRestaurantSchema = createUpdateSchema(restaurantTable);
-export type UpdateRestaurantSchema = z.infer<typeof updateRestaurantSchema>;
+export type UpdateRestaurant = z.infer<typeof updateRestaurantSchema>;
 
 export const updateRestaurantInfoSchema = updateRestaurantSchema.required({
   id: true,

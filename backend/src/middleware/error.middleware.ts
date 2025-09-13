@@ -29,7 +29,7 @@ export default function errorHandler(
 
   if (error instanceof z.ZodError) {
     // Handle Zod validation errors
-    return res.status(400).json({
+    res.status(400).json({
       error: {
         message: 'Validation Error',
         ...(isProduction
@@ -37,6 +37,7 @@ export default function errorHandler(
           : { error: error, req: reqDisp, stack: error.stack }), // Only show stack in development
       },
     });
+    return;
   }
 
   // If the error is an HTTP error, use its status and message
