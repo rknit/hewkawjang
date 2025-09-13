@@ -1,5 +1,5 @@
 import ApiService from '@/services/api.service';
-import { Restaurant, RestaurantSchema } from '../types/restaurant.type';
+import { UpdateRestaurantInfo, Restaurant, RestaurantSchema } from '@/types/restaurant.type';
 import { normalizeError } from '@/utils/api-error';
 
 export async function fetchRestaurants(): Promise<Restaurant[]> {
@@ -23,5 +23,13 @@ export async function fetchRestaurantById(
   } catch (error) {
     console.error('Failed to fetch restaurant by ID:', error);
     return null;
-  }
+}
+  
+export async function updateRestaurantInfo(
+  data: UpdateRestaurantInfo,
+): Promise<void> {
+  try {
+    await ApiService.put('/restaurants', data);
+  } catch (error) {
+    normalizeError(error);
 }
