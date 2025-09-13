@@ -1,5 +1,6 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
+import { router } from 'expo-router';
 import SignUpModal from './signup-modal';
 import LoginModal from './login-modal';
 import UnderlinedPressableText from './underlined-pressable-text';
@@ -11,10 +12,12 @@ export default function NavBarGuest() {
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16">
       {/* Logo on the left edge */}
-      <Image
-        source={require('../assets/images/logo.png')}
-        style={{ width: 64, height: 64, marginLeft: 15 }}
-      />
+      <TouchableOpacity onPress={() => router.push('/')}>
+        <Image
+          source={require('../assets/images/logo.png')}
+          style={{ width: 64, height: 64, marginLeft: 15 }}
+        />
+      </TouchableOpacity>
 
       {/* Spacer to push links to the right */}
       <View className="flex-1" />
