@@ -26,14 +26,16 @@ import {
   getDefaultMinute,
 } from '@/utils/date-time';
 import { reservationTheme as brand, calendarTheme } from '@/utils/theme';
+import { login } from '@/apis/auth.api';
 
 export default function ReservationPane({
-  visible,
+  visible=true,
   onClose,
 }: {
   visible: boolean;
   onClose: () => void;
 }) {
+ 
   const now = new Date();
   const [adults, setAdults] = useState<number>(2);
   const [seniors, setSeniors] = useState<number>(0);
@@ -77,6 +79,7 @@ export default function ReservationPane({
     () => getValidMinutes(date, hour, earliest, now),
     [date, hour, earliest, now],
   );
+  console.log('Valid minutes:', validMinutes);
 
   // keep minute valid when hour changes
   useEffect(() => {
@@ -92,6 +95,7 @@ export default function ReservationPane({
           fetchRestaurants(),
         ]);
         setUser(userData);
+        console.log('Fetched user data:', userData);
         // Use the first available restaurant (you can modify this logic as needed)
         if (restaurants && restaurants.length > 0) {
           setRestaurant(restaurants[0]);
@@ -103,7 +107,9 @@ export default function ReservationPane({
 
     if (visible) {
       loadData();
+      console.log('Reservation pane opened, loading data...');
     }
+    console.log('Reservation pane visibility changed:', visible);
   }, [visible]);
 
   const totalGuests = adults + seniors + children;
@@ -128,6 +134,7 @@ export default function ReservationPane({
       };
 
       await createReservation(payload);
+      console.log('Reservation created with payload:', payload);
       Alert.alert('Success', 'Reservation created successfully');
       setShowConfirmation(false);
       onClose();

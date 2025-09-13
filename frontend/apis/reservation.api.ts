@@ -23,7 +23,6 @@ export async function createReservation(payload: {
   numberOfAdult?: number;
   numberOfChildren?: number;
   numberOfElderly?: number;
-  specialRequest?: string;
 }): Promise<Reservation | null> {
   try {
     const res = await ApiService.post('/reservations/create', payload);

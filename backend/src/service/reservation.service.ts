@@ -71,8 +71,6 @@ export default class ReservationService {
     reserveAt: Date;
     numberOfAdult?: number;
     numberOfChildren?: number;
-    numberOfElderly?: number;
-    specialRequest?: string;
   }) {
     const inserted = await db
       .insert(reservationTable)
@@ -82,8 +80,6 @@ export default class ReservationService {
         reserveAt: data.reserveAt,
         numberOfAdult: data.numberOfAdult ?? 0,
         numberOfChildren: data.numberOfChildren ?? 0,
-        numberOfElderly: data.numberOfElderly ?? 0,
-        specialRequest: data.specialRequest ?? null,
         status: 'unconfirmed',
       })
       .returning();

@@ -9,7 +9,6 @@ export const ReservationSchema = z.object({
   numberOfChildren: z.number().default(0),
   numberOfElderly: z.number().default(0),
   status: z.string(),
-  specialRequest: z.string().nullable(),
   createdAt: z.string(),
 });
 
