@@ -1,4 +1,4 @@
-import { login } from '@/apis/auth.api';
+import { login, logout } from '@/apis/auth.api';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Button, Text, View } from 'react-native';
@@ -8,11 +8,11 @@ export default function Index() {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   // FIXME: for testing purpose
-  useEffect(() => {
-    login('test@user.com', 'password').catch((error) => {
-      console.error('Login failed:', error);
-    });
-  });
+  // useEffect(() => {
+  //   login('test@user.com', 'password').catch((error) => {
+  //     console.error('Login failed:', error);
+  //   });
+  // });
 
   const handleLoginSuccess = () => {
     setShowLoginModal(false);
@@ -36,6 +36,8 @@ export default function Index() {
       <Button title="Go to Profile" onPress={() => router.push('/profile')} />
 
       <Button title="Sign In" onPress={() => setShowLoginModal(true)} />
+
+      <Button title="Log Out" onPress={logout} />
 
       {/* Login Modal */}
       <LoginModal

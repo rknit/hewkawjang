@@ -1,3 +1,4 @@
+import ApiService from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
 import { Tokens, TokensSchema } from '@/types/user.type';
 import { normalizeError } from '@/utils/api-error';
@@ -34,4 +35,24 @@ export async function login(email: string, password: string): Promise<void> {
   if (refreshToken) {
     TokenStorage.setRefreshToken(refreshToken);
   }
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await ApiService.post(
+      '/auth/logout',
+      {},
+      {
+        headers: {
+          'hkj-auth-client-type': Platform.OS === 'web' ? 'web' : 'mobile',
+        },
+        withCredentials: true,
+      },
+    );
+  } catch (error) {
+    normalizeError(error);
+  }
+
+  TokenStorage.removeAccessToken();
+  TokenStorage.removeRefreshToken();
 }
