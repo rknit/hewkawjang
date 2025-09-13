@@ -50,7 +50,10 @@ ApiService.interceptors.response.use(undefined, async (error) => {
         TokenStorage.setRefreshToken(newRefreshToken),
       ]);
     } else {
-      // TODO: logout user and redirect to login
+      await Promise.all([
+        TokenStorage.removeAccessToken(),
+        TokenStorage.removeRefreshToken(),
+      ]);
       router.replace('/');
       return Promise.reject(new Error('Unable to refresh token'));
     }

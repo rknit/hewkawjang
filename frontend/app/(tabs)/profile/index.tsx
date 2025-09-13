@@ -8,6 +8,7 @@ import {
   Image,
   Platform,
   TextInput,
+  Modal,
 } from 'react-native';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -15,6 +16,7 @@ import ApiService from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
 import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
 import { router } from 'expo-router';
+import AlertBox from '@/components/alert-box';
 
 export default function ProfileScreen() {
   // FIXME: Temporary auto-login for testing purpose
@@ -42,16 +44,32 @@ export default function ProfileScreen() {
   }, []);
 
   let [user, setUser] = useState<User | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleteChecked, setIsDeleteChecked] = useState(false);
+
   useEffect(() => {
     fetchCurrentUser().then((u) => setUser(u));
   }, []);
 
-  const deleteAccount = async () => {
+  const handleDeleteButtonPress = () => {
+    setShowDeleteModal(true);
+    setIsDeleteChecked(false);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (!isDeleteChecked) return;
+
+    setShowDeleteModal(false);
     await deleteCurrentUser().then((success) => {
       if (success) {
         router.replace('/');
       }
     });
+  };
+
+  const cancelDeleteAccount = () => {
+    setShowDeleteModal(false);
+    setIsDeleteChecked(false);
   };
 
   return (
@@ -95,7 +113,7 @@ export default function ProfileScreen() {
             your account.
           </Text>
           <Pressable
-            onPress={deleteAccount}
+            onPress={handleDeleteButtonPress}
             className="bg-[#DE0E0E] px-2 py-2 rounded-md self-start flex flex-row gap-1 justify-center items-center"
           >
             <AntDesign name="warning" size={24} color="white" />
@@ -105,6 +123,30 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* Delete Account Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelDeleteAccount}
+      >
+        <View className="flex-1 bg-white/50 justify-center items-center">
+          <AlertBox
+            title="Delete Account"
+            message="Are you sure you want to delete the account linked to"
+            email={user?.email}
+            confirmText="Delete My Account"
+            cancelText="Cancel"
+            showCheckbox={true}
+            checkboxText="I understand that I won't be able to recover my account."
+            onConfirm={confirmDeleteAccount}
+            onCancel={cancelDeleteAccount}
+            isChecked={isDeleteChecked}
+            onCheckboxChange={setIsDeleteChecked}
+          />
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -219,6 +261,7 @@ function EditableField(props: {
   setValue: (val: string) => void;
   disabled?: boolean;
 }) {
+  const [isFocused, setIsFocused] = useState(false);
   const isDisabled = props.disabled ?? false;
 
   return (
@@ -229,11 +272,15 @@ function EditableField(props: {
       <TextInput
         value={props.value}
         onChangeText={(t) => props.setValue(t)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         editable={!isDisabled}
         className={`text-sm sm:text-base w-full px-3 py-1 rounded-md border ${
           isDisabled
             ? 'text-gray-500 bg-gray-50 border-gray-200 cursor-not-allowed'
-            : 'text-black bg-[#FEF9F3] border-gray-200'
+            : isFocused
+              ? 'text-black bg-[#FEF9F3] border-[#8B5A3C]'
+              : 'text-black bg-[#FEF9F3] border-[#AD754C]'
         }`}
       />
     </View>

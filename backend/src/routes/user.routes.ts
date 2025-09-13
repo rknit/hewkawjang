@@ -28,7 +28,7 @@ router.post('/verify', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   await MailerService.sendOTP(req.body.email);
-  res.status(201);
+  res.status(201).send();
 });
 
 // Soft delete the authenticated user
