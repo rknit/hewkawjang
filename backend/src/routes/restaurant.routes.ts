@@ -1,6 +1,7 @@
 import express from 'express';
 import RestaurantService from '../service/restaurant.service';
 import { authHandler } from '../middleware/auth.middleware';
+import { createRestaurantSchema } from "../validators/restaurant.validator";
 
 const router = express.Router();
 
@@ -35,6 +36,26 @@ router.get('/reject', authHandler, async (req, res) => {
 router.get('/update/status', authHandler, async (req, res) => {
   await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
   res.status(200).send();
+});
+
+router.post("/", async (req, res, next) => {
+  try {
+  // validate request body
+  const parsedData = createRestaurantSchema.parse(req.body);
+
+  // call service
+  const restaurant = await RestaurantService.createRestaurant(parsedData);
+
+  res.status(201).json({
+    message: "Restaurant submitted successfully",
+    restaurant,
+  });
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.status(400).json({ error: "Bad request because some fields are missing or invalid." });
+    }
+   next(err);
+ }
 });
 
 export default router;
