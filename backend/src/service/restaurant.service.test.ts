@@ -24,6 +24,7 @@ const createMockRestaurant = (
   closeTime: '21:00',
   priceRange: 500,
   status: 'open',
+  activation: 'active',
   ...overrides,
 });
 

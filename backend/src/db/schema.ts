@@ -27,6 +27,11 @@ export const restaurantStatusEnum = pgEnum('restaurant_status', [
   'closed',
 ]);
 
+export const restaurantActivationEnum = pgEnum('restaurant_activation', [
+  'active',
+  'inactive',
+]);
+
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
   ownerId: integer('owner_id')
@@ -48,8 +53,10 @@ export const restaurantTable = pgTable('restaurant', {
   openTime: time('open_time'),
   closeTime: time('close_time'),
   priceRange: integer('priceRange'),
-  status: restaurantStatusEnum('status').notNull().default('closed'),
+  status: restaurantStatusEnum('status').notNull().default('closed'),  // open/close daily ops
+  activation: restaurantActivationEnum('activation').notNull().default('active'), // activate/deactivate restaurant
 });
+
 
 export const reservationStatusEnum = pgEnum('reservation_status', [
   'unconfirmed',

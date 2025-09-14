@@ -39,3 +39,14 @@ export async function updateRestaurantInfo(
     normalizeError(error);
   }
 }
+  
+export async function setRestaurantActivation(
+  id: number,
+  status: 'active' | 'inactive',
+): Promise<void> {
+  try {
+    await ApiService.patch(`/restaurants/${id}/activation`, { status });
+  } catch (error) {
+    normalizeError(error);
+  }
+}

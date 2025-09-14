@@ -5,6 +5,7 @@ import {
   asc,
   eq,
   and,
+  or,
 } from 'drizzle-orm';
 import { restaurantTable, reservationTable } from '../db/schema';
 import { db } from '../db';
@@ -17,6 +18,7 @@ import createHttpError from 'http-errors';
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
 export type RestaurantStatus = NewRestaurant['status'];
+export type RestaurantActivation = NewRestaurant["activation"];
 export type Reservation = InferInsertModel<typeof reservationTable>;
 
 export default class RestaurantService {
@@ -58,6 +60,16 @@ export default class RestaurantService {
 
     return await query;
   }
+  
+  static async getRestaurantById(id: number): Promise<Restaurant | undefined> {
+    const rows = await db
+      .select()
+      .from(restaurantTable)
+      .where(eq(restaurantTable.id, id))
+      .limit(1);
+
+    return rows[0];
+  }
 
   static async createRestaurant(data: CreateRestaurantInput) {
     const [restaurant] = await db
@@ -83,6 +95,40 @@ export default class RestaurantService {
       .update(restaurantTable)
       .set({ status: newStatus })
       .where(eq(restaurantTable.id, restaurantId));
+  }
+
+  static async updateRestaurantActivation(
+    restaurantId: number,
+    newActivation: RestaurantActivation,
+  ) {
+    return await db.transaction(async (tx) => {
+      const [updatedRestaurant] = await tx
+        .update(restaurantTable)
+        .set({ activation: newActivation})
+        .where(eq(restaurantTable.id, restaurantId))
+        .returning();
+
+      if (!updatedRestaurant) {
+        throw createHttpError(404, "Restaurant not found");
+      }
+
+      if (newActivation == 'inactive') {
+        // Cancel all reservations in one query
+        await tx
+          .update(reservationTable)
+          .set({ status: 'cancelled' })
+          .where(
+            and(
+              eq(reservationTable.restaurantId, restaurantId),
+              or(
+                eq(reservationTable.status, 'confirmed'),
+                eq(reservationTable.status, 'unconfirmed'),
+              )
+          ));
+      }
+
+      return updatedRestaurant;
+    });
   }
 
   static async updateInfo(data: UpdateRestaurantInfo): Promise<Restaurant> {
