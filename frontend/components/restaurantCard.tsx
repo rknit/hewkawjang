@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Star, ChevronDown } from "lucide-react-native";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Star, ChevronDown } from 'lucide-react-native';
 
 type DayOpeningHour = {
-  day: string;       // e.g., "Monday"
-  openTime: string;  // e.g., "09:00"
+  day: string; // e.g., "Monday"
+  openTime: string; // e.g., "09:00"
   closeTime: string; // e.g., "17:00"
 };
 
@@ -14,7 +14,7 @@ type RestaurantProps = {
   tags: string[];
   rating: number;
   prices: number; // for now just placeholder, could be actual icon names
-  openingHours: DayOpeningHour[];
+  openingHours?: DayOpeningHour[];
 };
 
 export default function RestaurantCard({
@@ -25,7 +25,7 @@ export default function RestaurantCard({
   prices,
   openingHours,
 }: RestaurantProps) {
-    const [showOpeningHour, setShowOpeningHour] = useState(false);
+  const [showOpeningHour, setShowOpeningHour] = useState(false);
   return (
     <View className="bg-white">
       {/* Title */}
@@ -53,33 +53,41 @@ export default function RestaurantCard({
 
         {/* Icons */}
         <View className="flex-row ml-2 space-x-1">
-            {Array.from({ length: prices }).map((_, idx) => (
+          {Array.from({ length: prices }).map((_, idx) => (
             <View
-                key={idx}
-                className="w-5 h-5 bg-gray-100 rounded-full items-center justify-center border-black border-[1px]"
+              key={idx}
+              className="w-5 h-5 bg-gray-100 rounded-full items-center justify-center border-black border-[1px]"
             >
-                <Text className="text-xs">$</Text>
+              <Text className="text-xs">$</Text>
             </View>
-            ))}
+          ))}
         </View>
       </View>
 
       {/* Opening Hour */}
-      <View className="text-gray-800 mt-4">
-        <View className="flex-row items-center mt-2">
+      {openingHours && (
+        <View className="text-gray-800 mt-4">
+          <View className="flex-row items-center mt-2">
             <Text className="text-gray-800 font-medium">Opening Hour</Text>
 
-            <TouchableOpacity className="p-2" onPress={()=>{setShowOpeningHour(!showOpeningHour)}}>
-                <ChevronDown size={20} color="gray" />
+            <TouchableOpacity
+              className="p-2"
+              onPress={() => {
+                setShowOpeningHour(!showOpeningHour);
+              }}
+            >
+              <ChevronDown size={20} color="gray" />
             </TouchableOpacity>
-        </View>
-        
-        {showOpeningHour && openingHours.map((day, idx) => (
-            <Text key={idx} className="text-gray-800">
+          </View>
+
+          {showOpeningHour &&
+            openingHours.map((day, idx) => (
+              <Text key={idx} className="text-gray-800">
                 {day.day}: {day.openTime} - {day.closeTime}
-            </Text>
-        ))}
-      </View>
+              </Text>
+            ))}
+        </View>
+      )}
     </View>
   );
 }
