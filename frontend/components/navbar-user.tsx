@@ -4,7 +4,7 @@ import UnderlinedPressableText from './underlined-pressable-text';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import UserDropdown from './accoutDropdown';
+import UserDropdown from './accountDropdown';
 
 export default function NavBarUser() {
   const { user } = useProfile();
