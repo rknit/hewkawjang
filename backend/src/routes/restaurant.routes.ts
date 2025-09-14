@@ -92,15 +92,19 @@ router.post("/", async (req, res, next) => {
  }
 });
 
-router.patch('/:id/deactivate', authHandler, async (req, res, next) => {
+router.patch('/:id/activation', authHandler, async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
     if (isNaN(restaurantId)) {
       return res.status(400).json({ error: 'Invalid restaurant id' });
     }
 
-    const userId = (req as any).userAuthPayload?.userId;
+    const { status } = req.body as { status?: 'active' | 'inactive' };
+    if (status !== 'active' && status !== 'inactive') {
+      return res.status(400).json({ error: "New status must be either 'active' or 'inactive'" });
+    }
 
+    const userId = (req as any).userAuthPayload?.userId;
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -115,10 +119,19 @@ router.patch('/:id/deactivate', authHandler, async (req, res, next) => {
       return res.status(403).json({ error: 'Forbidden: not owner' });
     }
 
-    const updated = await RestaurantService.updateRestaurantActivation(restaurantId, 'inactive');
+    if (restaurant.activation === status) {
+      return res.status(200).json({
+        message: `Restaurant is already ${status}`,
+        restaurant,
+      });
+    }
+
+    const updated = await RestaurantService.updateRestaurantActivation(restaurantId, status);
 
     res.status(200).json({
-      message: 'Restaurant deactivated successfully and all reservations cancelled',
+      message: status === 'inactive'
+          ? 'Restaurant deactivated successfully and all reservations cancelled'
+          : 'Restaurant activated successfully',
       restaurant: updated,
     });
   } catch (err) {

@@ -100,7 +100,7 @@ export default class RestaurantService {
     restaurantId: number,
     newActivation: RestaurantActivation,
   ) {
-        return await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const [updatedRestaurant] = await tx
         .update(restaurantTable)
         .set({ activation: newActivation})
