@@ -25,7 +25,7 @@ export function genJwtTokens(payload: any): JwtTokens {
 
 function genJwtAccessToken(payload: any): string {
   return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
-    expiresIn: '1d', //temporary
+    expiresIn: '15m',
     algorithm: 'HS512',
   });
 }

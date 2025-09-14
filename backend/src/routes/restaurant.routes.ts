@@ -41,28 +41,6 @@ router.get('/update/status', authHandler, async (req, res) => {
   res.status(200).send();
 });
 
-router.post('/', async (req, res, next) => {
-  try {
-    // validate request body
-    const parsedData = createRestaurantSchema.parse(req.body);
-
-    // call service
-    const restaurant = await RestaurantService.createRestaurant(parsedData);
-
-    res.status(201).json({
-      message: 'Restaurant submitted successfully',
-      restaurant,
-    });
-  } catch (err) {
-    if (err instanceof Error) {
-      return res.status(400).json({
-        error: 'Bad request because some fields are missing or invalid.',
-      });
-    }
-    next(err);
-  }
-});
-
 router.put('/', authHandler, async (req, res) => {
   if (req.body) {
     req.body.ownerId = req.userAuthPayload!.userId; // from auth middleware
