@@ -14,7 +14,7 @@ interface TextFieldProps
   inputClassName?: string;
 }
 
-export default function TextField({
+export default function UserProfileTextField({
   label,
   value,
   onValueChange,
