@@ -13,13 +13,15 @@ export default function Index() {
             From Hunger to Happiness — One Reservation Away.
           </Text>
         </View>
-        <View className="w-full justify-center items-center -top-32">
-          <Image
-            source={require('@/assets/images/hewman.png')}
-            className="-bottom-8 -left-1/4 w-full h-full max-w-md aspect-square"
-            resizeMode="contain"
-          />
-          <SearchPanel />
+        <View className="w-full gap-8 justify-center items-center -top-32">
+          <View className="w-full justify-center items-center">
+            <Image
+              source={require('@/assets/images/hewman.png')}
+              className="-bottom-8 -left-1/4 w-full h-full max-w-md aspect-square"
+              resizeMode="contain"
+            />
+            <SearchPanel />
+          </View>
           <CategoryRow />
           <RestaurantGrid />
         </View>
