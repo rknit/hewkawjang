@@ -71,6 +71,23 @@ export const useProfile = () => {
 
   // Save profile changes
   const saveProfile = () => {
+    // Validation
+    if (
+      !userForm.phoneNo ||
+      userForm.phoneNo.length !== 10 ||
+      !/^\d+$/.test(userForm.phoneNo)
+    ) {
+      alert('Error: Phone number must be exactly 10 digits.');
+      return;
+    }
+    if (!userForm.email || !userForm.email.includes('@')) {
+      alert('Error: Please enter a valid email address.');
+      return;
+    }
+    // Add more validations as needed
+
+    // If all validations pass
+    alert('Profile saved successfully!');
     // TODO: Implement save profile API call
     alert('TODO: Save Change');
   };

@@ -28,8 +28,7 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "cross-env": "^10.0.0"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.2",
@@ -39,6 +38,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.5",
+    "drizzle-zod": "^0.8.3",
     "express": "^5.1.0",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",

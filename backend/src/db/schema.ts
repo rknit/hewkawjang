@@ -34,7 +34,9 @@ export const restaurantActivationEnum = pgEnum('restaurant_activation', [
 
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
-  ownerId: integer('owner_id').references(() => usersTable.id),
+  ownerId: integer('owner_id')
+    .notNull()
+    .references(() => usersTable.id),
   name: text('name').notNull().unique(),
   phoneNo: text('phone_no').notNull(),
   // address
@@ -83,11 +85,9 @@ export const reservationTable = pgTable('reservation', {
     .references(() => restaurantTable.id),
   reserveAt: timestamp('reserve_at').notNull(),
   reservationfee: integer('reservation_fee').default(0),
-  numberOfElderly: integer('number_of_elderly').default(0),
   numberOfAdult: integer('number_of_adult').default(0),
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
-  specialRequest: text('special_request'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
