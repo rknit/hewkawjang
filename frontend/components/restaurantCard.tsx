@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Star, ChevronDown } from 'lucide-react-native';
 
 type DayOpeningHour = {
@@ -34,8 +34,8 @@ export default function RestaurantCard({
       {/* Address */}
       <Text className="text-gray-600 mt-1">{address}</Text>
 
-      {/* Tags + Rating */}
-      <View className="flex-row items-center flex-wrap mt-3 space-x-2">
+      {/* Tags */}
+      <View className="flex-row items-center flex-wrap mt-3">
         {tags.map((tag, idx) => (
           <Text
             key={idx}
@@ -44,15 +44,17 @@ export default function RestaurantCard({
             {tag}
           </Text>
         ))}
+      </View>
 
-        {/* Rating */}
-        <View className="flex-row items-center ml-2">
+      {/* Rating & Price */}
+      <View className="flex-row items-center mt-2">
+        <View className="flex-row items-center">
           <Star size={16} color="gold" fill="gold" />
           <Text className="ml-1 text-gray-800 font-medium">{rating}</Text>
         </View>
 
-        {/* Icons */}
-        <View className="flex-row ml-2 space-x-1">
+        {/* Price Icons */}
+        <View className="flex-row ml-4 space-x-1">
           {Array.from({ length: prices }).map((_, idx) => (
             <View
               key={idx}
