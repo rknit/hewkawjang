@@ -53,7 +53,6 @@ export default class AuthService {
     }
   }
 
-
   static async refreshTokens(
     refreshToken: string,
     data: UserAuthPayload,
@@ -65,6 +64,47 @@ export default class AuthService {
     if (!user || !user.refreshToken || user.refreshToken !== refreshToken) {
       throw createHttpError.Unauthorized();
     }
+
+    const payload: UserAuthPayload = { userId: user.id };
+    const tokens = genJwtTokens(payload);
+
+    // Store refresh token in database
+    await db
+      .update(usersTable)
+      .set({ refreshToken: tokens.refreshToken })
+      .where(eq(usersTable.id, user.id));
+
+    return tokens;
+  }
+
+  static async bypassLoginForDev(email: string): Promise<JwtTokens> {
+    if (process.env.NODE_ENV !== 'development') {
+      throw createHttpError.NotFound();
+    }
+
+    const [user] = await db
+      .insert(usersTable)
+      .values({
+        firstName: 'test',
+        lastName: 'user',
+        email: email,
+        // password: test
+        password:
+          '$2a$10$X2U6Om92gqq/our85mCh3eGNelVcv/BIO97lmMAv4qLOVXSA2onwq',
+        phoneNo: '1234567890',
+      })
+      .onConflictDoUpdate({
+        target: usersTable.email,
+        set: {
+          firstName: 'test',
+          lastName: 'user',
+          password:
+            '$2a$10$X2U6Om92gqq/our85mCh3eGNelVcv/BIO97lmMAv4qLOVXSA2onwq',
+          phoneNo: '1234567890',
+          isDeleted: false,
+        },
+      })
+      .returning();
 
     const payload: UserAuthPayload = { userId: user.id };
     const tokens = genJwtTokens(payload);

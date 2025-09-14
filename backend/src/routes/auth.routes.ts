@@ -35,9 +35,8 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
     sameSite: 'strict',
   });
 
-  res.status(200).json({message: 'Logged out successfully',});
+  res.status(200).json({ message: 'Logged out successfully' });
 });
-
 
 // Token refresh
 router.post(
@@ -81,5 +80,23 @@ function responseTokens(req: Request, res: Response, token: JwtTokens) {
       throw createHttpError.BadRequest('Unknown client type');
   }
 }
+
+router.post(
+  '/bypass-login',
+  authClientTypeHandler,
+  async (req: Request, res: Response) => {
+    if (process.env.NODE_ENV !== 'development') {
+      throw createHttpError.NotFound();
+    }
+
+    const { email } = req.body;
+    if (!email) {
+      throw createHttpError.BadRequest('Email is required');
+    }
+
+    const tokens = await AuthService.bypassLoginForDev(email);
+    responseTokens(req, res, tokens);
+  },
+);
 
 export default router;

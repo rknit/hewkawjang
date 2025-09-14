@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
 import { UserAuthPayload } from '../service/auth.service';
 import UserService from '../service/user.service';
+import { _dev_test_user_id } from '../db';
 
 // Extend Express Request interface to include userAuth properties
 declare global {
@@ -40,6 +41,18 @@ export function authClientTypeHandler(
 }
 
 export function authHandler(req: Request, res: Response, next: NextFunction) {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    req.headers &&
+    req.headers['hkj-auth-bypass'] === 'true'
+  ) {
+    // Bypass authentication for development if header is set
+    if (req.headers['hkj-auth-use-test-user'] === 'true') {
+      req.userAuthPayload = { userId: _dev_test_user_id! };
+    }
+    return next();
+  }
+
   if (!req.headers.authorization) {
     return next(createHttpError.Unauthorized());
   }
