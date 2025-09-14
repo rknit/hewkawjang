@@ -89,8 +89,8 @@ router.post(
       throw createHttpError.NotFound();
     }
 
-    const { email } = req.body;
-    if (!email) {
+    const { email }: { email: string } = req.body;
+    if (!email || email.trim() === '') {
       throw createHttpError.BadRequest('Email is required');
     }
 

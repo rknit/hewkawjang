@@ -37,6 +37,42 @@ export async function login(email: string, password: string): Promise<void> {
   }
 }
 
+export async function bypassLogin(): Promise<void> {
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('devLogin can only be used in development environment');
+  }
+
+  let tokens: Tokens;
+
+  try {
+    // use axios here since we're not logged in yet
+    const BASE_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+    const res = await axios.post(
+      `${BASE_URL}/auth/bypass-login`,
+      {
+        email: 'test@user.com',
+      },
+      {
+        headers: {
+          'hkj-auth-client-type': Platform.OS === 'web' ? 'web' : 'mobile',
+          'hkj-auth-bypass': 'true',
+        },
+        withCredentials: true,
+      },
+    );
+    tokens = TokensSchema.parse(res.data);
+  } catch (error) {
+    normalizeError(error);
+    return;
+  }
+
+  const { accessToken, refreshToken } = tokens;
+  TokenStorage.setAccessToken(accessToken);
+  if (refreshToken) {
+    TokenStorage.setRefreshToken(refreshToken);
+  }
+}
+
 export async function logout(): Promise<void> {
   try {
     await ApiService.post(

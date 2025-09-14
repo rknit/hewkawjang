@@ -71,3 +71,17 @@ We use JWT for auth, and due to frontend being multi-platform, we'll have to set
 
 On web, set header `hkj-auth-client-type`: `web`
 On mobile, set header `hkj-auth-client-type`: `mobile`
+
+### Bypassing auth for development env
+
+#### Postman
+
+To use the `test` user, set this headers:
+    - `hkj-auth-bypass` to `true`
+
+To login as any user do the following:
+    - send `POST` to `/auth/bypass-login`
+    - set these headers: `hkj-auth-bypass` to `true`, `hkj-auth-client-type` to `web`
+    - set body: { "email": "ANY@EMAIL\.COM" }
+    - use accessToken in authorization header (bearer token) to do auth
+    - if get `401 unauthorized`, login again
