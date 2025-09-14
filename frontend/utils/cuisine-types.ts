@@ -1,0 +1,18 @@
+export const CUISINE_TYPES = [
+  'Thai',
+  'Chinese',
+  'Japanese',
+  'Korean',
+  'Western',
+  'Seafood',
+  'Vegetarian',
+  'Vegan',
+  'Halal',
+  'Bakery',
+  'Cafe',
+  'Buffet',
+  'BBQ',
+  'Steakhouse',
+  'Fast Food',
+  'Other',
+];
