@@ -44,6 +44,6 @@
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.6",
     "postgres": "^3.4.7",
-    "zod": "^4.1.5"
+    "zod": "^4.1.8"
   }
 }

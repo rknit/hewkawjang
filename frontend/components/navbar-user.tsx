@@ -1,14 +1,21 @@
-import { View, TouchableOpacity, Image } from 'react-native';
+import { View, TouchableOpacity, Image, Modal } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import UnderlinedPressableText from './underlined-pressable-text';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
+import { useState } from 'react';
+import UserDropdown from './accoutDropdown';
 
 export default function NavBarUser() {
   const { user } = useProfile();
+  const [isDropdownVisible, setDropdownVisible] = useState(false);
 
   // Get display name with fallback
   const displayName = user?.displayName || user?.firstName || 'Loading...';
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!isDropdownVisible);
+  };
 
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16 space-x-5 pr-6">
@@ -56,18 +63,37 @@ export default function NavBarUser() {
         </TouchableOpacity>
       </View>
 
+      {/* Profile section with dropdown trigger */}
       <View className="flex flex-row items-center">
         <UnderlinedPressableText
           text={displayName}
-          onPress={() => {
-            router.push('/profile');
-          }}
+          onPress={toggleDropdown} // Use the toggle function
           textClassName="text-black text-base mr-2"
         />
-        <TouchableOpacity onPress={() => router.push('/profile')}>
+        <TouchableOpacity onPress={toggleDropdown}>
           <Feather name="user" size={24} color="black" />
         </TouchableOpacity>
       </View>
+
+      {/* Modal for the user dropdown */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isDropdownVisible}
+        onRequestClose={toggleDropdown}
+      >
+        {/* Backdrop to dismiss modal */}
+        <TouchableOpacity
+          style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+          activeOpacity={1}
+          onPressOut={toggleDropdown}
+        >
+          {/* Dropdown container - positioned absolutely */}
+          <View style={{ position: 'absolute', top: 55, right: 20 }}>
+            <UserDropdown />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

@@ -4,6 +4,7 @@ import { Tokens, TokensSchema } from '@/types/user.type';
 import { normalizeError } from '@/utils/api-error';
 import axios from 'axios';
 import { Platform } from 'react-native';
+import { router } from 'expo-router';
 
 export async function login(email: string, password: string): Promise<void> {
   let tokens: Tokens;
@@ -55,4 +56,7 @@ export async function logout(): Promise<void> {
 
   TokenStorage.removeAccessToken();
   TokenStorage.removeRefreshToken();
+
+  // Redirect to the index page
+  router.replace('/');
 }
