@@ -16,7 +16,7 @@ export default function SearchPanel() {
       {/* Search Input */}
       <TextInput
         className="flex-1 text-[16px] text-[#8B5C2A] p-0 focus:outline-none"
-        placeholder="Search for reservations..."
+        placeholder="Search for restaurants..."
         placeholderTextColor="#A67C52"
         editable={false}
       />

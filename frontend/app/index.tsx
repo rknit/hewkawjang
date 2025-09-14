@@ -5,7 +5,7 @@ import { View, ScrollView, Text, Image } from 'react-native';
 
 export default function Index() {
   return (
-    <ScrollView className="flex-1 bg-gray-50">
+    <ScrollView className="flex-1 bg-white">
       <View className="flex-1 gap-4 w-full">
         <View className="pt-14 w-full justify-center items-center gap-4">
           <Text className="right-40 text-4xl text-[#E05910]">HEW KAW JANG</Text>

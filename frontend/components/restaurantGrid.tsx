@@ -4,7 +4,7 @@ import { View } from 'react-native';
 const RESTAURANTS_DATA = [
   {
     name: 'Pagoda Chinese Restaurant',
-    address: "@ Bangkok Marriott Marquis Queen's Park",
+    address: '399/9 Sukhumvit Rd, Phrom Phong, Bangkok 10110',
     tags: ['Phrom Phong', 'Chinese Cuisine'],
     rating: 4.5,
     prices: 5,
@@ -14,7 +14,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Barcelona Gaudi',
-    address: 'Asok • European',
+    address: '21 Sukhumvit Soi 11, Asok, Bangkok 10110',
     tags: ['Asok', 'European'],
     rating: 4.5,
     prices: 5,
@@ -24,7 +24,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'BARSUI @ Sheraton Grande Sukhumvit Hotel',
-    address: 'Asok • Bars and pubs',
+    address: '250 Sukhumvit Rd, Asok, Bangkok 10110',
     tags: ['Asok', 'Bars and pubs'],
     rating: 4.4,
     prices: 5,
@@ -34,7 +34,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Great Harbour International Buffet @ ICONSIAM',
-    address: 'Charoen Nakhon • Buffet',
+    address: '299 Charoen Nakhon Rd, Khlong Ton Sai, Bangkok 10600',
     tags: ['Charoen Nakhon', 'Buffet'],
     rating: 4.5,
     prices: 5,
@@ -45,7 +45,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Sirocco Sky Bar',
-    address: 'Silom • Fine Dining',
+    address: '1055 Silom Rd, State Tower 63rd Floor, Bangkok 10500',
     tags: ['Silom', 'Fine Dining', 'Rooftop'],
     rating: 4.7,
     prices: 5,
@@ -55,7 +55,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Gaggan Anand',
-    address: 'Lumpini • Indian Fusion',
+    address: '68/1 Soi Langsuan, Lumpini, Bangkok 10330',
     tags: ['Lumpini', 'Indian Fusion'],
     rating: 4.8,
     prices: 5,
@@ -65,7 +65,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Vertigo and Moon Bar',
-    address: 'Silom • International',
+    address: '61 South Sathorn Rd, Banyan Tree Hotel 61st Floor, Bangkok 10120',
     tags: ['Silom', 'International', 'Rooftop'],
     rating: 4.6,
     prices: 5,
@@ -76,7 +76,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Sorn',
-    address: 'Thonglor • Southern Thai',
+    address: '56 Sukhumvit Soi 26, Thonglor, Bangkok 10110',
     tags: ['Thonglor', 'Southern Thai'],
     rating: 4.9,
     prices: 5,
@@ -86,7 +86,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Terminal 21 Food Court',
-    address: 'Asok • Food Court',
+    address: '88 Sukhumvit Soi 19, Asok Intersection, Bangkok 10110',
     tags: ['Asok', 'Food Court', 'International'],
     rating: 4.2,
     prices: 2,
@@ -96,7 +96,7 @@ const RESTAURANTS_DATA = [
   },
   {
     name: 'Le Du',
-    address: 'Silom • Modern Thai',
+    address: '399/3 Silom Soi 7, Silom, Bangkok 10500',
     tags: ['Silom', 'Modern Thai', 'Michelin Star'],
     rating: 4.8,
     prices: 5,
