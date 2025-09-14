@@ -1,12 +1,53 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { View, SafeAreaView, ScrollView, Text, TouchableOpacity } from "react-native";
 import ImageGallery from "@/components/image-gallery";
 import CommentList from "@/components/commentList";
 import CommentSummary from "@/components/commentSummary";
-import RestaurantAbout from "@/components/restaurantAbout";
+import RestaurantAbout, {RestaurantAboutProps} from "@/components/restaurantAbout";
 import ReviewSection from "@/components/reviewSection";
-import RestaurantCard from "@/components/restaurantCard";
-const Restaurant: React.FC = () => {
+import RestaurantCard, {RestaurantProps} from "@/components/restaurantCard";
+import { fetchRestaurantById, fetchRestaurantOpeningHours } from "@/apis/restaurant.api";
+import { OpeningHour, Restaurant } from "@/types/restaurant.type";
+
+const RestaurantPreview: React.FC<{ restaurantId: number }> = ({ restaurantId = 13 }) => {
+    const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+    const [openingHours, setOpeningHours] = useState<OpeningHour[]>([]);
+    
+    useEffect(() => {
+        const loadData = async () => {
+            const resData = await fetchRestaurantById(restaurantId);
+            console.log(resData);
+
+            const hours = await fetchRestaurantOpeningHours(restaurantId);
+            console.log(hours);
+
+            if (resData) setRestaurant(resData );
+                setOpeningHours(hours);
+        };
+
+        loadData();
+    }, [restaurantId]);
+
+    const restaurantData: RestaurantProps = {
+        name: restaurant?.name ?? "Unknown Restaurant",
+        address: restaurant
+            ? `${restaurant.houseNo ?? ""} ${restaurant.road ?? ""}, ${restaurant.subDistrict ?? ""}, ${restaurant.district ?? ""}, ${restaurant.province ?? ""}`
+            : "Unknown Address",
+        tags: [], // you can set default tags or get from API
+        rating: 4,
+        prices: restaurant?.priceRange ?? 0,
+        openingHours: openingHours ?? [],
+    };
+
+    const aboutData: RestaurantAboutProps = {
+        address: restaurant
+            ? `${restaurant.houseNo ?? ""} ${restaurant.road ?? ""}, ${restaurant.subDistrict ?? ""}, ${restaurant.district ?? ""}, ${restaurant.province ?? ""}`
+            : "Unknown Address",
+        description: restaurant?.description ?? "Unknown Description",
+        cuisine: "Buffet",
+        paymentOptions: ["MasterCard", "HewKawJangWallet"],
+    };
+
   const pictures: string[] = [
     "https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80", // workspace
     "https://images.unsplash.com/photo-1581291519195-ef11498d1cf2?auto=format&fit=crop&w=400&q=80", // portrait
@@ -76,26 +117,6 @@ const Restaurant: React.FC = () => {
     },
   ];
 
-  const mockRestaurantData = {
-    name: "Pagoda Chinese Restaurant @ Bangkok Marriott Marquis Queen's Park",
-    address:
-      "199 Sukhumvit Soi22, Klong Ton, Klongtoey, Bangkok 10110, Bangkok",
-    tags: ["Phrom Phong", "Chinese Cuisine"],
-    rating: 4.5,
-    prices: 4, // just placeholders
-    openingHours: [
-        { day: "Monday", openTime: "09:00", closeTime: "17:00" },
-        { day: "Tuesday", openTime: "09:00", closeTime: "17:00" },
-        { day: "Wednesday", openTime: "09:00", closeTime: "17:00" },
-        { day: "Thursday", openTime: "09:00", closeTime: "17:00" },
-        { day: "Friday", openTime: "09:00", closeTime: "20:00" },
-        { day: "Saturday", openTime: "10:00", closeTime: "20:00" },
-        { day: "Sunday", openTime: "10:00", closeTime: "16:00" },
-    ],
-    buttonLabel: "Reserve",
-  };
-
-
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
         <View className="w-[100%] h-[50px] bg-gray-300 flex-row items-center justify-center px-4">
@@ -126,16 +147,13 @@ const Restaurant: React.FC = () => {
                     />
 
                     <RestaurantAbout
-                    address="199 Sukhumvit Soi22, Klong Ton, Klongtoey, Bangkok 10110, Bangkok"
-                    description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
-                    cuisine="Buffet"
-                    paymentOptions={["MasterCard", "HewKawJangWallet"]}
+                        {...aboutData}
                     />
                 </View>
 
                 {/* Second column */}
                 <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px]">
-                    <RestaurantCard {...mockRestaurantData} />
+                    <RestaurantCard {...restaurantData} />
 
                     <TouchableOpacity
                         className="bg-orange-500 px-6 py-3 rounded-md mt-4 w-[120px] items-center"
@@ -150,4 +168,4 @@ const Restaurant: React.FC = () => {
   );
 };
 
-export default Restaurant;
+export default RestaurantPreview;

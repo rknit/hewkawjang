@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, LayoutChangeEvent } from "react-native";
 
-type RestaurantAboutProps = {
+export type RestaurantAboutProps = {
   address: string;
   description: string;
   cuisine: string;
@@ -15,6 +15,18 @@ const RestaurantAbout: React.FC<RestaurantAboutProps> = ({
   paymentOptions,
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const [textHeight, setTextHeight] = useState(0);
+
+  const MAX_HEIGHT = 100; // e.g., 5 lines ≈ 100px, adjust as needed
+
+  const handleLayout = (e: LayoutChangeEvent) => {
+    const { height } = e.nativeEvent.layout;
+    setTextHeight(height);
+    if (height > MAX_HEIGHT) {
+      setShowButton(true);
+    }
+  };
 
   return (
     <View className="p-4 bg-[#FEF9F3] rounded-md shadow">
@@ -29,17 +41,21 @@ const RestaurantAbout: React.FC<RestaurantAboutProps> = ({
       <View className="mb-4">
         <Text
           className="text-gray-600 leading-5"
-          numberOfLines={expanded ? undefined : 3}
+          numberOfLines={expanded ? undefined : 5} // still limit lines when collapsed
+          onLayout={handleLayout}
         >
           {description}
         </Text>
-        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
-        <View className="items-center mt-2">
-            <Text className="text-orange-500 font-medium">
-            {expanded ? "Show Less" : "View All"}
-            </Text>
-        </View>
-        </TouchableOpacity>
+
+        {showButton && (
+          <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+            <View className="items-center mt-2">
+              <Text className="text-orange-500 font-medium">
+                {expanded ? "Show Less" : "View All"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Cuisine */}

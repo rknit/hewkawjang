@@ -29,6 +29,26 @@ export const RestaurantSchema = z.object({
   openTime: z.string().nullable(),
   closeTime: z.string().nullable(),
   priceRange: z.number().nullable(),
+  description: z.string().nullable(),
   status: z.enum(['open', 'closed']),
 });
 export type Restaurant = z.infer<typeof RestaurantSchema>;
+
+export const OpeningHourSchema = z.object({
+  id: z.number(),
+  restaurantId: z.number(),
+  dayOfWeek: z.enum([
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ]),
+  openTime: z.string(),   // format: 'HH:mm'
+  closeTime: z.string(),  // format: 'HH:mm'
+  isClosed: z.boolean().optional(), // optional for days when restaurant is closed
+});
+
+export type OpeningHour = z.infer<typeof OpeningHourSchema>;

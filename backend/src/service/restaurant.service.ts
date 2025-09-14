@@ -7,7 +7,7 @@ import {
   and,
   or,
 } from 'drizzle-orm';
-import { restaurantTable, reservationTable } from '../db/schema';
+import { restaurantTable, reservationTable, restaurantHoursTable } from '../db/schema';
 import { db } from '../db';
 import {
   CreateRestaurantInput,
@@ -17,6 +17,8 @@ import createHttpError from 'http-errors';
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
+export type RestaurantHour = InferSelectModel<typeof restaurantHoursTable>;
+export type NewRestaurantHour = InferInsertModel<typeof restaurantHoursTable>;
 export type RestaurantStatus = NewRestaurant['status'];
 export type RestaurantActivation = NewRestaurant["activation"];
 export type Reservation = InferInsertModel<typeof reservationTable>;
@@ -71,13 +73,37 @@ export default class RestaurantService {
     return rows[0];
   }
 
-  static async createRestaurant(data: CreateRestaurantInput) {
+  static async getRestaurantOpeningHours(restaurantId: number): Promise<RestaurantHour[]> {
+    const hours = await db
+      .select({
+        id: restaurantHoursTable.id,
+        restaurantId: restaurantHoursTable.restaurantId,
+        dayOfWeek: restaurantHoursTable.dayOfWeek,
+        openTime: restaurantHoursTable.openTime,
+        closeTime: restaurantHoursTable.closeTime,
+        isClosed: restaurantHoursTable.isClosed, // optional if you have isClosed
+      })
+      .from(restaurantHoursTable)
+      .where(eq(restaurantHoursTable.restaurantId, restaurantId))
+      .orderBy(asc(restaurantHoursTable.dayOfWeek));
+
+    return hours;
+  }
+
+  static async createRestaurant(data: NewRestaurant) {
     const [restaurant] = await db
       .insert(restaurantTable)
       .values(data as InferInsertModel<typeof restaurantTable>)
       .returning();
 
     return restaurant;
+  }
+
+  static async addOpeningHours(hours: NewRestaurantHour[]) {
+    await db
+      .insert(restaurantHoursTable)
+      .values(hours)
+      .onConflictDoNothing();
   }
 
   static async rejectReservation(reservationId: number): Promise<void> {
