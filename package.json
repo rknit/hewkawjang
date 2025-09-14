@@ -1,10 +1,15 @@
 {
-	"name": "hewkawjang",
-	"version": "1.0.0",
-	"scripts": {
-		"frontend": "cd frontend && npm start",
-		"backend": "cd backend && npm run dev",
-		"test:backend": "cd backend && npm run test",
-		"test": "npm run test:backend"
-	}
+  "name": "hewkawjang",
+  "version": "1.0.0",
+  "scripts": {
+    "frontend": "cd frontend && npm start",
+    "backend": "cd backend && npm run dev",
+    "test:backend": "cd backend && npm run test",
+    "test": "npm run test:backend"
+  },
+  "dependencies": {
+    "expo": "^54.0.6",
+    "react-native-image-picker": "^8.2.1",
+    "expo-image-picker": "~17.0.8"
+  }
 }
