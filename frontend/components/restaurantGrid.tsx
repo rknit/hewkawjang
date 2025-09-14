@@ -129,9 +129,9 @@ const RESTAURANTS_DATA = [
 export default function RestaurantGrid() {
   return (
     <View className="p-4 w-9/12 mx-auto">
-      <View className="flex-row flex-wrap justify-between">
+      <View className="flex-row flex-wrap justify-center gap-x-8 gap-y-4">
         {RESTAURANTS_DATA.map((restaurant, index) => (
-          <View key={index} className="w-[48%] mb-3">
+          <View key={index} className="w-[48%]">
             <RestaurantCardWithImage
               name={restaurant.name}
               address={restaurant.address}

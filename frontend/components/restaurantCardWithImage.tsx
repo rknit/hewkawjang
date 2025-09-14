@@ -30,7 +30,7 @@ export default function RestaurantCardWithImage({
   openingHours,
 }: RestaurantCardWithImageProps) {
   return (
-    <View className="bg-white rounded-lg overflow-hidden shadow-sm flex-row">
+    <View className="bg-white rounded-lg overflow-hidden shadow-md flex-row">
       {/* Image */}
       <View className="relative w-48">
         <Image source={image} className="w-full h-full" resizeMode="cover" />
