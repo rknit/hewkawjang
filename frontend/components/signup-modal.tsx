@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import BaseModal from './base-modal';
 import FormField from './form-field';
 import FormButton from './form-button';
@@ -7,6 +7,8 @@ import PressableText from './pressable-text';
 import { register } from '@/apis/auth.api';
 import { isAxiosError } from 'axios';
 import OtpModal from './OTP-Modal';
+import PolicyModal from './policy-modal';
+import { PRIVACY_POLICY } from '../constants/policy-content';
 
 interface SignUpModalProps {
   visible: boolean;
@@ -26,6 +28,7 @@ export default function SignUpModal({
   const [password, setPassword] = useState('');
   const [checked, setChecked] = useState(false);
   const [otpModalVisible, setotpModalVisible] = useState(false);
+  const [showPolicy, setShowPolicy] = useState(false);
 
   // Alert states
   const [showAlert, setShowAlert] = useState(false);
@@ -148,9 +151,7 @@ export default function SignUpModal({
           {"I've read and accept the "}
           <Text
             className="underline text-black"
-            onPress={() =>
-              Linking.openURL('https://www.youtube.com/watch?v=PbWFpzi8C94')
-            }
+            onPress={() => setShowPolicy(true)}
           >
             Privacy Policy.
           </Text>
@@ -187,6 +188,14 @@ export default function SignUpModal({
           setotpModalVisible(false);
           handleClose();
         }}
+      />
+
+      {/* Privacy Policy Modal */}
+      <PolicyModal
+        visible={showPolicy}
+        onClose={() => setShowPolicy(false)}
+        title="Privacy Policy"
+        content={PRIVACY_POLICY}
       />
     </BaseModal>
   );
