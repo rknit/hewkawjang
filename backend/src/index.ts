@@ -23,7 +23,13 @@ app.use(
     credentials: true,
   }),
 );
-
+const corsOptions = {
+  // This MUST be the exact origin of your frontend
+  origin: 'http://localhost:8081',
+  // This is needed if your frontend sends cookies or auth headers
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
@@ -37,7 +43,7 @@ app.get('/', (_: Request, res: Response) => {
 });
 
 app.use((_: Request, res: Response) => {
-  res.status(404).send ('Not Found');
+  res.status(404).send('Not Found');
 });
 
 // make sure error handler is the last middleware

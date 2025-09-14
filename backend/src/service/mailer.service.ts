@@ -1,15 +1,13 @@
-import {
-  eq,
-} from 'drizzle-orm';
-import nodemailer from "nodemailer";
+import { eq } from 'drizzle-orm';
+import nodemailer from 'nodemailer';
 import { db } from '../db';
-import { emailVerificationTable ,usersTable } from '../db/schema';
+import { emailVerificationTable, usersTable } from '../db/schema';
 import createHttpError from 'http-errors';
 
 export default class MailerService {
   static async sendVerifiedEmail(email: string, OTP: string) {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -18,16 +16,16 @@ export default class MailerService {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: email, 
-      subject: "Email Verification",
-      html: `<p>This is your OTP: ${OTP}</p>`
+      to: email,
+      subject: 'Email Verification',
+      html: `<p>This is your OTP: ${OTP}</p>`,
     };
 
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.log("✅ Email sent:", info.response);
+      console.log('✅ Email sent:', info.response);
     } catch (error) {
-      console.error("❌ Error sending email:", error);
+      console.error('❌ Error sending email:', error);
     }
   }
 
@@ -43,11 +41,13 @@ export default class MailerService {
     const otp = await this.generateOTP();
     await this.sendVerifiedEmail(email, otp);
     let timestamp = new Date(Date.now());
-    let data = {"email":email,"otp":otp,"sendTime":timestamp}
+    let data = { email: email, otp: otp, sendTime: timestamp };
     await db.insert(emailVerificationTable).values(data);
   }
 
   static async generateOTP(length = 6) {
-    return (Math.floor(100000 + Math.random() * 900000 + Math.random())%1000000).toString(); // 6 หลัก
+    return (
+      Math.floor(100000 + Math.random() * 900000 + Math.random()) % 1000000
+    ).toString(); // 6 หลัก
   }
 }

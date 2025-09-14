@@ -20,3 +20,15 @@ export async function deleteCurrentUser(): Promise<boolean> {
     return false;
   }
 }
+
+export async function updateCurrentUser(
+  user: Partial<User>,
+): Promise<User | null> {
+  try {
+    const res = await ApiService.post('/users/updateProfile', user);
+    return UserSchema.parse(res.data);
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}
