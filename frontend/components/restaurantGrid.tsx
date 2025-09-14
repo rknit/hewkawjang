@@ -1,5 +1,5 @@
 import RestaurantCardWithImage from '@/components/restaurantCardWithImage';
-import { View, ScrollView } from 'react-native';
+import { View } from 'react-native';
 
 const RESTAURANTS_DATA = [
   {
@@ -128,24 +128,22 @@ const RESTAURANTS_DATA = [
 
 export default function RestaurantGrid() {
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-4 w-9/12 mx-auto">
-        <View className="flex-row flex-wrap justify-between">
-          {RESTAURANTS_DATA.map((restaurant, index) => (
-            <View key={index} className="w-[48%] mb-3">
-              <RestaurantCardWithImage
-                name={restaurant.name}
-                address={restaurant.address}
-                tags={restaurant.tags}
-                rating={restaurant.rating}
-                prices={restaurant.prices}
-                image={restaurant.image}
-                isNew={restaurant.isNew}
-              />
-            </View>
-          ))}
-        </View>
+    <View className="p-4 w-9/12 mx-auto">
+      <View className="flex-row flex-wrap justify-between">
+        {RESTAURANTS_DATA.map((restaurant, index) => (
+          <View key={index} className="w-[48%] mb-3">
+            <RestaurantCardWithImage
+              name={restaurant.name}
+              address={restaurant.address}
+              tags={restaurant.tags}
+              rating={restaurant.rating}
+              prices={restaurant.prices}
+              image={restaurant.image}
+              isNew={restaurant.isNew}
+            />
+          </View>
+        ))}
       </View>
-    </ScrollView>
+    </View>
   );
 }
