@@ -64,26 +64,6 @@ const RESTAURANTS_DATA = [
     },
   },
   {
-    name: 'Chatuchak Weekend Market',
-    address: 'Chatuchak • Street Food',
-    tags: ['Chatuchak', 'Street Food', 'Market'],
-    rating: 4.3,
-    prices: 2,
-    image: {
-      uri: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=400&h=300&fit=crop',
-    },
-  },
-  {
-    name: 'Blue Elephant',
-    address: 'Sathorn • Thai Cuisine',
-    tags: ['Sathorn', 'Thai Cuisine'],
-    rating: 4.4,
-    prices: 4,
-    image: {
-      uri: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
-    },
-  },
-  {
     name: 'Vertigo and Moon Bar',
     address: 'Silom • International',
     tags: ['Silom', 'International', 'Rooftop'],
