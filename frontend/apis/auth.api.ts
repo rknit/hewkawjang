@@ -60,3 +60,53 @@ export async function logout(): Promise<void> {
   // Redirect to the index page
   router.replace('/');
 }
+
+export async function register(email: string): Promise<void> {
+  try {
+    await axios.post(
+      `${process.env.BACKEND_URL || 'http://localhost:8080'}/users/register`,
+      {
+        email: email,
+      },
+      {
+        headers: {
+          'hkj-auth-client-type': Platform.OS === 'web' ? 'web' : 'mobile',
+        },
+        withCredentials: true,
+      },
+    );
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function verify(
+  first_name: string,
+  last_name: string,
+  phone_no: string,
+  password: string,
+  email: string,
+  otp: string,
+): Promise<void> {
+  try {
+    await axios.post(
+      `${process.env.BACKEND_URL || 'http://localhost:8080'}/users/verify`,
+      {
+        firstName: first_name,
+        lastName: last_name,
+        phoneNo: phone_no,
+        password: password,
+        email: email,
+        otp: otp,
+      },
+      {
+        headers: {
+          'hkj-auth-client-type': Platform.OS === 'web' ? 'web' : 'mobile',
+        },
+        withCredentials: true,
+      },
+    );
+  } catch (error) {
+    normalizeError(error);
+  }
+}

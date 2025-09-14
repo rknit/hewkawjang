@@ -4,6 +4,9 @@ import BaseModal from './base-modal';
 import FormField from './form-field';
 import FormButton from './form-button';
 import PressableText from './pressable-text';
+import { register } from '@/apis/auth.api';
+import { isAxiosError } from 'axios';
+import OtpModal from './OTP-Modal';
 
 interface SignUpModalProps {
   visible: boolean;
@@ -22,6 +25,11 @@ export default function SignUpModal({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [checked, setChecked] = useState(false);
+  const [otpModalVisible, setotpModalVisible] = useState(false);
+
+  // Alert states
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const resetComponent = () => {
     setFirstname('');
@@ -35,6 +43,36 @@ export default function SignUpModal({
   const handleClose = () => {
     resetComponent();
     onClose();
+  };
+
+  const handleSignUp = async () => {
+    try {
+      await register(email);
+      // Handle successful registration (e.g., show a success message, close modal, etc.)
+      setotpModalVisible(true);
+    } catch (error) {
+      // Handle registration error (e.g., show an error message)
+      if (isAxiosError(error)) {
+        let errorMessage = 'sign up failed. Please try again.';
+
+        if (error.response?.data?.error) {
+          // Backend sends error as { error: { message: "...", ... } }
+          if (typeof error.response.data.error === 'string') {
+            errorMessage = error.response.data.error;
+          } else if (error.response.data.error.message) {
+            errorMessage = error.response.data.error.message;
+          }
+        } else if (error.response?.status === 409) {
+          errorMessage = 'email already registered. Please login instead.';
+        }
+
+        setAlertMessage(errorMessage);
+        setShowAlert(true);
+      } else {
+        setAlertMessage('An unexpected error occurred. Please try again.');
+        setShowAlert(true);
+      }
+    }
   };
 
   const allFilled =
@@ -124,7 +162,7 @@ export default function SignUpModal({
         title="Sign Up"
         onPress={() => {
           // TODO: Handle sign up logic
-          alert('Sign Up button pressed');
+          handleSignUp();
         }}
         disabled={!allFilled}
       />
@@ -134,6 +172,21 @@ export default function SignUpModal({
         text="Already have an account?"
         linkText="Login"
         onPress={onLoginPress || (() => {})}
+      />
+
+      {/* OTP */}
+      <OtpModal
+        firstname={firstname}
+        lastname={lastname}
+        phone={phone}
+        email={email}
+        password={password}
+        visible={otpModalVisible}
+        onClose={() => setotpModalVisible(false)}
+        onVerifySuccess={() => {
+          setotpModalVisible(false);
+          handleClose();
+        }}
       />
     </BaseModal>
   );
