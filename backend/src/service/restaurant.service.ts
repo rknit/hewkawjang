@@ -100,24 +100,10 @@ export default class RestaurantService {
     restaurantId: number,
     newActivation: RestaurantActivation,
   ) {
-    const [updated] = await db
-      .update(restaurantTable)
-      .set({ activation: newActivation })
-      .where(eq(restaurantTable.id, restaurantId))
-      .returning();
-
-    if (!updated) {
-      throw createHttpError(404, "Restaurant not found");
-    }
-
-    return updated;
-  }
-
-  static async deactivateRestaurant(restaurantId: number) {
-    return await db.transaction(async (tx) => {
+        return await db.transaction(async (tx) => {
       const [updatedRestaurant] = await tx
         .update(restaurantTable)
-        .set({ activation: 'inactive' })
+        .set({ activation: newActivation})
         .where(eq(restaurantTable.id, restaurantId))
         .returning();
 
@@ -125,17 +111,17 @@ export default class RestaurantService {
         throw createHttpError(404, "Restaurant not found");
       }
 
-      // Cancel all reservations in one query
-      await tx
-        .update(reservationTable)
-        .set({ status: 'cancelled' })
-        .where(eq(reservationTable.restaurantId, restaurantId));
+      if (newActivation == 'inactive') {
+        // Cancel all reservations in one query
+        await tx
+          .update(reservationTable)
+          .set({ status: 'cancelled' })
+          .where(eq(reservationTable.restaurantId, restaurantId));
+      }
 
       return updatedRestaurant;
     });
   }
-
-
 
   static async updateInfo(data: UpdateRestaurantInfo): Promise<Restaurant> {
     const [updatedRestaurant] = await db
