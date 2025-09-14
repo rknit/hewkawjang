@@ -5,6 +5,7 @@ import {
   asc,
   eq,
   and,
+  or,
 } from 'drizzle-orm';
 import { restaurantTable, reservationTable } from '../db/schema';
 import { db } from '../db';
@@ -116,7 +117,14 @@ export default class RestaurantService {
         await tx
           .update(reservationTable)
           .set({ status: 'cancelled' })
-          .where(eq(reservationTable.restaurantId, restaurantId));
+          .where(
+            and(
+              eq(reservationTable.restaurantId, restaurantId),
+              or(
+                eq(reservationTable.status, 'confirmed'),
+                eq(reservationTable.status, 'unconfirmed'),
+              )
+          ));
       }
 
       return updatedRestaurant;
