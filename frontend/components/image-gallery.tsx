@@ -27,7 +27,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   };
 
   return (
-    <View className="flex-row items-start justify-center h-[250px]">
+    <View className="flex-row items-start justify-center h-[250px] w-[500px]">
         {/* Main image */}
         <View className="w-[65%] h-full max-w-[360px] min-w-[250px] overflow-hidden">
             <Image
