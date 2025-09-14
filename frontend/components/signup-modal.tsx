@@ -162,7 +162,6 @@ export default function SignUpModal({
         title="Sign Up"
         onPress={() => {
           // TODO: Handle sign up logic
-          alert('Sign Up button pressed');
           handleSignUp();
         }}
         disabled={!allFilled}

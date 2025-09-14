@@ -71,7 +71,7 @@ export default function OtpModal({
     try {
       // API call is now much simpler and more secure
       await verify(firstname, lastname, phone, password, email, otp);
-      Alert.alert('Success', 'Your account has been verified!');
+      alert('Your account has been verified!');
       onVerifySuccess();
     } catch (error) {
       Alert.alert(

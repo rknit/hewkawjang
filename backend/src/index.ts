@@ -8,7 +8,6 @@ import userRoute from './routes/user.routes';
 import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
 import errorHandler from './middleware/error.middleware';
-import { authHandler } from './middleware/auth.middleware';
 import cookieParser from 'cookie-parser';
 
 const app = express();
@@ -23,13 +22,6 @@ app.use(
     credentials: true,
   }),
 );
-const corsOptions = {
-  // This MUST be the exact origin of your frontend
-  origin: 'http://localhost:8081',
-  // This is needed if your frontend sends cookies or auth headers
-  credentials: true,
-};
-app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
