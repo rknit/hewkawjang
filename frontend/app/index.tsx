@@ -1,5 +1,4 @@
-import { logout } from '@/apis/auth.api';
-import { Button, View } from 'react-native';
+import { View } from 'react-native';
 
 export default function Index() {
   return (
