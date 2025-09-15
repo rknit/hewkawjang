@@ -48,3 +48,11 @@ export async function cancelReservation(
     return false;
   }
 }
+
+export async function deleteRestaurant(restaurantId: number): Promise<void> {
+  try {
+    await ApiService.delete(`/restaurant/${restaurantId}`);
+  } catch (error) {
+    normalizeError(error);
+  }
+}

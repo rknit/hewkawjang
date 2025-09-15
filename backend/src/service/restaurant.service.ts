@@ -6,6 +6,7 @@ import {
   eq,
   and,
   or,
+  gt,
 } from 'drizzle-orm';
 import { restaurantTable, reservationTable } from '../db/schema';
 import { db } from '../db';
@@ -18,7 +19,7 @@ import createHttpError from 'http-errors';
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
 export type RestaurantStatus = NewRestaurant['status'];
-export type RestaurantActivation = NewRestaurant["activation"];
+export type RestaurantActivation = NewRestaurant['activation'];
 export type Reservation = InferInsertModel<typeof reservationTable>;
 
 export default class RestaurantService {
@@ -60,7 +61,7 @@ export default class RestaurantService {
 
     return await query;
   }
-  
+
   static async getRestaurantById(id: number): Promise<Restaurant | undefined> {
     const rows = await db
       .select()
@@ -104,12 +105,12 @@ export default class RestaurantService {
     return await db.transaction(async (tx) => {
       const [updatedRestaurant] = await tx
         .update(restaurantTable)
-        .set({ activation: newActivation})
+        .set({ activation: newActivation })
         .where(eq(restaurantTable.id, restaurantId))
         .returning();
 
       if (!updatedRestaurant) {
-        throw createHttpError(404, "Restaurant not found");
+        throw createHttpError(404, 'Restaurant not found');
       }
 
       if (newActivation == 'inactive') {
@@ -123,8 +124,9 @@ export default class RestaurantService {
               or(
                 eq(reservationTable.status, 'confirmed'),
                 eq(reservationTable.status, 'unconfirmed'),
-              )
-          ));
+              ),
+            ),
+          );
       }
 
       return updatedRestaurant;
@@ -150,5 +152,34 @@ export default class RestaurantService {
     }
 
     return updatedRestaurant;
+  }
+
+  static async deleteRestaurant(restaurantId: number): Promise<void> {
+    const restaurant = await db
+      .select()
+      .from(restaurantTable)
+      .where(eq(restaurantTable.id, restaurantId))
+      .limit(1);
+    if (!restaurant || restaurant.length === 0) {
+      throw createHttpError.NotFound('Restaurant not found');
+    }
+
+    // Reject all future reservations in one query
+
+    const reservations = await db
+      .update(reservationTable)
+      .set({ status: 'rejected' })
+      .where(
+        and(
+          eq(reservationTable.restaurantId, restaurantId),
+          gt(reservationTable.reserveAt, new Date()),
+        ),
+      );
+
+    const result = await db
+      .update(restaurantTable)
+      .set({ isDeleted: true })
+      .where(eq(restaurantTable.id, restaurantId))
+      .returning();
   }
 }
