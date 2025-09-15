@@ -170,9 +170,17 @@ export default class RestaurantService {
       .update(reservationTable)
       .set({ status: 'rejected' })
       .where(
-        and(
-          eq(reservationTable.restaurantId, restaurantId),
-          gt(reservationTable.reserveAt, new Date()),
+        or(
+          and(
+            eq(reservationTable.restaurantId, restaurantId),
+            gt(reservationTable.reserveAt, new Date()),
+            eq(reservationTable.status, 'confirmed'),
+          ),
+          and(
+            eq(reservationTable.restaurantId, restaurantId),
+            gt(reservationTable.reserveAt, new Date()),
+            eq(reservationTable.status, 'unconfirmed'),
+          ),
         ),
       );
 
