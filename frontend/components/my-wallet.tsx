@@ -1,32 +1,67 @@
 // components/my-wallet.tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import React from 'react';
+import BaseModal from './base-modal';
 
-interface MyWalletProps {
-  balance: number;
-  onAddBalance?: () => void;
+interface MyWalletModalProps {
+  visible: boolean;
+  onClose: () => void;
 }
 
-export default function MyWallet({ balance, onAddBalance }: MyWalletProps) {
-  return (
-    <div className="bg-[#FDF6F0] border border-[#F5C9A0] rounded-xl p-6 flex items-center justify-between w-full max-w-lg mx-auto shadow-md">
-      {/* Left: Wallet Icon */}
-      <div className="flex-shrink-0">
-        <Ionicons name="wallet-outline" size={240} color="black" />
-      </div>
+export default function MyWallet({ visible, onClose }: MyWalletModalProps) {
+  const [balance, setBalance] = useState<number>(0);
 
-      {/* Right: Balance and Add Button */}
-      <div className="flex-1 flex flex-col items-start justify-center ml-6">
-        <span className="text-black text-xl font-semibold">
-          Balance : {balance.toLocaleString()} ฿
-        </span>
-        <button
-          onClick={onAddBalance}
-          className="mt-4 bg-[#D97706] text-white px-6 py-2 rounded-lg hover:bg-[#b95d04] transition"
-        >
-          Add balance
-        </button>
-      </div>
-    </div>
+  useEffect(() => {
+    // Fetch balance from API or local storage
+    // This is a placeholder - replace with actual balance fetching logic
+    const fetchBalance = async () => {
+      try {
+        // Example: const userBalance = await getUserBalance();
+        // setBalance(userBalance);
+        setBalance(1500); // Placeholder value
+      } catch (error) {
+        console.error('Failed to fetch balance:', error);
+      }
+    };
+
+    if (visible) {
+      fetchBalance();
+    }
+  }, [visible]);
+
+  const handleAddBalance = () => {
+    // Internal logic for adding balance
+    // This could open another modal, navigate to a payment screen, etc.
+    console.log('Add balance clicked');
+  };
+
+  return (
+    <BaseModal
+      visible={visible}
+      onClose={onClose}
+      showCloseButton
+      width="default"
+    >
+      <View className="p-6 flex-row items-center justify-between w-full max-w-lg self-center">
+        {/* Left: Wallet Icon */}
+        <View className="flex-shrink-0">
+          <Ionicons name="wallet-outline" size={120} color="black" />
+        </View>
+
+        {/* Right: Balance and Add Button */}
+        <View className="flex-1 flex flex-col items-start justify-center ml-6">
+          <Text className="text-black text-xl font-semibold">
+            Balance : {balance.toLocaleString()} ฿
+          </Text>
+          <TouchableOpacity
+            onPress={handleAddBalance}
+            className="mt-4 bg-[#D97706] text-white px-6 py-2 rounded-lg active:bg-[#b95d04]"
+          >
+            <Text className="text-white font-semibold">Add balance</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </BaseModal>
   );
 }

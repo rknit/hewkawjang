@@ -1,10 +1,10 @@
-import { View, TouchableOpacity, Image, Modal } from 'react-native';
+import { View, TouchableOpacity, Image } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import UnderlinedPressableText from './underlined-pressable-text';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import UserDropdown from './accountDropdown';
+import UserDropdown from './user-dropdown';
 
 export default function NavBarUser() {
   const { user } = useProfile();
@@ -75,25 +75,7 @@ export default function NavBarUser() {
         </TouchableOpacity>
       </View>
 
-      {/* Modal for the user dropdown */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isDropdownVisible}
-        onRequestClose={toggleDropdown}
-      >
-        {/* Backdrop to dismiss modal */}
-        <TouchableOpacity
-          style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
-          activeOpacity={1}
-          onPressOut={toggleDropdown}
-        >
-          {/* Dropdown container - positioned absolutely */}
-          <View style={{ position: 'absolute', top: 55, right: 20 }}>
-            <UserDropdown />
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <UserDropdown visible={isDropdownVisible} onClose={toggleDropdown} />
     </View>
   );
 }
