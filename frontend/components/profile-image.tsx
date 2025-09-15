@@ -14,7 +14,7 @@ export default function ProfileImage({
 }: ProfileImageProps) {
   const name = user?.displayName ?? user?.firstName ?? 'Loading...';
   const profileImage =
-    user?.profileUrl ?? require('../app/(tabs)/profile/default_profile.png');
+    user?.profileUrl ?? require('@/assets/images/default_profile.png');
 
   return (
     <View className="col-span-1 flex flex-col gap-4 items-center pt-4">

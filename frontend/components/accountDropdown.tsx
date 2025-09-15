@@ -72,7 +72,7 @@ export default function UserDropdown({
             </View>
             <View className="border-t p-2">
               <TouchableOpacity
-                className="flex-row items-center gap-2 p-2 rounded w-full"
+                className="flex-row items-center gap-2 p-2 rounded w-full active:bg-gray-200 focus:bg-gray-100 hover:bg-gray-100"
                 onPress={logout}
               >
                 <Feather name="log-out" size={16} color="black" />
