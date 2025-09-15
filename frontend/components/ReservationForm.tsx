@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
+import SimpleAlert from './simple-alert';
 import { fetchCurrentUser } from '@/apis/user.api';
 import { User } from '@/types/user.type';
 import { fetchRestaurants, fetchRestaurantById } from '@/apis/restaurant.api';
@@ -42,6 +43,7 @@ export default function ReservationPane({
   const [seniors, setSeniors] = useState<number>(0);
   const [children, setChildren] = useState<number>(1);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
 
@@ -140,9 +142,8 @@ export default function ReservationPane({
       };
 
       await createReservation(payload);
-      Alert.alert('Success', 'Reservation created successfully');
       setShowConfirmation(false);
-      onClose();
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error('Failed to create reservation:', error);
       Alert.alert('Error', 'Failed to create reservation. Please try again.');
@@ -151,6 +152,11 @@ export default function ReservationPane({
 
   function onCancelConfirmation() {
     setShowConfirmation(false);
+  }
+
+  function onSuccessAlertClose() {
+    setShowSuccessAlert(false);
+    onClose();
   }
 
   // restrict calendar to 7 days range
@@ -668,6 +674,21 @@ export default function ReservationPane({
           )}
         </TouchableOpacity>
       </TouchableOpacity>
+
+      {/* Success Alert Modal */}
+      {showSuccessAlert && (
+        <Modal transparent animationType="fade">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <SimpleAlert
+              type="success"
+              title="Success!"
+              message="Your reservation has been created successfully. We look forward to serving you!"
+              buttonText="Great!"
+              onClose={onSuccessAlertClose}
+            />
+          </View>
+        </Modal>
+      )}
     </Modal>
   );
 }
