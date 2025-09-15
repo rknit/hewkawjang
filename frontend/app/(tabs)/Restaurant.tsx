@@ -83,11 +83,7 @@ export default function RestaurantScreen() {
 
   const [restaurant, setRestaurant] = React.useState<Restaurant | null>(null);
   useEffect(() => {
-    fetchRestaurantById(restaurantId)
-      .then((data) => setRestaurant(data))
-      .catch((error) => {
-        console.error('Error fetching restaurant data:', error);
-      });
+    fetchRestaurantById(restaurantId).then((data) => setRestaurant(data));
   }, [restaurantId]);
 
   return (
