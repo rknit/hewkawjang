@@ -14,5 +14,4 @@ export const CUISINE_TYPES = [
   'BBQ',
   'Steakhouse',
   'Fast Food',
-  'Other',
 ];
