@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { View, SafeAreaView, ScrollView } from 'react-native';
+import { View, SafeAreaView, ScrollView, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import ImageGallery from '@/components/image-gallery';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
 import { fetchRestaurantById } from '@/apis/restaurant.api';
+import ReserveButton from '@/components/reserve-button';
 
 const pictures: string[] = [
   'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
@@ -86,39 +87,59 @@ export default function RestaurantScreen() {
     fetchRestaurantById(restaurantId).then((data) => setRestaurant(data));
   }, [restaurantId]);
 
+  const makeAddress = (restaurant: Restaurant): string => {
+    const parts = [
+      restaurant.houseNo,
+      restaurant.village,
+      restaurant.building,
+      restaurant.road,
+      restaurant.soi,
+      restaurant.subDistrict,
+      restaurant.district,
+      restaurant.province,
+      restaurant.postalCode,
+    ].filter((part) => part && part.trim() !== '');
+    return parts.join(', ');
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="flex-row">
-          {/* First column */}
-          <View className="w-[50%] min-w-[500px] max-w-[600px] p-[20px] space-y-6">
-            <ImageGallery images={pictures} />
+      <View className="flex-1 flex-row w-full justify-center">
+        <View className="w-[50%] min-w-[500px] max-w-[600px] h-full">
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ padding: 20, paddingBottom: 24 }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="space-y-6">
+              <ImageGallery images={pictures} />
 
-            <ReviewSection
-              comments={mockComments}
-              average={4.5}
-              totalReviews={2900}
-              breakdown={{ 5: 2000, 4: 600, 3: 200, 2: 80, 1: 20 }}
-            />
+              <ReviewSection
+                comments={mockComments}
+                average={4.5}
+                totalReviews={2900}
+                breakdown={{ 5: 2000, 4: 600, 3: 200, 2: 80, 1: 20 }}
+              />
 
-            <RestaurantAbout
-              address="199 Sukhumvit Soi22, Klong Ton, Klongtoey, Bangkok 10110, Bangkok"
-              description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
-              cuisine="Buffet"
-              paymentOptions={['MasterCard', 'HewKawJangWallet']}
-            />
-          </View>
+              <RestaurantAbout
+                address={restaurant ? makeAddress(restaurant) : ''}
+                description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
+                cuisine="Buffet"
+                paymentOptions={['MasterCard', 'HewKawJangWallet']}
+              />
+            </View>
+          </ScrollView>
+        </View>
 
-          {/* Second column */}
-          <View className="w-[50%] min-w-[500px] max-w-[600px] bg-gray-100 p-[20px]">
-            {/* Placeholder for content */}
+        <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px]">
+          <View className="space-y-4">
+            <Text className="text-2xl font-bold text-gray-900">
+              {restaurant?.name || 'Loading...'}
+            </Text>
+            <ReserveButton restaurantId={restaurant?.id} />
           </View>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
