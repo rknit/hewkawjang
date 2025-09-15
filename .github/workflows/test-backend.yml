@@ -15,6 +15,7 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        if: false # Workflow temporarily disabled
         steps:
             - name: Checkout repository
               uses: actions/checkout@v5

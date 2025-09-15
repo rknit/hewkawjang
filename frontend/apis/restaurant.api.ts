@@ -71,3 +71,14 @@ export async function setRestaurantActivation(
     normalizeError(error);
   }
 }
+
+export async function updateRestaurantStatus(
+    id: number,
+    status: 'open' | 'closed',
+  ): Promise<void> {
+  try {
+    await ApiService.put('/restaurants/update/status', { id: id, status: status });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
