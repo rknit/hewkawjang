@@ -46,17 +46,31 @@ export default function RecommendedRestaurantCard({
       <View className="flex-1 p-3 justify-center">
         <View className="bg-white">
           {/* Title */}
-          <Text className="text-lg font-bold">{name}</Text>
+          <Text
+            className="text-lg font-bold"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {name}
+          </Text>
 
           {/* Address */}
-          <Text className="text-gray-600 mt-1">{address}</Text>
+          <Text
+            className="text-gray-600 mt-1"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {address}
+          </Text>
 
           {/* Tags */}
           <View className="flex-row items-center flex-wrap mt-3">
             {tags.map((tag, idx) => (
               <Text
                 key={idx}
-                className="text-gray-700 bg-gray-200 px-2 py-1 rounded mr-2"
+                className="text-gray-700 bg-gray-200 px-2 py-1 rounded mr-2 max-w-[80px]"
+                numberOfLines={1}
+                ellipsizeMode="tail"
               >
                 {tag}
               </Text>
