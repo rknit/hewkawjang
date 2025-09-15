@@ -39,7 +39,7 @@ export async function updateRestaurantInfo(
     normalizeError(error);
   }
 }
-
+  
 export async function setRestaurantActivation(
   id: number,
   status: 'active' | 'inactive',
@@ -52,14 +52,11 @@ export async function setRestaurantActivation(
 }
 
 export async function updateRestaurantStatus(
-  id: number,
-  status: 'open' | 'closed',
-): Promise<void> {
+    id: number,
+    status: 'open' | 'closed',
+  ): Promise<void> {
   try {
-    await ApiService.put('/restaurants/update/status', {
-      id: id,
-      status: status,
-    });
+    await ApiService.put('/restaurants/update/status', { id: id, status: status });
   } catch (error) {
     normalizeError(error);
   }

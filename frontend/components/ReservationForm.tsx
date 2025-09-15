@@ -11,7 +11,7 @@ import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchCurrentUser } from '@/apis/user.api';
 import { User } from '@/types/user.type';
-import { fetchRestaurants } from '@/apis/restaurant.api';
+import { fetchRestaurants, fetchRestaurantById } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
 import { createReservation } from '@/apis/reservation.api';
 import {
@@ -31,9 +31,11 @@ import { login } from '@/apis/auth.api';
 export default function ReservationPane({
   visible = true,
   onClose,
+  restaurantId,
 }: {
   visible: boolean;
   onClose: () => void;
+  restaurantId?: number;
 }) {
   const now = new Date();
   const [adults, setAdults] = useState<number>(2);
@@ -88,14 +90,17 @@ export default function ReservationPane({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [userData, restaurants] = await Promise.all([
-          fetchCurrentUser(),
-          fetchRestaurants(),
-        ]);
+        const userData = await fetchCurrentUser();
         setUser(userData);
-        // Use the first available restaurant (you can modify this logic as needed)
-        if (restaurants && restaurants.length > 0) {
-          setRestaurant(restaurants[0]);
+
+        if (restaurantId != null) {
+          const r = await fetchRestaurantById(restaurantId);
+          if (r) setRestaurant(r);
+        } else {
+          const restaurants = await fetchRestaurants();
+          if (restaurants && restaurants.length > 0) {
+            setRestaurant(restaurants[0]);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -105,7 +110,7 @@ export default function ReservationPane({
     if (visible) {
       loadData();
     }
-  }, [visible]);
+  }, [visible, restaurantId]);
 
   const totalGuests = adults + seniors + children;
 
