@@ -38,7 +38,10 @@ export function getValidHours(
 ): number[] {
   const todayISO = formatDateISO(now);
   if (date === todayISO) {
-    const startHour = earliest.getHours();
+    const startHour =
+      earliest.getMinutes() >= 15
+        ? earliest.getHours() + 1
+        : earliest.getHours();
     return Array.from(
       { length: Math.max(1, 24 - startHour) },
       (_, i) => startHour + i,
@@ -65,5 +68,8 @@ export function getValidMinutes(
 // Initialize default minute based on current time
 export function getDefaultMinute(now: Date): number {
   const m = now.getMinutes();
-  return MINUTE_STEPS.reduce((prev, step) => (m <= step ? step : prev), 45);
+  for (const step of MINUTE_STEPS) {
+    if (step >= m) return step;
+  }
+  return 0;
 }
