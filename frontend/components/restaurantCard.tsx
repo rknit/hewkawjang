@@ -3,12 +3,12 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Star, ChevronDown } from 'lucide-react-native';
 
 type DayOpeningHour = {
-  day: string; // e.g., "Monday"
-  openTime: string; // e.g., "09:00"
+  dayOfWeek: string;       // e.g., "Monday"
+  openTime: string;  // e.g., "09:00"
   closeTime: string; // e.g., "17:00"
 };
 
-type RestaurantProps = {
+export type RestaurantProps = {
   name: string;
   address: string;
   tags: string[];
@@ -25,7 +25,22 @@ export default function RestaurantCard({
   prices,
   openingHours,
 }: RestaurantProps) {
-  const [showOpeningHour, setShowOpeningHour] = useState(false);
+    const [showOpeningHour, setShowOpeningHour] = useState(false);
+    const getPriceBin = (value: number) => {
+      if (value < 100) return 1;
+      if (value < 300) return 2;
+      if (value < 700) return 3;
+      if (value < 1200) return 4;
+      return 5;
+    };
+
+  const priceBin = getPriceBin(prices);
+
+  const formatTime = (time: string) => {
+    const date = new Date(`1970-01-01T${time}Z`);
+    return date.toISOString().substr(11, 5); // "HH:MM"
+  };
+
   return (
     <View className="bg-white">
       {/* Title */}
@@ -53,9 +68,9 @@ export default function RestaurantCard({
           <Text className="ml-1 text-gray-800 font-medium">{rating}</Text>
         </View>
 
-        {/* Price Icons */}
-        <View className="flex-row ml-4 space-x-1">
-          {Array.from({ length: prices }).map((_, idx) => (
+        {/* Icons */}
+        <View className="flex-row ml-2 space-x-1">
+            {Array.from({ length: priceBin }).map((_, idx) => (
             <View
               key={idx}
               className="w-5 h-5 bg-gray-100 rounded-full items-center justify-center border-black border-[1px]"
@@ -80,16 +95,14 @@ export default function RestaurantCard({
             >
               <ChevronDown size={20} color="gray" />
             </TouchableOpacity>
-          </View>
-
-          {showOpeningHour &&
-            openingHours.map((day, idx) => (
-              <Text key={idx} className="text-gray-800">
-                {day.day}: {day.openTime} - {day.closeTime}
-              </Text>
-            ))}
         </View>
-      )}
+        
+        {showOpeningHour && openingHours.map((day, idx) => (
+            <Text key={idx} className="text-gray-800">
+                {day.dayOfWeek}: {formatTime(day.openTime)} - {formatTime(day.closeTime)}
+            </Text>
+        ))}
+      </View>
     </View>
   );
 }

@@ -3,6 +3,7 @@ import {
   UpdateRestaurantInfo,
   Restaurant,
   RestaurantSchema,
+  OpeningHour
 } from '@/types/restaurant.type';
 import { normalizeError } from '@/utils/api-error';
 
@@ -22,11 +23,31 @@ export async function fetchRestaurantById(
   id: number,
 ): Promise<Restaurant | null> {
   try {
-    const restaurants = await fetchRestaurants();
-    return restaurants.find((restaurant) => restaurant.id === id) || null;
+    const res = await ApiService.get(`/restaurants/${id}`);
+    return res.data as Restaurant;
   } catch (error) {
     console.error('Failed to fetch restaurant by ID:', error);
     return null;
+  }
+}
+
+export async function fetchRestaurantOpeningHours(id: number): Promise<OpeningHour[]> {
+  try {
+    const res = await ApiService.get(`/restaurants/${id}/openingHours`);
+    const data = res.data as OpeningHour[];
+
+    // Map API data to frontend format
+    return data.map((h) => ({
+      id: h.id,
+      restaurantId: h.restaurantId,
+      dayOfWeek: h.dayOfWeek, // rename directly
+      openTime: h.openTime,
+      closeTime: h.closeTime,
+      isClosed: h.isClosed ?? false, // optional, default false
+    }));
+  } catch (error) {
+    console.error('Failed to fetch opening hours:', error);
+    return [];
   }
 }
 
