@@ -6,12 +6,12 @@ import { router } from 'expo-router';
 const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
 
 const ApiService = axios.create({
-  baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
+  baseURL: process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8080',
   timeout: 15000,
 });
 
 const refreshApi = axios.create({
-  baseURL: process.env.BACKEND_URL || 'http://localhost:8080',
+  baseURL: process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8080',
   timeout: 15000,
   headers: {
     'hkj-auth-client-type': clientType,
