@@ -138,6 +138,7 @@ export default function RecommendedRestaurantGrid() {
           restaurants.map((restaurant, index) => (
             <View key={index} className="flex-1 min-w-[340px] max-w-[500px]">
               <RecommendedRestaurantCard
+                id={restaurant.id}
                 name={restaurant.name}
                 address={makeAddress(restaurant)}
                 tags={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].tags}

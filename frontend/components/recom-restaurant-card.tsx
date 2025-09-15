@@ -9,6 +9,7 @@ type DayOpeningHour = {
 };
 
 type RestaurantCardWithImageProps = {
+  id: number;
   name: string;
   address: string;
   tags: string[];
