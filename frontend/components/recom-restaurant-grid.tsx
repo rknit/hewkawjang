@@ -1,4 +1,4 @@
-import RestaurantCardWithImage from '@/components/restaurantCardWithImage';
+import RecommendedRestaurantCard from '@/components/recom-restaurant-card';
 import { View } from 'react-native';
 
 const RESTAURANTS_DATA = [
@@ -106,13 +106,13 @@ const RESTAURANTS_DATA = [
   },
 ];
 
-export default function RestaurantGrid() {
+export default function RecommendedRestaurantGrid() {
   return (
     <View className="p-4 w-9/12 mx-auto">
       <View className="flex-row flex-wrap justify-center gap-x-8 gap-y-4">
         {RESTAURANTS_DATA.map((restaurant, index) => (
           <View key={index} className="w-[48%]">
-            <RestaurantCardWithImage
+            <RecommendedRestaurantCard
               name={restaurant.name}
               address={restaurant.address}
               tags={restaurant.tags}
