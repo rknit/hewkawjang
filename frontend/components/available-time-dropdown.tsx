@@ -35,13 +35,22 @@ export default function AvailableTimeDropdown({
   const handleDayPress = (day: any) => {
     const dow = new Date(day.dateString).getDay();
     if (!selectedDays.includes(dow)) return;
-    setMarkedDates({
-      ...markedDates,
-      [day.dateString]: {
+
+    const isCurrentlySelected = markedDates[day.dateString]?.selected;
+    const newMarkedDates = { ...markedDates };
+
+    if (isCurrentlySelected) {
+      // Remove the date if it's currently selected
+      delete newMarkedDates[day.dateString];
+    } else {
+      // Add the date if it's not currently selected
+      newMarkedDates[day.dateString] = {
         selected: true,
         selectedColor: '#E05910',
-      },
-    });
+      };
+    }
+
+    setMarkedDates(newMarkedDates);
   };
 
   const handleDone = () => {
