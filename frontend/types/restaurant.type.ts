@@ -26,9 +26,8 @@ export const RestaurantSchema = z.object({
   district: z.string().nullable(),
   province: z.string().nullable(),
   postalCode: z.string().nullable(),
-  openTime: z.string().nullable(),
-  closeTime: z.string().nullable(),
   priceRange: z.number().nullable(),
   status: z.enum(['open', 'closed']),
+  activation: z.enum(['active', 'inactive']),
 });
 export type Restaurant = z.infer<typeof RestaurantSchema>;

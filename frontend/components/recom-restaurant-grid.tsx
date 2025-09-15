@@ -1,4 +1,7 @@
+import { fetchRestaurants } from '@/apis/restaurant.api';
 import RecommendedRestaurantCard from '@/components/recom-restaurant-card';
+import { Restaurant } from '@/types/restaurant.type';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 const RESTAURANTS_DATA = [
@@ -107,22 +110,48 @@ const RESTAURANTS_DATA = [
 ];
 
 export default function RecommendedRestaurantGrid() {
+  const [restaurants, setRestaurants] = useState<Restaurant[] | null>();
+
+  useEffect(() => {
+    fetchRestaurants().then((data) => setRestaurants(data));
+  }, []);
+
+  const makeAddress = (restaurant: Restaurant): string => {
+    const parts = [
+      restaurant.houseNo,
+      restaurant.village,
+      restaurant.building,
+      restaurant.road,
+      restaurant.soi,
+      restaurant.subDistrict,
+      restaurant.district,
+      restaurant.province,
+      restaurant.postalCode,
+    ].filter((part) => part && part.trim() !== '');
+    return parts.join(', ');
+  };
+
   return (
     <View className="p-4 w-full max-w-5xl mx-auto">
       <View className="flex-row flex-wrap justify-center gap-x-8 gap-y-4">
-        {RESTAURANTS_DATA.map((restaurant, index) => (
-          <View key={index} className="flex-1 min-w-[340px] max-w-[500px]">
-            <RecommendedRestaurantCard
-              name={restaurant.name}
-              address={restaurant.address}
-              tags={restaurant.tags}
-              rating={restaurant.rating}
-              prices={restaurant.prices}
-              image={restaurant.image}
-              isNew={restaurant.isNew}
-            />
-          </View>
-        ))}
+        {restaurants &&
+          restaurants.map((restaurant, index) => (
+            <View key={index} className="flex-1 min-w-[340px] max-w-[500px]">
+              <RecommendedRestaurantCard
+                name={restaurant.name}
+                address={makeAddress(restaurant)}
+                tags={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].tags}
+                rating={
+                  RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].rating
+                }
+                prices={
+                  RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].prices
+                }
+                image={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].image}
+                isNew={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].isNew}
+              />
+            </View>
+          ))}
       </View>
     </View>
   );
