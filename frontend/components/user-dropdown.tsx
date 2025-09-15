@@ -26,6 +26,11 @@ export default function UserDropdown({
     router.push('/profile');
   };
 
+  const onRestaurantSignup = () => {
+    onClose();
+    router.push('/restaurant-signup');
+  };
+
   const onOpenWallet = () => {
     setShowWalletModal(true);
   };
@@ -71,7 +76,10 @@ export default function UserDropdown({
                 <Feather name="user" size={16} color="black" />
                 <Text>My profile</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100">
+              <TouchableOpacity
+                onPressOut={onRestaurantSignup}
+                className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100"
+              >
                 {/* Using MaterialCommunityIcons for the store icon */}
                 <MaterialCommunityIcons
                   name="storefront"
