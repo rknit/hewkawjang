@@ -3,6 +3,8 @@ import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { logout } from '@/apis/auth.api';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
+import { useState } from 'react';
+import MyWallet from './my-wallet';
 
 export default function UserDropdown({
   visible,
@@ -14,10 +16,22 @@ export default function UserDropdown({
   const { user } = useProfile();
   const fullname = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   const email = user?.email || 'Loading...';
+  const [showWalletModal, setShowWalletModal] = useState(false);
+
+  // Placeholder balance - you might want to get this from user profile or API
+  const walletBalance = 1500.0;
 
   const onSelectProfile = () => {
     onClose();
     router.push('/profile');
+  };
+
+  const onOpenWallet = () => {
+    setShowWalletModal(true);
+  };
+
+  const onCloseWallet = () => {
+    setShowWalletModal(false);
   };
 
   return (
@@ -74,9 +88,12 @@ export default function UserDropdown({
                 />
                 <Text>Contact support</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100">
+              <TouchableOpacity
+                onPress={onOpenWallet}
+                className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100"
+              >
                 <MaterialCommunityIcons name="wallet" size={16} color="black" />
-                <Text>My wallet : 2,000.00 ฿</Text>
+                <Text>My wallet : {walletBalance.toLocaleString()} ฿</Text>
               </TouchableOpacity>
             </View>
             <View className="border-t p-2">
@@ -91,6 +108,9 @@ export default function UserDropdown({
           </View>
         </View>
       </View>
+
+      {/* MyWallet Modal */}
+      <MyWallet visible={showWalletModal} onClose={onCloseWallet} />
     </Modal>
   );
 }
