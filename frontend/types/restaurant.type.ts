@@ -26,8 +26,8 @@ export const RestaurantSchema = z.object({
   district: z.string().nullable(),
   province: z.string().nullable(),
   postalCode: z.string().nullable(),
-  openTime: z.string().nullable(),
-  closeTime: z.string().nullable(),
+  openTime: z.string().nullish(),
+  closeTime: z.string().nullish(),
   priceRange: z.number().nullable(),
   status: z.enum(['open', 'closed']),
 });

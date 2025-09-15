@@ -95,7 +95,13 @@ export default function ReservationPane({
 
         if (restaurantId != null) {
           const r = await fetchRestaurantById(restaurantId);
-          if (r) setRestaurant(r);
+          if (r) {
+            setRestaurant(r);
+          } else {
+            const restaurant = await fetchRestaurantById(1);
+            console.log(restaurant);
+              setRestaurant(restaurant);        
+          }
         } else {
           const restaurants = await fetchRestaurants();
           if (restaurants && restaurants.length > 0) {

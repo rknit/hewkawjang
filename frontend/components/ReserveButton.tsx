@@ -14,7 +14,7 @@ export default function ReserveButton({ restaurantId, label = 'Reserve' }: Props
     <>
       <TouchableOpacity
         onPress={() => setOpen(true)}
-        className="rounded-xl items-center py-4"
+        className="bg-orange-500 px-6 py-3 rounded-md mt-4 w-[120px] items-center "
         style={{ backgroundColor: '#E46D2C' }}
       >
         <Text className="font-bold text-white text-lg">{label}</Text>
