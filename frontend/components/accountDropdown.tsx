@@ -28,13 +28,22 @@ export default function UserDropdown({
       onRequestClose={onClose}
     >
       {/* Backdrop to dismiss modal */}
-      <TouchableOpacity
-        style={{ flex: 1 }}
-        activeOpacity={1}
-        onPressOut={onClose}
-      >
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          activeOpacity={1}
+          onPress={onClose}
+        />
         {/* Dropdown container - positioned absolutely */}
-        <View style={{ position: 'absolute', top: 65, right: 20 }}>
+        <View
+          style={{ position: 'absolute', top: 65, right: 20 }}
+          pointerEvents="box-none"
+        >
           <View className="w-64 bg-white border rounded boxShadow-lg z-50">
             <View className="p-4 border-b">
               <Text className="font-semibold">{fullname}</Text>
@@ -81,7 +90,7 @@ export default function UserDropdown({
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 }
