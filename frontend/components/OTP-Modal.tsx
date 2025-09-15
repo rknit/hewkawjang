@@ -39,7 +39,7 @@ export default function OtpModal({
 
   // Effect to handle the countdown timer
   useEffect(() => {
-    let interval: NodeJS.Timeout; // Using NodeJS.Timeout is slightly more idiomatic
+    let interval: ReturnType<typeof setInterval>; // Using NodeJS.Timeout is slightly more idiomatic
     if (visible) {
       setTimer(RESEND_TIMEOUT_SECONDS);
       setIsResendDisabled(true);
