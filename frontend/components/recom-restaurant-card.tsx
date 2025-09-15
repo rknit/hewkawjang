@@ -31,9 +31,9 @@ export default function RecommendedRestaurantCard({
 }: RestaurantCardWithImageProps) {
   const [showOpeningHour, setShowOpeningHour] = React.useState(false);
   return (
-    <View className="bg-white rounded-lg overflow-hidden shadow-md flex-row">
+    <View className="bg-white rounded-lg overflow-hidden shadow-md flex-row w-full">
       {/* Image */}
-      <View className="relative w-48">
+      <View className="relative w-2/5 min-w-[120px] max-w-[180px]">
         <Image source={image} className="w-full h-full" resizeMode="cover" />
         {isNew && (
           <View className="absolute top-1 right-1 bg-orange-500 px-1 py-0.5 rounded">
@@ -43,7 +43,7 @@ export default function RecommendedRestaurantCard({
       </View>
 
       {/* Content - Inlined RestaurantCard */}
-      <View className="flex-1 p-3 justify-center">
+      <View className="flex-1 p-3 justify-center min-w-0">
         <View className="bg-white">
           {/* Title */}
           <Text
