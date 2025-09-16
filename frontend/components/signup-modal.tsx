@@ -26,6 +26,7 @@ export default function SignUpModal({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm_password, setConfirmPassword] = useState('');
   const [checked, setChecked] = useState(false);
   const [otpModalVisible, setotpModalVisible] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
@@ -34,13 +35,64 @@ export default function SignUpModal({
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  // Validation helpers
+  const nameRegex = /^[A-Za-z]+$/;
+  const emailRegex = /^[A-Za-z0-9._%+-]+@gmail\.com$/i;
+
+  const firstnameError = !firstname
+    ? 'First name is required.'
+    : nameRegex.test(firstname)
+      ? ''
+      : 'First name must contain only alphabets.';
+
+  const lastnameError = !lastname
+    ? 'Last name is required.'
+    : nameRegex.test(lastname)
+      ? ''
+      : 'Last name must contain only alphabets.';
+
+  const phoneDigitsOnly = phone; // phone input is filtered to digits on change
+  const phoneError = !phoneDigitsOnly
+    ? 'Phone number is required.'
+    : phoneDigitsOnly.length !== 10
+      ? 'Phone number must be 10 digits.'
+      : '';
+
+  const normalizedEmail = email.trim();
+  const emailError = !normalizedEmail
+    ? 'Email is required.'
+    : emailRegex.test(normalizedEmail)
+      ? ''
+      : 'Email must be a valid Gmail address (e.g., name@gmail.com).';
+
+  const passwordError = !password ? 'Password is required.' : '';
+  const confirmPasswordError = !confirm_password
+    ? 'Please confirm your password.'
+    : confirm_password !== password
+      ? 'Passwords do not match.'
+      : '';
+
+  const policyError = checked ? '' : 'You must accept the Privacy Policy.';
+
+  const isFormValid =
+    !firstnameError &&
+    !lastnameError &&
+    !phoneError &&
+    !emailError &&
+    !passwordError &&
+    !confirmPasswordError &&
+    checked;
+
   const resetComponent = () => {
     setFirstname('');
     setLastname('');
     setPhone('');
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setChecked(false);
+    setShowAlert(false);
+    setAlertMessage('');
   };
 
   const handleClose = () => {
@@ -78,6 +130,7 @@ export default function SignUpModal({
     }
   };
 
+  // Deprecated: use isFormValid to control button state
   const allFilled =
     firstname && lastname && phone && email && password && checked;
 
@@ -92,6 +145,7 @@ export default function SignUpModal({
         value={firstname}
         onChangeText={setFirstname}
         placeholder="Enter your firstname"
+        error={firstnameError}
         required
       />
 
@@ -101,6 +155,7 @@ export default function SignUpModal({
         value={lastname}
         onChangeText={setLastname}
         placeholder="Enter your lastname"
+        error={lastnameError}
         required
       />
 
@@ -108,10 +163,11 @@ export default function SignUpModal({
       <FormField
         label="Phone Number"
         value={phone}
-        onChangeText={setPhone}
+        onChangeText={(t) => setPhone(t.replace(/\D/g, ''))}
         placeholder="Enter your phone number"
         keyboardType="phone-pad"
         maxLength={10}
+        error={phoneError}
         required
       />
 
@@ -123,17 +179,30 @@ export default function SignUpModal({
         placeholder="Enter your email"
         keyboardType="email-address"
         autoCapitalize="none"
+        error={emailError}
         required
       />
 
       {/* Password */}
+      <FormField
+        label="Password"
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Enter your password"
+        secureTextEntry
+        error={passwordError}
+        required
+      />
+
+      {/* Confirm Password */}
       <View className="mb-6">
         <FormField
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter your password"
+          label="Confirm Password"
+          value={confirm_password}
+          onChangeText={setConfirmPassword}
+          placeholder="Confirm your password"
           secureTextEntry
+          error={confirmPasswordError}
           required
         />
       </View>
@@ -158,15 +227,31 @@ export default function SignUpModal({
         </Text>
       </View>
 
+      {/* Policy error */}
+      {policyError ? (
+        <Text className="text-red-500 text-sm mb-2 text-center">
+          {policyError}
+        </Text>
+      ) : null}
+
       {/* Sign Up Button */}
       <FormButton
         title="Sign Up"
         onPress={() => {
           // TODO: Handle sign up logic
-          handleSignUp();
+          if (isFormValid) {
+            handleSignUp();
+          }
         }}
-        disabled={!allFilled}
+        disabled={false}
       />
+
+      {/* API Error Alert */}
+      {showAlert ? (
+        <Text className="text-red-500 text-sm mt-2 text-center">
+          {alertMessage}
+        </Text>
+      ) : null}
 
       {/* Already have an account? Login */}
       <PressableText
