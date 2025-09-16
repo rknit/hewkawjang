@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import ImageChooser from './image-chooser';
 import { CUISINE_TYPES } from '@/constants/cuisine-types';
 import AvailableTimeDropdown from './available-time-dropdown';
+import { PAYMENT_METHODS } from '@/constants/payment-methods';
 import { THAI_PROVINCES } from '@/constants/thailand-provinces';
 
 const sortedProvinces = [...THAI_PROVINCES].sort((a, b) => a.localeCompare(b));
