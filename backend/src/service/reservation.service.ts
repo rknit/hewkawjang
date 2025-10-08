@@ -1,4 +1,4 @@
-import { InferSelectModel, eq, and } from 'drizzle-orm';
+import { InferSelectModel, eq, and, inArray, asc } from 'drizzle-orm';
 import { reservationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -23,6 +23,42 @@ export default class ReservationService {
         ),
       )
       .offset(offset);
+
+    return reservations;
+  }
+
+  static async getReservationsByRestaurant(props: {
+    restaurantId: number;
+    status?: Reservation['status'] | Reservation['status'][];
+    offset?: number;
+    limit?: number;
+  }): Promise<Reservation[]> {
+    const restaurantId = props.restaurantId;
+    const status = props.status;
+    const offset = props.offset ?? 0;
+    const limit = props.limit ?? 50;
+
+    const conditions: any[] = [eq(reservationTable.restaurantId, restaurantId)];
+
+    if (status) {
+      if (Array.isArray(status)) {
+        conditions.push(
+          inArray(reservationTable.status, status as Reservation['status'][]),
+        );
+      } else {
+        conditions.push(
+          eq(reservationTable.status, status as Reservation['status']),
+        );
+      }
+    }
+
+    const reservations = await db
+      .select()
+      .from(reservationTable)
+      .where(and(...conditions))
+      .orderBy(asc(reservationTable.reserveAt))
+      .offset(offset)
+      .limit(limit);
 
     return reservations;
   }
@@ -65,7 +101,7 @@ export default class ReservationService {
       .where(eq(reservationTable.id, reservationId));
   }
 
-    static async createReservation(data: {
+  static async createReservation(data: {
     userId: number;
     restaurantId: number;
     reserveAt: Date;
@@ -87,5 +123,3 @@ export default class ReservationService {
     return inserted[0];
   }
 }
-
-

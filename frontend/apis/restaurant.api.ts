@@ -4,6 +4,7 @@ import {
   Restaurant,
   RestaurantSchema,
 } from '@/types/restaurant.type';
+import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import { normalizeError } from '@/utils/api-error';
 
 export async function fetchRestaurants(): Promise<Restaurant[]> {
@@ -62,5 +63,31 @@ export async function updateRestaurantStatus(
     });
   } catch (error) {
     normalizeError(error);
+  }
+}
+
+// Owner-facing: fetch reservations for a restaurant (owner must be authenticated)
+export async function fetchReservationsForOwner(
+  id: number,
+  options?: { status?: string | string[]; offset?: number; limit?: number },
+): Promise<Reservation[] | null> {
+  try {
+    const params: any = {};
+    if (options?.offset !== undefined) params.offset = options.offset;
+    if (options?.limit !== undefined) params.limit = options.limit;
+    if (options?.status !== undefined) {
+      params.status = Array.isArray(options.status)
+        ? options.status.join(',')
+        : options.status;
+    }
+
+    const res = await ApiService.get(`/restaurants/${id}/reservations`, {
+      params,
+    });
+
+    return res.data.map((r: any) => ReservationSchema.parse(r));
+  } catch (error) {
+    normalizeError(error);
+    return null;
   }
 }
