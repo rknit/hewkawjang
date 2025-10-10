@@ -126,3 +126,20 @@ export const emailVerificationTable = pgTable('emailVerification', {
   otp: text('otp').notNull(),
   sendTime: timestamp('sendTime').notNull(),
 });
+
+export const reviewTable = pgTable('review', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => usersTable.id),
+  restaurantId: integer('restaurant_id')
+    .notNull()
+    .references(() => restaurantTable.id),
+  reservationId: integer('reservation_id')
+    .notNull()
+    .references(() => reservationTable.id)
+    .unique(),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
