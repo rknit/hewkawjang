@@ -40,8 +40,6 @@ router.post('/cancel', authHandler, async (req, res) => {
   return res.sendStatus(200);
 });
 
-export default router;
-
 router.post('/create', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
   const { restaurantId, reserveAt, numberOfAdult, numberOfChildren } = req.body;
@@ -70,3 +68,5 @@ router.post('/create', authHandler, async (req, res) => {
 
   return res.status(201).json(reservation);
 });
+
+export default router;
