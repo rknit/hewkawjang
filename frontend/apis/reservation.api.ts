@@ -33,32 +33,6 @@ export async function createReservation(payload: {
   }
 }
 
-// Public-facing: fetch reservations for a restaurant (supports status, offset, limit)
-export async function fetchReservationsByRestaurant(
-  restaurantId: number,
-  options?: { status?: string | string[]; offset?: number; limit?: number },
-): Promise<Reservation[] | null> {
-  try {
-    const params: any = { restaurantId };
-    if (options?.offset !== undefined) params.offset = options.offset;
-    if (options?.limit !== undefined) params.limit = options.limit;
-    if (options?.status !== undefined) {
-      params.status = Array.isArray(options.status)
-        ? options.status.join(',')
-        : options.status;
-    }
-
-    const res = await ApiService.get('/reservations/by-restaurant', {
-      params,
-    });
-
-    return res.data.map((r: any) => ReservationSchema.parse(r));
-  } catch (error) {
-    normalizeError(error);
-    return null;
-  }
-}
-
 export async function cancelReservation(
   reservationId: number,
   restaurantId: number,

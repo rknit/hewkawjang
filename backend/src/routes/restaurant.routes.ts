@@ -80,6 +80,40 @@ router.get('/:id/my-reservations', authHandler, async (req, res, next) => {
   }
 });
 
+// Public/user-facing: list reservations for a restaurant
+router.get('/:id/reservations', async (req, res, next) => {
+  try {
+    const restaurantId = Number(req.params.id);
+    if (isNaN(restaurantId)) {
+      return res.status(400).json({ error: 'restaurant id must be a number' });
+    }
+
+    const offset = req.query.offset ? Number(req.query.offset) : undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+
+    let status: any = undefined;
+    if (req.query.status) {
+      const s = req.query.status;
+      if (typeof s === 'string' && s.includes(',')) {
+        status = s.split(',').map((x) => x.trim());
+      } else {
+        status = s as string;
+      }
+    }
+
+    const reservations = await ReservationService.getReservationsByRestaurant({
+      restaurantId,
+      status,
+      offset,
+      limit,
+    });
+
+    return res.json(reservations);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/reject', authHandler, async (req, res) => {
   await RestaurantService.rejectReservation(req.body.id);
   res.status(200).send();

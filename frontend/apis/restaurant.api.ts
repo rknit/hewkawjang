@@ -91,3 +91,33 @@ export async function fetchReservationsForOwner(
     return null;
   }
 }
+
+// Public-facing: fetch reservations for a restaurant (supports status, offset, limit)
+export async function fetchReservationsByRestaurant(
+  restaurantId: number,
+  options?: { status?: string | string[]; offset?: number; limit?: number },
+): Promise<Reservation[] | null> {
+  try {
+    const params: any = {};
+
+    if (options?.offset !== undefined) params.offset = options.offset;
+    if (options?.limit !== undefined) params.limit = options.limit;
+    if (options?.status !== undefined) {
+      params.status = Array.isArray(options.status)
+        ? options.status.join(',')
+        : options.status;
+    }
+
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/reservations`,
+      {
+        params,
+      },
+    );
+
+    return res.data.map((r: any) => ReservationSchema.parse(r));
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}
