@@ -1,10 +1,10 @@
 import ApiService from '@/services/api.service';
+import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
-  UpdateRestaurantInfo,
   Restaurant,
   RestaurantSchema,
+  UpdateRestaurantInfo,
 } from '@/types/restaurant.type';
-import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import { normalizeError } from '@/utils/api-error';
 
 export async function fetchRestaurants(): Promise<Restaurant[]> {
@@ -81,7 +81,7 @@ export async function fetchReservationsForOwner(
         : options.status;
     }
 
-    const res = await ApiService.get(`/restaurants/${id}/reservations`, {
+    const res = await ApiService.get(`/restaurants/${id}/my-reservations`, {
       params,
     });
 

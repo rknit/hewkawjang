@@ -33,7 +33,7 @@ router.get('/owner/:ownerId', async (req, res) => {
 });
 
 // Owner-facing: list reservations for a restaurant (owner only)
-router.get('/:id/reservations', authHandler, async (req, res, next) => {
+router.get('/:id/my-reservations', authHandler, async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
     if (isNaN(restaurantId)) {
@@ -113,11 +113,9 @@ router.post('/', async (req, res, next) => {
     });
   } catch (err) {
     if (err instanceof Error) {
-      return res
-        .status(400)
-        .json({
-          error: 'Bad request because some fields are missing or invalid.',
-        });
+      return res.status(400).json({
+        error: 'Bad request because some fields are missing or invalid.',
+      });
     }
     next(err);
   }
