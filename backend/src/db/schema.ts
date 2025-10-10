@@ -141,5 +141,6 @@ export const reviewTable = pgTable('review', {
     .unique(),
   rating: integer('rating').notNull(),
   comment: text('comment'),
+  attachPhotos: text('attach_photos'), // URL to the photos
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
