@@ -36,6 +36,38 @@ router.get('/reject', authHandler, async (req, res) => {
   res.status(200).send();
 });
 
+router.get('/:restaurantId', async (req, res) => {
+  const restaurantId = Number(req.params.restaurantId);
+
+  if (isNaN(restaurantId)) {
+    return res.status(400).json({ error: 'restaurantId must be a number' });
+  }
+
+  const restaurant = await RestaurantService.getRestaurantById(restaurantId);
+
+  if (!restaurant) {
+    return res.status(404).json({ error: 'Restaurant not found' });
+  }
+
+  res.json(restaurant);
+});
+
+router.get('/:restaurantId/openingHours', async (req, res) => {
+  const restaurantId = Number(req.params.restaurantId);
+
+  if (isNaN(restaurantId)) {
+    return res.status(400).json({ error: 'restaurantId must be a number' });
+  }
+
+  const openingHours = await RestaurantService.getRestaurantOpeningHours(restaurantId);
+
+  if (!openingHours) {
+    return res.status(404).json({ error: 'openingHours not found' });
+  }
+
+  res.json(openingHours);
+});
+
 router.get('/update/status', authHandler, async (req, res) => {
   await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
   res.status(200).send();
