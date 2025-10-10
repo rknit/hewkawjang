@@ -13,6 +13,7 @@ import {
   usersTable,
   emailVerificationTable,
   reservationTable,
+  reviewTable
 } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -36,6 +37,8 @@ export type User = Omit<
 >;
 
 export type NewUser = InferInsertModel<typeof usersTable>;
+
+export type NewReview = InferInsertModel<typeof reviewTable>;
 
 export default class UserService {
   static async getUsers(
@@ -191,5 +194,41 @@ export default class UserService {
         profileUrl: data.profileUrl,
       })
       .where(eq(usersTable.id, data.id!));
+  }
+
+  static async createReview(data: NewReview): Promise<void> {
+    let query = await db
+      .select({ id: reservationTable.id, status: reservationTable.status })
+      .from(reservationTable)
+      .where(
+        and(
+          eq(reservationTable.userId, data.userId),
+          eq(reservationTable.restaurantId, data.restaurantId),
+        ),
+      )
+      .orderBy(desc(reservationTable.id))
+      .limit(1);
+    if (query.length === 0) {
+      throw createHttpError.BadRequest(
+        'You have never made a reservation at this restaurant',
+      );
+    }
+    const reservation = query[0];
+    if (reservation.status !== 'completed') {
+      throw createHttpError.BadRequest(
+        'You can only review after completing a reservation',
+      );
+    }
+    let dup = await db
+      .select({ id: reviewTable.id })
+      .from(reviewTable)
+      .where(eq(reviewTable.reservationId, reservation.id))
+      .limit(1);
+    if (dup.length > 0) {
+      throw createHttpError.Conflict(
+        'You have already reviewed this reservation',
+      );
+    }
+    await db.insert(reviewTable).values(data);
   }
 }
