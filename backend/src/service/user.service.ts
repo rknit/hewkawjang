@@ -197,37 +197,21 @@ export default class UserService {
   }
 
   static async createReview(data: NewReview): Promise<void> {
-    let query = await db
-      .select({ id: reservationTable.id, status: reservationTable.status })
+    let reservation = await db
+      .select()
       .from(reservationTable)
-      .where(
-        and(
-          eq(reservationTable.userId, data.userId),
-          eq(reservationTable.restaurantId, data.restaurantId),
-        ),
-      )
-      .orderBy(desc(reservationTable.id))
+      .where(eq(reservationTable.id, data.reservationId))
       .limit(1);
-    if (query.length === 0) {
-      throw createHttpError.BadRequest(
-        'You have never made a reservation at this restaurant',
-      );
+    if (reservation.length === 0) {
+      throw createHttpError.NotFound('Reservation not found');
     }
-    const reservation = query[0];
-    if (reservation.status !== 'completed') {
-      throw createHttpError.BadRequest(
-        'You can only review after completing a reservation',
-      );
-    }
-    let dup = await db
-      .select({ id: reviewTable.id })
+    let review = await db
+      .select()
       .from(reviewTable)
-      .where(eq(reviewTable.reservationId, reservation.id))
+      .where(eq(reviewTable.reservationId, data.reservationId))
       .limit(1);
-    if (dup.length > 0) {
-      throw createHttpError.Conflict(
-        'You have already reviewed this reservation',
-      );
+    if (review.length > 0) {
+      throw createHttpError.Conflict('Review for this reservation already exists');
     }
     await db.insert(reviewTable).values(data);
   }

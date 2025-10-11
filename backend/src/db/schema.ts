@@ -129,12 +129,6 @@ export const emailVerificationTable = pgTable('emailVerification', {
 
 export const reviewTable = pgTable('review', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => usersTable.id),
-  restaurantId: integer('restaurant_id')
-    .notNull()
-    .references(() => restaurantTable.id),
   reservationId: integer('reservation_id')
     .notNull()
     .references(() => reservationTable.id)

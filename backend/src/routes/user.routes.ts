@@ -59,15 +59,7 @@ router.delete('/me', authHandler, async (req, res) => {
 });
 
 router.post('/me/reviews', authHandler, async (req, res) => {
-  const userId = req.userAuthPayload?.userId;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-  await UserService.createReview({
-      ...req.body,
-      userId: userId,
-    });
+  await UserService.createReview(req.body);
     res.status(201).send();
 });
 
