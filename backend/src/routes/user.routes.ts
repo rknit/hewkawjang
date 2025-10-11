@@ -58,4 +58,9 @@ router.delete('/me', authHandler, async (req, res) => {
   });
 });
 
+router.post('/me/reviews', authHandler, async (req, res) => {
+  await UserService.createReview(req.body);
+    res.status(201).send();
+});
+
 export default router;

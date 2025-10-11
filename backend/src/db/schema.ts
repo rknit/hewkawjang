@@ -126,3 +126,15 @@ export const emailVerificationTable = pgTable('emailVerification', {
   otp: text('otp').notNull(),
   sendTime: timestamp('sendTime').notNull(),
 });
+
+export const reviewTable = pgTable('review', {
+  id: serial('id').primaryKey(),
+  reservationId: integer('reservation_id')
+    .notNull()
+    .references(() => reservationTable.id)
+    .unique(),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  attachPhotos: text('attach_photos').array(), // URL to the photos
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
