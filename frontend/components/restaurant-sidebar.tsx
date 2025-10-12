@@ -1,63 +1,146 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image } from "react-native";
-import { Calendar, BarChart2, Settings } from "lucide-react-native";
+import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { Calendar, BarChart2, Settings } from 'lucide-react-native';
 
-export default function Sidebar() {
+interface SidebarProps {
+  setContent: (content: string) => void;
+}
+
+export default function Sidebar({ setContent }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
+  const [isSetting, setIsSetting] = useState(false);
+  const [isDashboard, setIsDashboard] = useState(false);
+  const [isReservation, setIsReservation] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
 
   const toggleStatus = () => {
     setIsOpen(!isOpen);
   };
 
+  const setStates = (i: number) => {
+    if (i === 1) {
+      setIsSetting(false);
+      setIsDashboard(false);
+      setIsReservation(false);
+      setIsPreview(true);
+      setContent('preview');
+    }
+    if (i === 2) {
+      setIsSetting(false);
+      setIsDashboard(false);
+      setIsPreview(false);
+      setIsReservation(true);
+      setContent('reservation');
+    }
+    if (i === 3) {
+      setIsSetting(false);
+      setIsReservation(false);
+      setIsPreview(false);
+      setIsDashboard(true);
+      setContent('dashboard');
+    }
+    if (i === 4) {
+      setIsDashboard(false);
+      setIsReservation(false);
+      setIsPreview(false);
+      setIsSetting(true);
+      setContent('settings');
+    }
+  };
+
   return (
     <View className="w-64 h-full bg-[#faf7f2] p-4 border-r border-gray-200 items-center">
       {/* Main column */}
-      <View className="flex-1">
+      <View className="flex-1 gap-8 w-full top-5">
         {/* Menu items */}
-        <View className="flex-col gap-6">
+        <View className="flex-col ">
           {/* Restaurant Preview */}
-          <TouchableOpacity className="flex-row items-center gap-3">
-            <Image
-              source={{ uri: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png" }}
-              className="w-6 h-6"
-            />
-            <Text className="text-black text-base font-semibold">
-              Restaurant Preview
-            </Text>
+          <TouchableOpacity
+            className={`${isPreview ? 'bg-orange-500' : 'bg-[#faf7f2]'}  pb-6`}
+            onPress={() => setStates(1)}
+          >
+            <View className="flex-row top-3 center gap-3 left-3">
+              <Image
+                source={{
+                  uri: 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png',
+                }}
+                className="w-6 h-6"
+              />
+              <Text
+                className={`${isPreview ? 'text-white' : 'text-black'} text-base font-semibold`}
+              >
+                Restaurant Preview
+              </Text>
+            </View>
           </TouchableOpacity>
 
           {/* Reservation */}
-          <TouchableOpacity className="flex-row items-center gap-3">
-            <Calendar size={28} color="black" />
-            <Text className="text-black text-base font-semibold">Reservation</Text>
+          <TouchableOpacity
+            className={`${isReservation ? 'bg-orange-500' : 'bg-[#faf7f2]'}  pb-6`}
+            onPress={() => setStates(2)}
+          >
+            <View className="flex-row top-3 center gap-3 left-3">
+              <Calendar
+                size={28}
+                color={`${isReservation ? 'white' : 'black'}`}
+              />
+              <Text
+                className={`${isReservation ? 'text-white' : 'text-black'} text-base font-semibold`}
+              >
+                Reservation
+              </Text>
+            </View>
           </TouchableOpacity>
 
           {/* Dashboard */}
-          <TouchableOpacity className="flex-row items-center gap-3">
-            <BarChart2 size={28} color="black" />
-            <Text className="text-black text-base font-semibold">Dashboard</Text>
+          <TouchableOpacity
+            className={`${isDashboard ? 'bg-orange-500' : 'bg-[#faf7f2]'}  pb-6`}
+            onPress={() => setStates(3)}
+          >
+            <View className="flex-row top-3 center gap-3 left-3">
+              <BarChart2
+                size={28}
+                color={`${isDashboard ? 'white' : 'black'}`}
+              />
+              <Text
+                className={`${isDashboard ? 'text-white' : 'text-black'} text-base font-semibold`}
+              >
+                Dashboard
+              </Text>
+            </View>
           </TouchableOpacity>
 
           {/* Settings */}
-          <TouchableOpacity className="flex-row items-center gap-3 pb-6">
-            <Settings size={28} color="black" />
-            <Text className="text-black text-base font-semibold">Settings</Text>
+          <TouchableOpacity
+            className={`${isSetting ? 'bg-orange-500' : 'bg-[#faf7f2]'}  pb-6`}
+            onPress={() => setStates(4)}
+          >
+            <View className="flex-row top-3 center gap-3 left-3">
+              <Settings size={28} color={`${isSetting ? 'white' : 'black'}`} />
+              <Text
+                className={`${isSetting ? 'text-white' : 'text-black'} text-base font-semibold`}
+              >
+                Settings
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
-
-        {/* Footer: Status + Button */}
-        <View className="mt-auto gap-2 items-center">
-          <Text className={`${isOpen ? 'text-green-600' : 'text-red-600'} font-medium`}>
-            Currently The restaurant is {isOpen ? 'Open' : 'Closed'}
+      </View>
+      {/* Footer: Status + Button */}
+      <View className="gap-20 items-center">
+        <Text
+          className={`${isOpen ? 'text-green-600' : 'text-red-600'} font-medium`}
+        >
+          Currently The restaurant is {isOpen ? 'Open' : 'Closed'}
+        </Text>
+        <TouchableOpacity
+          onPress={toggleStatus}
+          className={`px-6 py-2 rounded-md items-center ${isOpen ? 'bg-red-500' : 'bg-green-500'}`}
+        >
+          <Text className="text-white font-semibold">
+            {isOpen ? 'Close Restaurant' : 'Open Restaurant'}
           </Text>
-          <TouchableOpacity
-            onPress={toggleStatus}
-            className={`px-6 py-2 rounded-md items-center ${isOpen ? 'bg-red-500' : 'bg-green-500'}`}>
-    <Text className="text-white font-semibold">
-    {isOpen ? 'Close Restaurant' : 'Open Restaurant'}
-    </Text>
-    </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
