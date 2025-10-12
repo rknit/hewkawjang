@@ -13,7 +13,7 @@ import {
   usersTable,
   emailVerificationTable,
   reservationTable,
-  reviewTable
+  reviewTable,
 } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -196,6 +196,16 @@ export default class UserService {
       .where(eq(usersTable.id, data.id!));
   }
 
+  static async getUserById(id: number): Promise<User | undefined> {
+    const rows = await db
+      .select(non_sensitive_user_fields)
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
+
+    return rows[0];
+  }
+
   static async createReview(data: NewReview): Promise<void> {
     let reservation = await db
       .select()
@@ -211,7 +221,9 @@ export default class UserService {
       .where(eq(reviewTable.reservationId, data.reservationId))
       .limit(1);
     if (review.length > 0) {
-      throw createHttpError.Conflict('Review for this reservation already exists');
+      throw createHttpError.Conflict(
+        'Review for this reservation already exists',
+      );
     }
     await db.insert(reviewTable).values(data);
   }

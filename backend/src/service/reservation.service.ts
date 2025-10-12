@@ -140,4 +140,25 @@ export default class ReservationService {
 
     return reservations;
   }
+
+  static async updateReservationStatus(
+    reservationId: number,
+    newStatus: Reservation['status'],
+  ): Promise<void> {
+    // ensure reservation exists
+    const rows = await db
+      .select()
+      .from(reservationTable)
+      .where(eq(reservationTable.id, reservationId))
+      .limit(1);
+
+    if (!rows || rows.length === 0) {
+      throw new createHttpError.NotFound('Reservation not found');
+    }
+
+    await db
+      .update(reservationTable)
+      .set({ status: newStatus })
+      .where(eq(reservationTable.id, reservationId));
+  }
 }

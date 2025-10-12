@@ -20,3 +20,13 @@ export async function deleteCurrentUser(): Promise<boolean> {
     return false;
   }
 }
+
+export async function fetchUserById(id: number): Promise<User | null> {
+  try {
+    const res = await ApiService.get(`/users/${id}`);
+    return UserSchema.parse(res.data);
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}

@@ -88,4 +88,46 @@ router.get('/:id/reservations/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
+router.patch('/:id/status', authHandler, async (req, res, next) => {
+  try {
+    const reservationId = Number(req.params.id);
+    if (isNaN(reservationId)) {
+      return res.status(400).json({ error: 'reservation id must be a number' });
+    }
+
+    const { status } = req.body;
+    if (!status || typeof status !== 'string') {
+      return res.status(400).json({ error: 'status is required' });
+    }
+
+    const allowed = [
+      'unconfirmed',
+      'expired',
+      'confirmed',
+      'cancelled',
+      'rejected',
+      'completed',
+      'uncompleted',
+    ];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: 'invalid status value' });
+    }
+
+    const updated = await ReservationService.updateReservationStatus(
+      reservationId,
+      status as
+        | 'unconfirmed'
+        | 'expired'
+        | 'confirmed'
+        | 'cancelled'
+        | 'rejected'
+        | 'completed'
+        | 'uncompleted',
+    );
+    return res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

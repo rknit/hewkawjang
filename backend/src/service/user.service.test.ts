@@ -318,3 +318,43 @@ describe('User Service', () => {
     });
   });
 });
+
+describe('getUserById (additional tests)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should return a user when found', async () => {
+    const mockUser: any = {
+      id: 5,
+      firstName: 'Found',
+      lastName: 'User',
+      email: 'found@example.com',
+      phoneNo: '+000',
+      displayName: 'Found',
+      profileUrl: null,
+      isDeleted: false,
+    };
+
+    const mockWhere = jest.fn().mockResolvedValue([mockUser]);
+    const mockFrom = jest.fn().mockReturnValue({ where: mockWhere });
+    const mockSelect = jest.fn().mockReturnValue({ from: mockFrom });
+    db.select = mockSelect;
+
+    const result = await UserService.getUserById(5);
+
+    expect(result).toEqual(mockUser);
+    expect(mockFrom).toHaveBeenCalledWith(usersTable);
+    expect(mockWhere).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it('should return undefined when user not found', async () => {
+    const mockWhere = jest.fn().mockResolvedValue([]);
+    const mockFrom = jest.fn().mockReturnValue({ where: mockWhere });
+    const mockSelect = jest.fn().mockReturnValue({ from: mockFrom });
+    db.select = mockSelect;
+
+    const result = await UserService.getUserById(999);
+    expect(result).toBeUndefined();
+  });
+});

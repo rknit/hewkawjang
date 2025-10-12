@@ -48,3 +48,16 @@ export async function cancelReservation(
     return false;
   }
 }
+
+export async function updateReservationStatus(
+  reservationId: number,
+  status: string,
+): Promise<boolean> {
+  try {
+    await ApiService.patch(`/reservations/${reservationId}/status`, { status });
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
