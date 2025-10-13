@@ -7,7 +7,7 @@ import {
   timestamp,
   pgEnum,
   boolean,
-  uniqueIndex
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
@@ -43,7 +43,6 @@ export const dayOfWeekEnum = pgEnum('day_of_week', [
   'saturday',
 ]);
 
-
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
   ownerId: integer('owner_id')
@@ -51,6 +50,7 @@ export const restaurantTable = pgTable('restaurant', {
     .references(() => usersTable.id),
   name: text('name').notNull().unique(),
   phoneNo: text('phone_no').notNull(),
+  wallet: integer('wallet').notNull().default(0),
   // address
   houseNo: text('house_no'),
   village: text('village'),
@@ -63,11 +63,15 @@ export const restaurantTable = pgTable('restaurant', {
   postalCode: text('postal_code'),
   // detail
   priceRange: integer('priceRange'),
-  status: restaurantStatusEnum('status').notNull().default('closed'),  // open/close daily ops
-  activation: restaurantActivationEnum('activation').notNull().default('active'), // activate/deactivate restaurant
+  status: restaurantStatusEnum('status').notNull().default('closed'), // open/close daily ops
+  activation: restaurantActivationEnum('activation')
+    .notNull()
+    .default('active'), // activate/deactivate restaurant
 });
 
-export const restaurantHoursTable = pgTable('restaurant_hours', {
+export const restaurantHoursTable = pgTable(
+  'restaurant_hours',
+  {
     id: serial('id').primaryKey(),
     restaurantId: integer('restaurant_id')
       .notNull()
@@ -81,11 +85,10 @@ export const restaurantHoursTable = pgTable('restaurant_hours', {
     // UNIQUE constraint: one entry per restaurant per day
     uniqueRestaurantDay: uniqueIndex('uniq_restaurant_day').on(
       t.restaurantId,
-      t.dayOfWeek
+      t.dayOfWeek,
     ),
-  })
+  }),
 );
-
 
 export const reservationStatusEnum = pgEnum('reservation_status', [
   'unconfirmed',

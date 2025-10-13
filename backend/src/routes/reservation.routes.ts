@@ -23,19 +23,16 @@ router.get('/unconfirmed/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
-router.post('/cancel', authHandler, async (req, res) => {
+router.post('/cancel/:id', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
-  const { reservationId, restaurantId } = req.body;
-  if (!reservationId || !userId || !restaurantId) {
-    return res
-      .status(400)
-      .json({ error: 'reservationId, userId and restarantId are required' });
+  const reservationId = Number(req.params.id);
+  if (!reservationId || !userId) {
+    return res.status(400).json({ error: 'reservationId is required' });
   }
 
   await ReservationService.cancelReservation({
     reservationId,
     userId,
-    restaurantId,
   });
   return res.sendStatus(200);
 });
@@ -67,6 +64,28 @@ router.post('/create', authHandler, async (req, res) => {
   });
 
   return res.status(201).json(reservation);
+});
+
+router.get('/:id/reservations/inspect', async (req, res) => {
+  const restaurantId = Number(req.params.id);
+  if (isNaN(restaurantId)) {
+    return res.status(400).json({ error: 'restaurant id must be a number' });
+  }
+
+  const year = req.body.year;
+  const month = req.body.month;
+  if (!year || !month || month < 1 || month > 12) {
+    return res
+      .status(400)
+      .json({ error: 'year and month (1-12) are required' });
+  }
+  const reservations =
+    await ReservationService.getReservationsByRestaurantIdInOneMonth(
+      restaurantId,
+      month,
+      year,
+    );
+  return res.json(reservations);
 });
 
 export default router;

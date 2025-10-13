@@ -1,4 +1,4 @@
-import { InferSelectModel, eq, and, inArray, asc } from 'drizzle-orm';
+import { InferSelectModel, eq, and, inArray, asc, gte, lt } from 'drizzle-orm';
 import { reservationTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -66,15 +66,13 @@ export default class ReservationService {
   static async cancelReservation(data: {
     reservationId: number;
     userId: number;
-    restaurantId: number;
   }): Promise<void> {
     let reservationId = data.reservationId;
-    let userId = data.userId;
-    let restarantId = data.restaurantId;
+
     let reservation = await db
       .select()
       .from(reservationTable)
-      .where(eq(reservationTable.id, reservationId));
+      .where(eq(reservationTable.restaurantId, reservationId));
 
     if (!reservation || reservation.length === 0) {
       throw new createHttpError.NotFound('Reservation not found');
@@ -121,5 +119,25 @@ export default class ReservationService {
       .returning();
 
     return inserted[0];
+  }
+
+  static async getReservationsByRestaurantIdInOneMonth(
+    restarantId: number,
+    month: number,
+    year: number,
+  ): Promise<Reservation[]> {
+    const reservations = await db
+      .select()
+      .from(reservationTable)
+      .orderBy(reservationTable.reserveAt)
+      .where(
+        and(
+          eq(reservationTable.restaurantId, restarantId),
+          gte(reservationTable.reserveAt, new Date(year, month, 1)),
+          lt(reservationTable.reserveAt, new Date(year, month + 1, 1)),
+        ),
+      );
+
+    return reservations;
   }
 }
