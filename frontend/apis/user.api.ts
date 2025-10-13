@@ -21,6 +21,16 @@ export async function deleteCurrentUser(): Promise<boolean> {
   }
 }
 
+export async function fetchUserById(id: number): Promise<User | null> {
+  try {
+    const res = await ApiService.get(`/users/${id}`);
+    return UserSchema.parse(res.data);
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}
+
 export async function submitReview(
   reservationId: number,
   review: { rating: number; attachPhotos: string[]; comment: string })

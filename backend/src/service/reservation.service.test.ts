@@ -280,4 +280,50 @@ describe('Reservation Service', () => {
       );
     });
   });
+
+  describe('updateReservationStatus', () => {
+    let mockSelect: jest.Mock;
+    let mockFrom: jest.Mock;
+    let mockWhere: jest.Mock;
+    let mockUpdate: jest.Mock;
+    let mockSet: jest.Mock;
+    let mockWhereUpdate: jest.Mock;
+
+    function setupSelectMock(returnValue: Reservation[]) {
+      mockWhere = jest.fn().mockResolvedValue(returnValue);
+      mockFrom = jest.fn().mockReturnValue({ where: mockWhere });
+      mockSelect = jest.fn().mockReturnValue({ from: mockFrom });
+      db.select = mockSelect;
+    }
+
+    function setupUpdateMock() {
+      mockWhereUpdate = jest.fn().mockResolvedValue(undefined);
+      mockSet = jest.fn().mockReturnValue({ where: mockWhereUpdate });
+      mockUpdate = jest.fn().mockReturnValue({ set: mockSet });
+      db.update = mockUpdate;
+    }
+
+    it('should update status when reservation exists', async () => {
+      const reservation = mockReservations[1];
+      setupSelectMock([reservation]);
+      setupUpdateMock();
+
+      await expect(
+        ReservationService.updateReservationStatus(reservation.id, 'cancelled'),
+      ).resolves.toBeUndefined();
+
+      expect(mockSelect).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalledWith({ status: 'cancelled' });
+      expect(mockWhereUpdate).toHaveBeenCalledWith(expect.any(Object));
+    });
+
+    it('should throw NotFound if reservation does not exist', async () => {
+      setupSelectMock([]);
+
+      await expect(
+        ReservationService.updateReservationStatus(9999, 'confirmed'),
+      ).rejects.toThrow('Reservation not found');
+    });
+  });
 });

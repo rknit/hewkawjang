@@ -116,4 +116,35 @@ describe('User Routes', () => {
         });
     });
   });
+
+  describe('GET /users/:id', () => {
+    it('should return 200 and user data when found', async () => {
+      const mockUser = {
+        id: 5,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'a@b.com',
+      };
+      (UserService.getUserById as jest.Mock).mockResolvedValue(mockUser);
+
+      await request(app)
+        .get('/users/5')
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toEqual(mockUser);
+          expect(UserService.getUserById).toHaveBeenCalledWith(5);
+        });
+    });
+
+    it('should return 404 when user not found', async () => {
+      (UserService.getUserById as jest.Mock).mockResolvedValue(undefined);
+
+      await request(app)
+        .get('/users/999')
+        .expect(404)
+        .then((res) => {
+          expect(res.body).toEqual({ message: 'User not found' });
+        });
+    });
+  });
 });
