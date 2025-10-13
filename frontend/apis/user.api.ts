@@ -30,3 +30,19 @@ export async function fetchUserById(id: number): Promise<User | null> {
     return null;
   }
 }
+
+export async function submitReview(
+  reservationId: number,
+  review: { rating: number; attachPhotos: string[]; comment: string })
+: Promise<boolean> {
+  try {
+    await ApiService.post('/users/me/reviews', {
+      reservationId,
+      ...review,
+    });
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
