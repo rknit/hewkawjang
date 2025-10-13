@@ -166,8 +166,9 @@ export default function ReviewModal({
               value={text}
               onChangeText={setText}
               placeholder="Share your experience..."
+              placeholderTextColor="#9ca3af"
               multiline
-              className="border border-orange-300 rounded-xl p-3 text-base h-28 mb-4 bg-orange-50/50"
+              className="border border-orange-300 hover:border-orange-500 rounded-xl p-3 text-base h-28 mb-4 bg-orange-50/50"
             />
 
             {/* Submit Button */}
