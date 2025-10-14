@@ -20,3 +20,29 @@ export async function deleteCurrentUser(): Promise<boolean> {
     return false;
   }
 }
+
+export async function fetchUserById(id: number): Promise<User | null> {
+  try {
+    const res = await ApiService.get(`/users/${id}`);
+    return UserSchema.parse(res.data);
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}
+
+export async function submitReview(
+  reservationId: number,
+  review: { rating: number; attachPhotos: string[]; comment: string })
+: Promise<boolean> {
+  try {
+    await ApiService.post('/users/me/reviews', {
+      reservationId,
+      ...review,
+    });
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}

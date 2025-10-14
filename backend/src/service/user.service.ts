@@ -13,6 +13,7 @@ import {
   usersTable,
   emailVerificationTable,
   reservationTable,
+  reviewTable,
 } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -36,6 +37,8 @@ export type User = Omit<
 >;
 
 export type NewUser = InferInsertModel<typeof usersTable>;
+
+export type NewReview = InferInsertModel<typeof reviewTable>;
 
 export default class UserService {
   static async getUsers(
@@ -191,5 +194,37 @@ export default class UserService {
         profileUrl: data.profileUrl,
       })
       .where(eq(usersTable.id, data.id!));
+  }
+
+  static async getUserById(id: number): Promise<User | undefined> {
+    const rows = await db
+      .select(non_sensitive_user_fields)
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
+
+    return rows[0];
+  }
+
+  static async createReview(data: NewReview): Promise<void> {
+    let reservation = await db
+      .select()
+      .from(reservationTable)
+      .where(eq(reservationTable.id, data.reservationId))
+      .limit(1);
+    if (reservation.length === 0) {
+      throw createHttpError.NotFound('Reservation not found');
+    }
+    let review = await db
+      .select()
+      .from(reviewTable)
+      .where(eq(reviewTable.reservationId, data.reservationId))
+      .limit(1);
+    if (review.length > 0) {
+      throw createHttpError.Conflict(
+        'Review for this reservation already exists',
+      );
+    }
+    await db.insert(reviewTable).values(data);
   }
 }

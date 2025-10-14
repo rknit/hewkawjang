@@ -58,4 +58,24 @@ router.delete('/me', authHandler, async (req, res) => {
   });
 });
 
+router.post('/me/reviews', authHandler, async (req, res) => {
+  await UserService.createReview(req.body);
+  res.status(201).send();
+});
+
+// Get user by id (public)
+router.get('/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid user id' });
+  }
+
+  const user = await UserService.getUserById(id);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  res.json(user);
+});
+
 export default router;

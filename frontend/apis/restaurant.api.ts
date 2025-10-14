@@ -1,8 +1,9 @@
 import ApiService from '@/services/api.service';
+import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
-  UpdateRestaurantInfo,
   Restaurant,
   RestaurantSchema,
+  UpdateRestaurantInfo,
 } from '@/types/restaurant.type';
 import { normalizeError } from '@/utils/api-error';
 
@@ -39,7 +40,7 @@ export async function updateRestaurantInfo(
     normalizeError(error);
   }
 }
-  
+
 export async function setRestaurantActivation(
   id: number,
   status: 'active' | 'inactive',
@@ -52,12 +53,71 @@ export async function setRestaurantActivation(
 }
 
 export async function updateRestaurantStatus(
-    id: number,
-    status: 'open' | 'closed',
-  ): Promise<void> {
+  id: number,
+  status: 'open' | 'closed',
+): Promise<void> {
   try {
-    await ApiService.put('/restaurants/update/status', { id: id, status: status });
+    await ApiService.put('/restaurants/update/status', {
+      id: id,
+      status: status,
+    });
   } catch (error) {
     normalizeError(error);
+  }
+}
+
+// Owner-facing: fetch reservations for a restaurant (owner must be authenticated)
+export async function fetchReservationsForOwner(
+  id: number,
+  options?: { status?: string | string[]; offset?: number; limit?: number },
+): Promise<Reservation[] | null> {
+  try {
+    const params: any = {};
+    if (options?.offset !== undefined) params.offset = options.offset;
+    if (options?.limit !== undefined) params.limit = options.limit;
+    if (options?.status !== undefined) {
+      params.status = Array.isArray(options.status)
+        ? options.status.join(',')
+        : options.status;
+    }
+
+    const res = await ApiService.get(`/restaurants/${id}/my-reservations`, {
+      params,
+    });
+
+    return res.data.map((r: any) => ReservationSchema.parse(r));
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}
+
+// Public-facing: fetch reservations for a restaurant (supports status, offset, limit)
+export async function fetchReservationsByRestaurant(
+  restaurantId: number,
+  options?: { status?: string | string[]; offset?: number; limit?: number },
+): Promise<Reservation[] | null> {
+  try {
+    const params: any = {};
+
+    if (options?.offset !== undefined) params.offset = options.offset;
+    if (options?.limit !== undefined) params.limit = options.limit;
+    if (options?.status !== undefined) {
+      params.status = Array.isArray(options.status)
+        ? options.status.join(',')
+        : options.status;
+    }
+
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/reservations`,
+      {
+        params,
+      },
+    );
+
+    return res.data.map((r: any) => ReservationSchema.parse(r));
+  } catch (error) {
+    normalizeError(error);
+    return null;
   }
 }

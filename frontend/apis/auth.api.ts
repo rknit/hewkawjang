@@ -11,7 +11,8 @@ export async function login(email: string, password: string): Promise<void> {
 
   try {
     // use axios here since we're not logged in yet
-    const BASE_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+    const BASE_URL =
+      process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8080';
     const res = await axios.post(
       `${BASE_URL}/auth/login`,
       {
@@ -64,7 +65,7 @@ export async function logout(): Promise<void> {
 export async function register(email: string): Promise<void> {
   try {
     await axios.post(
-      `${process.env.BACKEND_URL || 'http://localhost:8080'}/users/register`,
+      `${process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/users/register`,
       {
         email: email,
       },
@@ -90,7 +91,7 @@ export async function verify(
 ): Promise<void> {
   try {
     await axios.post(
-      `${process.env.BACKEND_URL || 'http://localhost:8080'}/users/verify`,
+      `${process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8080'}/users/verify`,
       {
         firstName: first_name,
         lastName: last_name,

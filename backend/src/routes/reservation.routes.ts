@@ -23,55 +23,111 @@ router.get('/unconfirmed/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
-router.post('/cancel', authHandler, async (req, res) => {
+router.post('/cancel/:id', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
-  const { reservationId, restaurantId } = req.body;
-  if (!reservationId || !userId || !restaurantId) {
-    return res
-      .status(400)
-      .json({ error: 'reservationId, userId and restarantId are required' });
+  const reservationId = Number(req.params.id);
+  if (!reservationId || !userId) {
+    return res.status(400).json({ error: 'reservationId is required' });
   }
 
   await ReservationService.cancelReservation({
     reservationId,
     userId,
-    restaurantId,
   });
   return res.sendStatus(200);
 });
 
-export default router;
+router.post('/create', authHandler, async (req, res) => {
+  const userId = req.userAuthPayload?.userId;
+  const { restaurantId, reserveAt, numberOfAdult, numberOfChildren } = req.body;
 
+  if (!userId || !restaurantId || !reserveAt) {
+    return res
+      .status(400)
+      .json({ error: 'userId, restaurantId and reserveAt are required' });
+  }
 
-router.post('/create', authHandler, async (req, res, next) => {
-  try {
-    const userId = req.userAuthPayload?.userId;
-    const { restaurantId, reserveAt,
-            numberOfAdult, numberOfChildren } = req.body;
-
-    if (!userId || !restaurantId || !reserveAt) {
-      return res.status(400).json({ error: 'userId, restaurantId and reserveAt are required' });
-    }
-
-    // Must be at least 30 minutes ahead
-    const reserveTime = new Date(reserveAt);
-    if (reserveTime.getTime() - Date.now() < 30 * 60 * 1000) {
-      return res
-        .status(400)
-        .json({ error: 'Reservation must be made at least 30 minutes in advance' });
-    }
-
-    const reservation = await ReservationService.createReservation({
-      userId,
-      restaurantId,
-      reserveAt: reserveTime,
-      numberOfAdult,
-      numberOfChildren,
- 
+  // Must be at least 30 minutes ahead
+  const reserveTime = new Date(reserveAt);
+  if (reserveTime.getTime() - Date.now() < 30 * 60 * 1000) {
+    return res.status(400).json({
+      error: 'Reservation must be made at least 30 minutes in advance',
     });
+  }
 
-    return res.status(201).json(reservation);
+  const reservation = await ReservationService.createReservation({
+    userId,
+    restaurantId,
+    reserveAt: reserveTime,
+    numberOfAdult,
+    numberOfChildren,
+  });
+
+  return res.status(201).json(reservation);
+});
+
+router.get('/:id/reservations/inspect', async (req, res) => {
+  const restaurantId = Number(req.params.id);
+  if (isNaN(restaurantId)) {
+    return res.status(400).json({ error: 'restaurant id must be a number' });
+  }
+
+  const year = req.body.year;
+  const month = req.body.month;
+  if (!year || !month || month < 1 || month > 12) {
+    return res
+      .status(400)
+      .json({ error: 'year and month (1-12) are required' });
+  }
+  const reservations =
+    await ReservationService.getReservationsByRestaurantIdInOneMonth(
+      restaurantId,
+      month,
+      year,
+    );
+  return res.json(reservations);
+});
+
+router.patch('/:id/status', authHandler, async (req, res, next) => {
+  try {
+    const reservationId = Number(req.params.id);
+    if (isNaN(reservationId)) {
+      return res.status(400).json({ error: 'reservation id must be a number' });
+    }
+
+    const { status } = req.body;
+    if (!status || typeof status !== 'string') {
+      return res.status(400).json({ error: 'status is required' });
+    }
+
+    const allowed = [
+      'unconfirmed',
+      'expired',
+      'confirmed',
+      'cancelled',
+      'rejected',
+      'completed',
+      'uncompleted',
+    ];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: 'invalid status value' });
+    }
+
+    const updated = await ReservationService.updateReservationStatus(
+      reservationId,
+      status as
+        | 'unconfirmed'
+        | 'expired'
+        | 'confirmed'
+        | 'cancelled'
+        | 'rejected'
+        | 'completed'
+        | 'uncompleted',
+    );
+    return res.json(updated);
   } catch (err) {
     next(err);
   }
 });
+
+export default router;

@@ -51,6 +51,7 @@ export const restaurantTable = pgTable('restaurant', {
     .references(() => usersTable.id),
   name: text('name').notNull().unique(),
   phoneNo: text('phone_no').notNull(),
+  wallet: integer('wallet').notNull().default(0),
   // address
   houseNo: text('house_no'),
   village: text('village'),
@@ -129,4 +130,16 @@ export const emailVerificationTable = pgTable('emailVerification', {
   email: text('email').notNull(),
   otp: text('otp').notNull(),
   sendTime: timestamp('sendTime').notNull(),
+});
+
+export const reviewTable = pgTable('review', {
+  id: serial('id').primaryKey(),
+  reservationId: integer('reservation_id')
+    .notNull()
+    .references(() => reservationTable.id)
+    .unique(),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  attachPhotos: text('attach_photos').array(), // URL to the photos
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });

@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
+import SimpleAlert from './simple-alert';
 import { fetchCurrentUser } from '@/apis/user.api';
 import { User } from '@/types/user.type';
-import { fetchRestaurants } from '@/apis/restaurant.api';
+import { fetchRestaurants, fetchRestaurantById } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
 import { createReservation } from '@/apis/reservation.api';
 import {
@@ -31,15 +32,18 @@ import { login } from '@/apis/auth.api';
 export default function ReservationPane({
   visible = true,
   onClose,
+  restaurantId,
 }: {
   visible: boolean;
   onClose: () => void;
+  restaurantId?: number;
 }) {
   const now = new Date();
   const [adults, setAdults] = useState<number>(2);
   const [seniors, setSeniors] = useState<number>(0);
   const [children, setChildren] = useState<number>(1);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
 
@@ -88,14 +92,23 @@ export default function ReservationPane({
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [userData, restaurants] = await Promise.all([
-          fetchCurrentUser(),
-          fetchRestaurants(),
-        ]);
+        const userData = await fetchCurrentUser();
         setUser(userData);
-        // Use the first available restaurant (you can modify this logic as needed)
-        if (restaurants && restaurants.length > 0) {
-          setRestaurant(restaurants[0]);
+
+        if (restaurantId != null) {
+          const r = await fetchRestaurantById(restaurantId);
+          if (r) {
+            setRestaurant(r);
+          } else {
+            const restaurant = await fetchRestaurantById(1);
+            console.log(restaurant);
+            setRestaurant(restaurant);
+          }
+        } else {
+          const restaurants = await fetchRestaurants();
+          if (restaurants && restaurants.length > 0) {
+            setRestaurant(restaurants[0]);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -105,7 +118,7 @@ export default function ReservationPane({
     if (visible) {
       loadData();
     }
-  }, [visible]);
+  }, [visible, restaurantId]);
 
   const totalGuests = adults + seniors + children;
 
@@ -129,9 +142,8 @@ export default function ReservationPane({
       };
 
       await createReservation(payload);
-      Alert.alert('Success', 'Reservation created successfully');
       setShowConfirmation(false);
-      onClose();
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error('Failed to create reservation:', error);
       Alert.alert('Error', 'Failed to create reservation. Please try again.');
@@ -140,6 +152,11 @@ export default function ReservationPane({
 
   function onCancelConfirmation() {
     setShowConfirmation(false);
+  }
+
+  function onSuccessAlertClose() {
+    setShowSuccessAlert(false);
+    onClose();
   }
 
   // restrict calendar to 7 days range
@@ -657,6 +674,21 @@ export default function ReservationPane({
           )}
         </TouchableOpacity>
       </TouchableOpacity>
+
+      {/* Success Alert Modal */}
+      {showSuccessAlert && (
+        <Modal transparent animationType="fade">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <SimpleAlert
+              type="success"
+              title="Success!"
+              message="Your reservation has been created successfully. We look forward to serving you!"
+              buttonText="Great!"
+              onClose={onSuccessAlertClose}
+            />
+          </View>
+        </Modal>
+      )}
     </Modal>
   );
 }

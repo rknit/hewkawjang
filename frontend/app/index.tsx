@@ -1,13 +1,9 @@
 import CategoryRow from '@/components/categoryRow';
-import RestaurantGrid from '@/components/restaurantGrid';
+import RecommendedRestaurantGrid from '@/components/recom-restaurant-grid';
 import SearchPanel from '@/components/search-panel';
 import { Image, ScrollView, Text, View } from 'react-native';
 
 export default function Index() {
-  const handleAddBalance = () => {
-    console.log('Add Balance clicked!');
-  };
-
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="flex-1 gap-4 w-full">
@@ -27,7 +23,7 @@ export default function Index() {
             <SearchPanel />
           </View>
           <CategoryRow />
-          <RestaurantGrid />
+          <RecommendedRestaurantGrid />
         </View>
       </View>
     </ScrollView>

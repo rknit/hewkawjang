@@ -18,7 +18,7 @@ const port = process.env.PORT || 8080;
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'hkj-auth-client-type'],
     credentials: true,
   }),
@@ -37,7 +37,7 @@ app.get('/', (_: Request, res: Response) => {
 });
 
 app.use((_: Request, res: Response) => {
-  res.status(404).send ('Not Found');
+  res.status(404).send('Not Found');
 });
 
 // make sure error handler is the last middleware
