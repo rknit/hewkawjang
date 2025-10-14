@@ -4,6 +4,7 @@ import { useProfile } from '@/hooks/useProfile';
 import ProfileImage from '@/components/profile-image';
 import UserInfo from '@/components/user-info';
 import DeleteAccountSection from '@/components/delete-account-section';
+import { uploadImage } from '@/utils/supabase'; 
 
 export default function ProfileScreen() {
   const {

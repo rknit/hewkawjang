@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { User } from '@/types/user.type';
 import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
+import { uploadImage } from '@/utils/supabase';
+import * as ImagePicker from 'expo-image-picker';
 
 export interface UserFormData {
   displayName: string;
@@ -93,9 +95,18 @@ export const useProfile = () => {
   };
 
   // Change profile image
-  const changeProfileImage = () => {
+  const changeProfileImage = async () => {
     // TODO: Implement change profile image
-    alert('TODO: Change Profile Image');
+    const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsMultipleSelection: false,
+          quality: 0.8,
+        });
+     if (!result.canceled) {
+      const uris = result.assets.map((a) => a.uri);
+      console.log('Selected image URIs:', uris);
+      uploadImage(uris[0], `${user?.firstName}/profile.jpg`);
+    }
   };
 
   // Delete account handlers
