@@ -31,7 +31,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.2",
+    "@supabase/supabase-js": "^2.75.0",
     "@types/cors": "^2.8.19",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
