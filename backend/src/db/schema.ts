@@ -1,3 +1,4 @@
+import { is } from 'drizzle-orm';
 import {
   pgTable,
   serial,
@@ -67,6 +68,7 @@ export const restaurantTable = pgTable('restaurant', {
   activation: restaurantActivationEnum('activation')
     .notNull()
     .default('active'), // activate/deactivate restaurant
+  isDeleted: boolean('is_deleted').notNull().default(false),
 });
 
 export const restaurantHoursTable = pgTable(
