@@ -9,7 +9,7 @@ export default function SearchPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
-    district: '',
+    province: '',
     priceRange: { min: 0, max: 10000 },
     cuisineTypes: [],
     minRating: 0,
@@ -24,7 +24,7 @@ export default function SearchPanel() {
     
     const searchParams = {
       query,
-      district: filters.district || undefined,
+      province: filters.province || undefined,
       priceRange: filters.priceRange.min > 0 || filters.priceRange.max < 10000
         ? filters.priceRange 
         : undefined,
@@ -45,7 +45,7 @@ export default function SearchPanel() {
 
   const handleClearFilters = () => {
     setFilters({
-      district: '',
+      province: '',
       priceRange: { min: 0, max: 10000 },
       cuisineTypes: [],
       minRating: 0,
@@ -55,7 +55,7 @@ export default function SearchPanel() {
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.district) count++;
+    if (filters.province) count++;
     if (filters.priceRange.min > 0 || filters.priceRange.max < 10000) count++;
     if (filters.cuisineTypes.length > 0) count++;
     if (filters.minRating > 0) count++;

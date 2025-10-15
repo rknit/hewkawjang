@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TouchableOpacity, View, Text, ScrollView, TextInput } from 'react-native';
 import BaseModal from './base-modal';
+import { THAI_PROVINCES } from '@/constants/thailand-provinces';
 
 interface SearchFilters {
-  district: string;
+  province: string;
   priceRange: { min: number; max: number };
   cuisineTypes: string[];
   minRating: number;
@@ -35,6 +36,13 @@ export default function SearchFilterModal({
   onClearFilters,
   onApplySearch,
 }: SearchFilterModalProps) {
+  const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
+  const [provinceSearch, setProvinceSearch] = useState('');
+
+  const filteredProvinces = THAI_PROVINCES.filter(province =>
+    province.toLowerCase().includes(provinceSearch.toLowerCase())
+  );
+
   const cuisineTypes = ['Buffet', 'Indian', 'Italian', 'Japanese', 'Chinese'];
   const priceRanges = [
     { label: 'Any', min: 0, max: 10000 },
@@ -86,15 +94,64 @@ export default function SearchFilterModal({
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        {/* District - Compact */}
+        {/* Province - Dropdown */}
         <View className="mb-4">
-          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">District</Text>
-          <TextInput
-            className="bg-gray-100 rounded-lg p-2 text-gray-800 text-sm"
-            placeholder="Enter district"
-            value={filters.district}
-            onChangeText={(text) => updateFilters({ district: text })}
-          />
+          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">Province</Text>
+          <TouchableOpacity
+            className="bg-gray-100 rounded-lg p-2 flex-row justify-between items-center"
+            onPress={() => setShowProvinceDropdown(!showProvinceDropdown)}
+          >
+            <Text className={`text-sm ${filters.province ? 'text-gray-800' : 'text-gray-500'}`}>
+              {filters.province || 'Select Province'}
+            </Text>
+            <Text className="text-gray-400">{showProvinceDropdown ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          
+          {/* Dropdown List */}
+          {showProvinceDropdown && (
+            <View className="bg-white border border-gray-200 rounded-lg mt-1 max-h-40">
+              {/* Search Input */}
+              <View className="p-2 border-b border-gray-100">
+                <TextInput
+                  className="bg-gray-50 rounded px-2 py-1 text-sm"
+                  placeholder="Search province"
+                  value={provinceSearch}
+                  onChangeText={setProvinceSearch}
+                  autoFocus
+                />
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={true}>
+                {/* Use filtered provinces */}
+                {filteredProvinces.map((province) => (
+                  <TouchableOpacity
+                    key={province}
+                    className="py-2 px-3 border-b border-gray-100"
+                    onPress={() => {
+                      updateFilters({ province });
+                      setShowProvinceDropdown(false);
+                      setProvinceSearch('');
+                    }}
+                  >
+                    <Text className={`text-sm ${
+                      filters.province === province ? 'font-bold text-[#8B5C2A]' : 'text-gray-700'
+                    }`}>
+                      {province}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+                
+                {/* Show "No results" if no provinces match */}
+                {filteredProvinces.length === 0 && (
+                  <View className="py-4 px-3">
+                    <Text className="text-gray-500 text-sm text-center">
+                      No provinces found
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          )}
         </View>
 
         {/* Price - Compact */}

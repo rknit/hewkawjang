@@ -159,7 +159,7 @@ router.post('/search', async (req, res, next) => {
   try {
     const {
       query,
-      district,
+      province,
       priceRange,
       cuisineTypes,
       minRating,
@@ -196,7 +196,7 @@ router.post('/search', async (req, res, next) => {
 
     const searchParams = {
       query: query?.trim(),
-      district: district?.trim(),
+      province: province?.trim(),
       priceRange: priceRange || { min: 0, max: 10000 },
       cuisineTypes: Array.isArray(cuisineTypes) ? cuisineTypes : [],
       minRating: minRating || 0,

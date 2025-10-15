@@ -10,7 +10,6 @@ import {
   gte,
   lte,
   sql,
-  ilike,
   getTableColumns,
 } from 'drizzle-orm';
 import { restaurantTable, reservationTable, reviewTable } from '../db/schema';
@@ -30,7 +29,7 @@ export type Reservation = InferInsertModel<typeof reservationTable>;
 
 export interface SearchParams {
   query?: string;
-  district?: string;
+  province?: string;
   priceRange?: { min: number; max: number };
   cuisineTypes: string[];
   minRating: number;
@@ -222,7 +221,7 @@ export default class RestaurantService {
   static async searchRestaurants(params: SearchParams): Promise<SearchResult> {
     const {
       query,
-      district,
+      province,
       priceRange,
       cuisineTypes,
       minRating,
@@ -238,10 +237,9 @@ export default class RestaurantService {
       eq(restaurantTable.activation, 'active'),
       eq(restaurantTable.isDeleted, false),
     ];
-    
-    // District filter
-    if (district) {
-      conditions.push(ilike(restaurantTable.district, `%${district}%`));
+
+    if(province) {
+      conditions.push(eq(restaurantTable.province, province));
     }
 
     // Price range filter
@@ -252,15 +250,6 @@ export default class RestaurantService {
       if (priceRange.max !== undefined) {
         conditions.push(lte(restaurantTable.priceRange, priceRange.max));
       }
-    }
-
-    // Text search (fuzzy-like search using ILIKE)
-    if (query) {
-      conditions.push(
-        ilike(restaurantTable.name, `%${query}%`),
-        ilike(restaurantTable.district, `%${query}%`),
-        ilike(restaurantTable.cuisineType, `%${query}%`),
-      );
     }
 
     // Cuisine types filter
@@ -300,18 +289,21 @@ export default class RestaurantService {
       const fuseOptions = {
         keys: [
           { name: 'name', weight: 0.6 },
-          { name: 'district', weight: 0.2 },
+          { name: 'district', weight: 0.1 },
+          { name: 'subDistrict', weight: 0.1 },
           { name: 'cuisineType', weight: 0.2 },
         ],
-        threshold: 0.4,
+        threshold: 0.3,
         includeScore: true,
         ignoreLocation: true,
         findAllMatches: false,
-        minMatchCharLength: 2,
+        minMatchCharLength: 3,
+        useExtendedSearch: false,
       };
 
       const fuse = new Fuse(allResults, fuseOptions);
       const fuseResults = fuse.search(query.trim());
+
       allResults = fuseResults.map((result) => result.item);
     }
 

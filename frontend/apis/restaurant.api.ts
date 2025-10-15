@@ -125,7 +125,7 @@ export async function fetchReservationsByRestaurant(
 
 export async function searchRestaurants(params: {
   query?: string;
-  district?: string;
+  province?: string;
   priceRange?: { min: number; max: number };
   cuisineTypes: string[];
   minRating: number;
@@ -141,7 +141,7 @@ export async function searchRestaurants(params: {
     // Prepare the request body to match the backend service
     const requestBody = {
       query: params.query || '',
-      district: params.district || '',
+      province: params.province || '',
       priceRange: params.priceRange,
       cuisineTypes: params.cuisineTypes,
       minRating: params.minRating,
