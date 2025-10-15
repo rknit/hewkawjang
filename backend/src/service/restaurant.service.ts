@@ -258,6 +258,8 @@ export default class RestaurantService {
     if (query) {
       conditions.push(
         ilike(restaurantTable.name, `%${query}%`),
+        ilike(restaurantTable.district, `%${query}%`),
+        ilike(restaurantTable.cuisineType, `%${query}%`),
       );
     }
 
