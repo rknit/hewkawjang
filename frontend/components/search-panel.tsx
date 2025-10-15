@@ -76,7 +76,7 @@ export default function SearchPanel() {
         {/* Search Input */}
         <TextInput
           className="flex-1 text-[16px] text-[#8B5C2A] p-0 outline-none"
-          placeholder="Search for restaurants..."
+          placeholder="Type restaurant name, cuisine type, or district"
           placeholderTextColor="#A67C52"
           value={searchQuery}
           onChangeText={setSearchQuery}
