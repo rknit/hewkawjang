@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 
 const categories = [
   { id: 1, name: 'Buffet', image: require('../assets/images/buffet.png') },
@@ -9,21 +10,37 @@ const categories = [
 ];
 
 export default function CategoryRow() {
+  const handleCategoryPress = (categoryName: string) => {
+    const searchParams = {
+      query: '',
+      district: '',
+      priceRange: { min: 0, max: 10000 },
+      cuisineTypes: [categoryName],
+      minRating: 0,
+      sortBy: {
+        field: 'rating',
+        order: 'desc'
+      },
+      offset: 0,
+      limit: 20,
+    };
+
+    router.push({
+      pathname: '/SearchResults',
+      params: {
+        data: btoa(JSON.stringify(searchParams)),
+      }
+    });
+  };
+
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      className="flex-row space-x-6 px-4"
-    >
+    <View className="flex-row justify-between px-4 w-2/3">
       {categories.map((cat) => (
         <TouchableOpacity
           key={cat.id}
-          className="items-center"
+          className="flex flex-col items-center"
           activeOpacity={0.7}
-          style={{
-            width: 140, // or use Dimensions API for dynamic sizing
-            marginHorizontal: 8,
-          }}
+          onPress={() => handleCategoryPress(cat.name)}
         >
           <Image
             source={cat.image}
@@ -45,6 +62,6 @@ export default function CategoryRow() {
           </Text>
         </TouchableOpacity>
       ))}
-    </ScrollView>
+    </View>
   );
 }
