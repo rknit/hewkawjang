@@ -155,6 +155,69 @@ router.post('/', async (req, res, next) => {
   }
 });
 
+router.post('/search', async (req, res, next) => {
+  try {
+    const {
+      query,
+      district,
+      priceRange,
+      cuisineTypes,
+      minRating,
+      sortBy,
+      offset,
+      limit,
+    } = req.body;
+
+    // Validate sortBy if provided
+    if (sortBy && !['rating', 'price', 'name'].includes(sortBy.field)) {
+      return res.status(400).json({
+        error: 'Invalid sort field. Must be rating, price, or name',
+      });
+    }
+
+    if (sortBy && !['asc', 'desc'].includes(sortBy.order)) {
+      return res.status(400).json({
+        error: 'Invalid sort order. Must be asc or desc',
+      });
+    }
+
+    // Validate offset and limit if provided
+    if (offset !== undefined && (isNaN(offset) || offset < 0)) {
+      return res.status(400).json({
+        error: 'Invalid offset. Must be a non-negative number',
+      });
+    }
+
+    if (limit !== undefined && (isNaN(limit) || limit <= 0)) {
+      return res.status(400).json({
+        error: 'Invalid limit. Must be a positive number',
+      });
+    }
+
+    const searchParams = {
+      query: query?.trim(),
+      district: district?.trim(),
+      priceRange: priceRange || { min: 0, max: 10000 },
+      cuisineTypes: Array.isArray(cuisineTypes) ? cuisineTypes : [],
+      minRating: minRating || 0,
+      sortBy: sortBy || { field: 'rating', order: 'desc' },
+      offset: offset || 0,
+      limit: limit || 20,
+    };
+
+    const results = await RestaurantService.searchRestaurants(searchParams);
+
+    res.json({
+      restaurants: results.restaurants,
+      total: results.total,
+      hasMore: results.hasMore,
+      searchParams,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.patch('/:id/activation', authHandler, async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
