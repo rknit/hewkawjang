@@ -7,20 +7,47 @@ import {
   and,
   or,
   gt,
+  gte,
+  lte,
+  sql,
+  getTableColumns,
 } from 'drizzle-orm';
-import { restaurantTable, reservationTable } from '../db/schema';
+import { restaurantTable, reservationTable, reviewTable } from '../db/schema';
 import { db } from '../db';
 import {
   CreateRestaurantInput,
   UpdateRestaurantInfo,
 } from '../validators/restaurant.validator';
 import createHttpError from 'http-errors';
+import Fuse from 'fuse.js';
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
 export type RestaurantStatus = NewRestaurant['status'];
 export type RestaurantActivation = NewRestaurant['activation'];
 export type Reservation = InferInsertModel<typeof reservationTable>;
+
+export interface SearchParams {
+  query?: string;
+  province?: string;
+  priceRange?: { min: number; max: number };
+  cuisineTypes: string[];
+  minRating: number;
+  sortBy: { field: 'rating' | 'price' | 'name'; order: 'asc' | 'desc' };
+  offset: number;
+  limit: number;
+}
+
+export interface RestaurantWithRating extends Restaurant {
+  avgRating: number;
+  reviewCount: number;
+}
+
+export interface SearchResult {
+  restaurants: RestaurantWithRating[];
+  total: number;
+  hasMore: boolean;
+}
 
 export default class RestaurantService {
   static async getRestaurants(
@@ -189,5 +216,145 @@ export default class RestaurantService {
       .set({ isDeleted: true })
       .where(eq(restaurantTable.id, restaurantId))
       .returning();
+  }
+
+  static async searchRestaurants(params: SearchParams): Promise<SearchResult> {
+    const {
+      query,
+      province,
+      priceRange,
+      cuisineTypes,
+      minRating,
+      sortBy,
+      offset,
+      limit,
+    } = params;
+
+    const restaurantColumns = getTableColumns(restaurantTable);
+
+    // Apply filters - build conditions
+    const conditions = [
+      eq(restaurantTable.activation, 'active'),
+      eq(restaurantTable.isDeleted, false),
+    ];
+
+    if(province) {
+      conditions.push(eq(restaurantTable.province, province));
+    }
+
+    // Price range filter
+    if (priceRange) {
+      if (priceRange.min !== undefined) {
+        conditions.push(gte(restaurantTable.priceRange, priceRange.min));
+      }
+      if (priceRange.max !== undefined) {
+        conditions.push(lte(restaurantTable.priceRange, priceRange.max));
+      }
+    }
+
+    // Cuisine types filter
+    if (cuisineTypes.length > 0) {
+      conditions.push(inArray(restaurantTable.cuisineType, cuisineTypes as any));
+    }
+
+    // Base query with rating calculation and all conditions applied
+    const finalQuery = db
+      .select({
+        // All restaurant fields
+        ...restaurantColumns,
+        // Calculate average rating and review count
+        avgRating: sql<number>`COALESCE(AVG(${reviewTable.rating}), 0)`,
+        reviewCount: sql<number>`COUNT(${reviewTable.id})`,
+      })
+      .from(restaurantTable)
+      .leftJoin(
+        reservationTable,
+        eq(restaurantTable.id, reservationTable.restaurantId),
+      )
+      .leftJoin(
+        reviewTable,
+        and(
+          eq(reservationTable.id, reviewTable.reservationId),
+          eq(reservationTable.status, 'completed'), // Only count reviews from completed reservations
+        ),
+      )
+      .where(and(...conditions))
+      .groupBy(restaurantTable.id);
+
+    // Execute query to get filtered results (limit to 200 for performance)
+    let allResults = await finalQuery.limit(200);
+
+    // Apply fuzzy search 
+    if (query && query.trim().length > 0) {
+      const fuseOptions = {
+        keys: [
+          { name: 'name', weight: 0.6 },
+          { name: 'district', weight: 0.1 },
+          { name: 'subDistrict', weight: 0.1 },
+          { name: 'cuisineType', weight: 0.2 },
+        ],
+        threshold: 0.3,
+        includeScore: true,
+        ignoreLocation: true,
+        findAllMatches: false,
+        minMatchCharLength: 3,
+        useExtendedSearch: false,
+      };
+
+      const fuse = new Fuse(allResults, fuseOptions);
+      const fuseResults = fuse.search(query.trim());
+
+      allResults = fuseResults.map((result) => result.item);
+    }
+
+    // Filter by minRating
+    const ratingFilteredResults = allResults.filter(
+      (r) => r.avgRating >= minRating,
+    );
+
+    // Sort Result
+    const sortedResults = ratingFilteredResults.sort((a, b) => {
+      let aValue: number | string;
+      let bValue: number | string;
+
+      switch (sortBy.field) {
+        case 'rating':
+          aValue = a.avgRating;
+          bValue = b.avgRating;
+          break;
+        case 'price':
+          aValue = a.priceRange || 0;
+          bValue = b.priceRange || 0;
+          break;
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        default:
+          aValue = a.avgRating;
+          bValue = b.avgRating;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortBy.order === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return sortBy.order === 'asc'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+
+    // Apply pagination
+    const total = sortedResults.length;
+    const paginatedResults = sortedResults.slice(offset, offset + limit);
+    const hasMore = offset + limit < total;
+
+    return {
+      restaurants: paginatedResults,
+      total,
+      hasMore,
+    };
   }
 }
