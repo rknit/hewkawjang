@@ -44,6 +44,22 @@ export const dayOfWeekEnum = pgEnum('day_of_week', [
   'saturday',
 ]);
 
+export const cuisineTypeEnum = pgEnum('cuisine_type', [
+  'buffet',
+  'indian',
+  'italian',
+  'japanese',
+  'chinese',
+  'thai',
+  'western',
+  'korean',
+  'vietnamese',
+  'french',
+  'mediterranean',
+  'mixed',
+  'other',
+]);
+
 export const restaurantTable = pgTable('restaurant', {
   id: serial('id').primaryKey(),
   ownerId: integer('owner_id')
@@ -63,6 +79,7 @@ export const restaurantTable = pgTable('restaurant', {
   province: text('province'),
   postalCode: text('postal_code'),
   // detail
+  cuisineType: cuisineTypeEnum('cuisine').notNull().default('other'),
   priceRange: integer('priceRange'),
   status: restaurantStatusEnum('status').notNull().default('closed'), // open/close daily ops
   activation: restaurantActivationEnum('activation')
