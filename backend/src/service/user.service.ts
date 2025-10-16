@@ -227,4 +227,46 @@ export default class UserService {
     }
     await db.insert(reviewTable).values(data);
   }
+
+static async deleteReview(reviewId: number, userId: number): Promise<void> {
+  //console.log('deleteReview called with:', { reviewId, userId });
+
+  const review = await db
+    .select({
+      id: reviewTable.id,
+      reservationId: reviewTable.reservationId,
+    })
+    .from(reviewTable)
+    .where(eq(reviewTable.id, reviewId))
+    .limit(1);
+
+  //console.log('review found:', review);
+
+  if (review.length === 0) {
+    throw createHttpError.NotFound('Review not found');
+  }
+
+  const reservation = await db
+    .select({
+      userId: reservationTable.userId,
+    })
+    .from(reservationTable)
+    .where(eq(reservationTable.id, review[0].reservationId))
+    .limit(1);
+
+  //console.log('reservation found:', reservation);
+
+  if (reservation.length === 0) {
+    throw createHttpError.NotFound('Reservation not found');
+  }
+
+  if (reservation[0].userId !== userId) {
+    throw createHttpError.Forbidden('You can only delete your own review');
+  }
+
+  await db.delete(reviewTable).where(eq(reviewTable.id, reviewId));
+  //console.log('review deleted successfully');
+}
+
+
 }
