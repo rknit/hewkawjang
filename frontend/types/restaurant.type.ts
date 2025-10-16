@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { CUISINE_TYPES } from '@/constants/cuisine-types';
 
 export const UpdateRestaurantInfoSchema = z.object({
   id: z.number().int().positive(),
@@ -26,8 +27,16 @@ export const RestaurantSchema = z.object({
   district: z.string().nullable(),
   province: z.string().nullable(),
   postalCode: z.string().nullable(),
+  cuisineType: z.enum(CUISINE_TYPES),
   priceRange: z.number().nullable(),
   status: z.enum(['open', 'closed']),
   activation: z.enum(['active', 'inactive']),
+  isDeleted: z.boolean(),
 });
+
+export type RestaurantWithRating = z.infer<typeof RestaurantSchema> & {
+  avgRating: number;
+  reviewCount: number;
+};
+
 export type Restaurant = z.infer<typeof RestaurantSchema>;
