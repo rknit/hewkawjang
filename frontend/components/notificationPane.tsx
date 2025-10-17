@@ -39,7 +39,7 @@ export default function NotificationPane({
           {/* header */}
           <Text className="text-black text-xl">Notification</Text>
           <View className="flex-row justify-between items-center">
-            <Text className="text-[#575757] text-s">
+            <Text className="text-[#575757] text-sm">
               Stay Update With Your Latest Notification
             </Text>
 
@@ -49,7 +49,7 @@ export default function NotificationPane({
               onPress={handleMarkAllAsRead}
             >
               <Ionicons name="checkmark-done-outline" size={20} color="black" />
-              <Text className="text-black text-s">Mark all as read</Text>
+              <Text className="text-black text-sm">Mark all as read</Text>
             </TouchableOpacity>
           </View>
 

@@ -1,5 +1,6 @@
 import { View, Image, Text } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { getDateDDMMYYYY, pad } from '@/utils/date-time';
 
 export interface NotificationPaneItemProps {
   title: string;
@@ -16,6 +17,8 @@ export default function NotificationPaneItem({
   isRead,
   imageUrl,
 }: NotificationPaneItemProps) {
+  const formattedDateTime = `${getDateDDMMYYYY(datetime)} ● ${pad(datetime.getHours())}:${pad(datetime.getMinutes())}`;
+
   return (
     <View className="w-full">
       <View
@@ -38,7 +41,10 @@ export default function NotificationPaneItem({
 
         <View className="flex-col flex-1 overflow-hidden gap-1">
           <Text className="font-semibold text-xs">{title}</Text>
-          <Text className="text-xs">{message}</Text>
+          <Text className="text-xs">
+            {message}{' '}
+            <Text className="text-[#B7B7B7]">- {formattedDateTime}</Text>
+          </Text>
         </View>
       </View>
 
