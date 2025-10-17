@@ -1,32 +1,9 @@
 import CategoryRow from '@/components/categoryRow';
-import { MOCK_NOTI_DATA } from '@/components/notificationPane';
 import RecommendedRestaurantGrid from '@/components/recom-restaurant-grid';
 import SearchPanel from '@/components/search-panel';
-import { useState } from 'react';
-import { Button, Image, ScrollView, Text, View } from 'react-native';
-import { useToast } from '@/context/ToastContext';
-import { Notification } from '@/types/notification.type';
+import { Image, ScrollView, Text, View } from 'react-native';
 
 export default function Index() {
-  const toast = useToast();
-  const [notiCounter, setNotiCounter] = useState(0);
-
-  const handleNotificationPress = () => {
-    const currentIndex = notiCounter % MOCK_NOTI_DATA.length;
-    const currentNotification = MOCK_NOTI_DATA[currentIndex];
-
-    toast.show<Notification>('default', {
-      data: {
-        title: currentNotification.title,
-        message: currentNotification.message,
-        datetime: new Date(),
-        imageUrl: currentNotification.imageUrl,
-      },
-    });
-
-    setNotiCounter(notiCounter + 1);
-  };
-
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="flex-1 gap-4 w-full">
@@ -45,13 +22,6 @@ export default function Index() {
             />
             <SearchPanel />
           </View>
-
-          {/* FIXME: only for testing */}
-          <Button
-            title={`receive notification! (${notiCounter})`}
-            onPress={handleNotificationPress}
-          />
-
           <CategoryRow />
           <RecommendedRestaurantGrid />
         </View>

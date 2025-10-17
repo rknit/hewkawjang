@@ -1,11 +1,11 @@
 import { View, Text, Image } from 'react-native';
 import { getDateDDMMYYYY, pad } from '@/utils/date-time';
 
-interface DefaultNotificationProps {
+export interface DefaultNotificationProps {
   title: string;
-  message: string;
+  message: string | null;
   datetime: Date;
-  imageUrl?: string;
+  imageUrl: string | null;
 }
 
 export default function DefaultNotification({

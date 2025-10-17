@@ -176,10 +176,12 @@ export const notificationTable = pgTable('notification', {
   userId: integer('user_id')
     .notNull()
     .references(() => usersTable.id),
+  title: text('title').notNull(),
   message: text('message'),
   imageUrl: text('image_url'),
-  reservationId: integer('reservation_id')
-    .references(() => reservationTable.id),
+  reservationId: integer('reservation_id').references(
+    () => reservationTable.id,
+  ),
   notificationType: notificationTypesEnum('notification_type').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isRead: boolean('is_read').notNull().default(false),
