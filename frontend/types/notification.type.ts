@@ -1,12 +1,6 @@
-export interface NotificationData {
+export interface Notification {
   title: string;
   message: string;
   datetime: Date;
   imageUrl?: string;
-}
-
-export interface NotificationOptions {
-  id?: string;
-  duration?: number;
-  data: NotificationData;
 }

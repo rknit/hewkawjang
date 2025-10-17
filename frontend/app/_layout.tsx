@@ -2,33 +2,34 @@ import { Stack } from 'expo-router';
 import '../global.css';
 import NavBarGuest from '@/components/navbar-guest';
 import NavBarUser from '@/components/navbar-user';
-import { useEffect, useState } from 'react';
-import { isUserLoggedIn } from '@/utils/jwt';
-import AuthService from '@/services/auth.service';
-import { NotificationProvider } from '@/context/NotificationContext';
+import { ToastProvider } from '@/context/ToastContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import DefaultNotification from '@/components/notifications/defaultNotification';
 
-export default function RootLayout() {
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
-
-  const checkLogin = async () => {
-    const status = await isUserLoggedIn();
-    setLoggedIn(status);
-  };
-
-  useEffect(() => {
-    checkLogin();
-    const unsubscribe = AuthService.onAuthChange(() => checkLogin());
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+function RootLayoutContent() {
+  const { user, isLoading } = useAuth();
 
   return (
-    <NotificationProvider offsetY={80}>
-      {loggedIn === null && null /* or spinner */}
-      {loggedIn === false && <NavBarGuest />}
-      {loggedIn === true && <NavBarUser />}
+    <>
+      {isLoading && null /* or spinner */}
+      {!isLoading && user === null && <NavBarGuest />}
+      {!isLoading && user !== null && <NavBarUser />}
       <Stack screenOptions={{ headerShown: false }} />
-    </NotificationProvider>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <ToastProvider
+        offsetY={80}
+        mappings={{
+          default: DefaultNotification,
+        }}
+      >
+        <RootLayoutContent />
+      </ToastProvider>
+    </AuthProvider>
   );
 }

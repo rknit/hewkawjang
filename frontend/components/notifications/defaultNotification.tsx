@@ -1,19 +1,19 @@
 import { View, Text, Image } from 'react-native';
 import { getDateDDMMYYYY, pad } from '@/utils/date-time';
 
-interface NotificationPopupProps {
+interface DefaultNotificationProps {
   title: string;
   message: string;
   datetime: Date;
   imageUrl?: string;
 }
 
-export default function NotificationPopup({
+export default function DefaultNotification({
   title,
   message,
   datetime,
   imageUrl,
-}: NotificationPopupProps) {
+}: DefaultNotificationProps) {
   const formattedDateTime = `- ${getDateDDMMYYYY(datetime)} ● ${pad(datetime.getHours())}:${pad(datetime.getMinutes())}`;
 
   return (

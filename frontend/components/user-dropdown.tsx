@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import { logout } from '@/apis/auth.api';
+import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ export default function UserDropdown({
   visible: boolean;
   onClose: () => void;
 }) {
+  const { logout } = useAuth();
   const { user } = useProfile();
   const fullname = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   const email = user?.email || 'Loading...';

@@ -4,17 +4,18 @@ import RecommendedRestaurantGrid from '@/components/recom-restaurant-grid';
 import SearchPanel from '@/components/search-panel';
 import { useState } from 'react';
 import { Button, Image, ScrollView, Text, View } from 'react-native';
-import { useNotification } from '@/context/NotificationContext';
+import { useToast } from '@/context/ToastContext';
+import { Notification } from '@/types/notification.type';
 
 export default function Index() {
-  const notification = useNotification();
+  const toast = useToast();
   const [notiCounter, setNotiCounter] = useState(0);
 
   const handleNotificationPress = () => {
     const currentIndex = notiCounter % MOCK_NOTI_DATA.length;
     const currentNotification = MOCK_NOTI_DATA[currentIndex];
 
-    notification.show({
+    toast.show<Notification>('default', {
       data: {
         title: currentNotification.title,
         message: currentNotification.message,

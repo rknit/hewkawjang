@@ -17,45 +17,46 @@ import {
   KeyboardAvoidingView,
   SafeAreaView,
 } from 'react-native';
-import NotificationPopup from '@/components/notificationPopup';
-import {
-  NotificationData,
-  NotificationOptions,
-} from '@/types/notification.type';
 
-interface Notification {
-  id: string;
-  data: NotificationData;
-  duration: number;
-  open: boolean;
+export interface ToastOptions<T = any> {
+  id?: string;
+  duration?: number;
+  data: T;
 }
 
-interface NotificationContextType {
-  show(options: NotificationOptions): string;
+interface ToastItemInfo<T = any> {
+  id: string;
+  data: T;
+  duration: number;
+  open: boolean;
+  component: React.ComponentType<any>;
+}
+
+interface ToastContextType {
+  show<T = any>(type: string, options: ToastOptions<T>): string;
   hide(id: string): void;
   hideAll(): void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined,
-);
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export function useNotification(): NotificationContextType {
-  const context = useContext(NotificationContext);
+export function useToast(): ToastContextType {
+  const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useNotification must be used within NotificationProvider');
+    throw new Error('useToast must be used within ToastProvider');
   }
   return context;
 }
 
-// Notification Item Component
-function NotificationItem({
+// Toast Item Component
+function ToastItem({
   id,
   data,
   duration,
   open,
+  component,
   onDestroy,
-}: Notification & { onDestroy: () => void }) {
+}: ToastItemInfo & { onDestroy: () => void }) {
   const [animation] = useState(new Animated.Value(0));
   const panResponderRef = useRef<PanResponderInstance | null>(null);
   const panResponderAnimRef = useRef<Animated.ValueXY | null>(null);
@@ -181,52 +182,53 @@ function NotificationItem({
       {...getPanResponder().panHandlers}
       style={animationStyle}
     >
-      <NotificationPopup
-        title={data.title}
-        message={data.message}
-        datetime={data.datetime}
-        imageUrl={data.imageUrl}
-      />
+      {React.createElement(component, data)}
     </Animated.View>
   );
 }
 
-// Notification Provider Component
-export function NotificationProvider({
+// Toast Provider Component
+export function ToastProvider({
   children,
   offsetY = 10,
+  mappings = {},
 }: {
   children: React.ReactNode;
   offsetY?: number;
+  mappings: Record<string, React.ComponentType<any>>;
 }) {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [toasts, setToasts] = useState<ToastItemInfo[]>([]);
 
-  const show = useCallback((options: NotificationOptions): string => {
-    const id = options?.id || Math.random().toString();
+  const show = useCallback(
+    (type: string, options: ToastOptions): string => {
+      const id = options?.id || Math.random().toString();
 
-    requestAnimationFrame(() => {
-      setNotifications((prev) => [
-        {
-          id,
-          data: options.data,
-          duration: options.duration ?? 5000,
-          open: true,
-        },
-        ...prev.filter((n) => n.open),
-      ]);
-    });
+      requestAnimationFrame(() => {
+        setToasts((prev) => [
+          {
+            id,
+            data: options.data,
+            duration: options.duration ?? 5000,
+            open: true,
+            component: mappings[type],
+          },
+          ...prev.filter((n) => n.open),
+        ]);
+      });
 
-    return id;
-  }, []);
+      return id;
+    },
+    [mappings],
+  );
 
   const hide = useCallback((id: string) => {
-    setNotifications((prev) =>
+    setToasts((prev) =>
       prev.map((n) => (n.id === id ? { ...n, open: false } : n)),
     );
   }, []);
 
   const hideAll = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, open: false })));
+    setToasts((prev) => prev.map((n) => ({ ...n, open: false })));
   }, []);
 
   const contextValue = React.useMemo(
@@ -235,7 +237,7 @@ export function NotificationProvider({
   );
 
   return (
-    <NotificationContext.Provider value={contextValue}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'position' : undefined}
@@ -243,12 +245,12 @@ export function NotificationProvider({
         pointerEvents="box-none"
       >
         <SafeAreaView pointerEvents="box-none">
-          {notifications.map((notification) => (
-            <NotificationItem
+          {toasts.map((notification) => (
+            <ToastItem
               key={notification.id}
               {...notification}
               onDestroy={() => {
-                setNotifications((prev) =>
+                setToasts((prev) =>
                   prev.filter((n) => n.id !== notification.id),
                 );
               }}
@@ -256,7 +258,7 @@ export function NotificationProvider({
           ))}
         </SafeAreaView>
       </KeyboardAvoidingView>
-    </NotificationContext.Provider>
+    </ToastContext.Provider>
   );
 }
 
