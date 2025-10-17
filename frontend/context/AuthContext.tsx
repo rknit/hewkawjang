@@ -9,7 +9,8 @@ import React, {
 import { User } from '@/types/user.type';
 import { fetchCurrentUser } from '@/apis/user.api';
 import * as authApi from '@/apis/auth.api';
-import { isUserLoggedIn } from '@/utils/jwt';
+import { isJwtTokenExpired } from '@/utils/jwt';
+import TokenStorage from '@/services/token-storage.service';
 
 interface AuthContextType {
   user: User | null;
@@ -31,8 +32,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loadUser = useCallback(async () => {
     setIsLoading(true);
     try {
-      const loggedIn = await isUserLoggedIn();
-      if (loggedIn) {
+      const loggedIn = await TokenStorage.getAccessToken().then((t) =>
+        t ? !isJwtTokenExpired(t) : false,
+      );
+
+      const hasUnexpiredRefreshToken =
+        await TokenStorage.getRefreshToken().then((t) =>
+          t ? !isJwtTokenExpired(t) : false,
+        );
+
+      // If logged in or has a valid refresh token, fetch user data
+      if (loggedIn || hasUnexpiredRefreshToken) {
         const userData = await fetchCurrentUser();
         setUser(userData);
       } else {

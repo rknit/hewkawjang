@@ -136,3 +136,17 @@ export function getRelativeTime(date: Date): string {
   const years = Math.floor(diffInDays / 365);
   return years === 1 ? '1 year ago' : `${years} years ago`;
 }
+
+// Parse date string and create Date object in local timezone
+export function parseLocalDate(dateString: string): Date {
+  if (dateString.includes(' ')) {
+    // Format: "YYYY-MM-DD HH:mm:ss"
+    const [datePart, timePart] = dateString.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+    return new Date(year, month - 1, day, hour, minute, second);
+  } else {
+    // Fallback: parse as ISO string or other format
+    return new Date(dateString.replace('T', ' ').replace('Z', ''));
+  }
+}

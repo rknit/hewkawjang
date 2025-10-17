@@ -56,6 +56,7 @@ export async function deleteRestaurant(restaurantId: number): Promise<void> {
     normalizeError(error);
   }
 }
+
 export async function updateReservationStatus(
   reservationId: number,
   status: string,

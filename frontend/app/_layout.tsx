@@ -27,6 +27,7 @@ export default function RootLayout() {
         offsetY={80}
         mappings={{
           default: DefaultNotification,
+          reservation_status: DefaultNotification,
         }}
       >
         {/* Make sure Auth and Toast providers are parent of noti provider */}

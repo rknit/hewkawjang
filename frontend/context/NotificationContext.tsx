@@ -11,11 +11,13 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { Notification } from '@/types/notification.type';
 import { DefaultNotificationProps } from '@/components/notifications/defaultNotification';
+import * as notiApi from '@/apis/notification.api';
+import { parseLocalDate } from '@/utils/date-time';
 
 interface NotificationContextType {
   notifications: Notification[];
-  readNoti: (id: number) => Promise<void>;
-  readAllNotis: () => Promise<void>;
+  readNotification: (id: number) => Promise<void>;
+  readAllNotifications: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -34,7 +36,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Fetch initial notifications
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotificationsData = useCallback(async () => {
     if (!user?.id) {
       setNotifications([]);
       setIsLoading(false);
@@ -43,32 +45,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('notification')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        return;
-      }
-
-      if (data) {
-        // Map snake_case to camelCase
-        const mappedData: Notification[] = data.map((item) => ({
-          id: item.id,
-          userId: item.user_id,
-          title: item.title,
-          message: item.message,
-          imageUrl: item.image_url,
-          reservationId: item.reservation_id,
-          notificationType: item.notification_type,
-          createdAt: item.created_at,
-          isRead: item.is_read,
-        }));
-        setNotifications(mappedData);
-      }
+      const data = await notiApi.fetchNotifications();
+      setNotifications(data);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -82,16 +60,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       if (!user?.id) return;
 
       try {
-        const { error } = await supabase
-          .from('notification')
-          .update({ is_read: true })
-          .eq('id', id)
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.error('Error marking notification as read:', error);
-          return;
-        }
+        await notiApi.readNotification(id);
 
         // Update local state
         setNotifications((prev) =>
@@ -111,16 +80,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     if (!user?.id) return;
 
     try {
-      const { error } = await supabase
-        .from('notification')
-        .update({ is_read: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-
-      if (error) {
-        console.error('Error marking all notifications as read:', error);
-        return;
-      }
+      await notiApi.readAllNotifications();
 
       // Update local state
       setNotifications((prev) =>
@@ -140,7 +100,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
 
     // Fetch initial notifications
-    fetchNotifications();
+    fetchNotificationsData();
 
     // Subscribe to realtime changes
     const realtimeChannel = supabase
@@ -169,14 +129,18 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           setNotifications((prev) => [newNotification, ...prev]);
 
           // Show toast notification for new notification
-          toast.show<DefaultNotificationProps>('default', {
-            data: {
-              title: newNotification.title,
-              message: newNotification.message,
-              datetime: new Date(newNotification.createdAt),
-              imageUrl: newNotification.imageUrl,
+          // hardcode to DefaultNotification for now
+          toast.show<DefaultNotificationProps>(
+            newNotification.notificationType,
+            {
+              data: {
+                title: newNotification.title,
+                message: newNotification.message,
+                datetime: parseLocalDate(newNotification.createdAt),
+                imageUrl: newNotification.imageUrl,
+              },
             },
-          });
+          );
         },
       )
       .on(
@@ -213,14 +177,14 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     return () => {
       supabase.removeChannel(realtimeChannel);
     };
-  }, [user?.id, fetchNotifications, toast]);
+  }, [user?.id, fetchNotificationsData, toast]);
 
   return (
     <NotificationContext.Provider
       value={{
         notifications,
-        readNoti,
-        readAllNotis,
+        readNotification: readNoti,
+        readAllNotifications: readAllNotis,
         isLoading,
       }}
     >
