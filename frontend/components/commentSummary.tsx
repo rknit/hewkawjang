@@ -19,15 +19,16 @@ const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdo
 
   const renderBar = (stars: 1 | 2 | 3 | 4 | 5, color: string) => {
     const count = breakdown[stars];
-    const percentage = (count / maxCount) * 100;
+    // If maxCount is 0 (no reviews), set percentage to 0 instead of NaN
+    const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
 
     return (
       <View className="flex-row items-center mb-1" key={stars}>
         <Text className="w-4 text-sm">{stars}</Text>
         <StarSolid size={14} color="#999" />
-        <View className="flex-1 h-2 mx-2">
+        <View className="flex-1 h-2 mx-2 bg-gray-300 rounded-full overflow-hidden">
           <View
-            className="h-2"
+            className="h-2 rounded-full"
             style={{ width: `${percentage}%`, backgroundColor: color }}
           />
         </View>
