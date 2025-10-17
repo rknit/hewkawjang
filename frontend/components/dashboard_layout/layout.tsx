@@ -3,16 +3,26 @@ import SideBar from '../restaurant-sidebar';
 import { View, Text } from 'react-native';
 import RestaurantScreen from '@/app/(tabs)/Restaurant';
 import Dashboard from './dashboard';
+import Reservation from './reservation';
 
-export default function DashboardLayout() {
+interface DashboardLayoutProps {
+  restaurantId: number;
+}
+
+export default function DashboardLayout({
+  restaurantId,
+}: DashboardLayoutProps) {
   const [content, setContent] = useState('preview');
+
   return (
-    <View className="flex flex-row bg-neutral-100 h-screen w-screen overflow-hidden">
+    <View className="flex flex-row bg-neutral-100 h-screen w-screen overflow-auto">
       <SideBar setContent={setContent} />
-      <View className="p-4">
+      <View className="w-full flex-1">
         {content === 'preview' && <RestaurantScreen />}
-        {content === 'reservation' && <Text>Reservation Content</Text>}
-        {content === 'dashboard' && <Dashboard />}
+        {content === 'reservation' && (
+          <Reservation restaurantId={restaurantId} />
+        )}
+        {content === 'dashboard' && <Dashboard restaurantId={1} />}
         {content === 'settings' && <Text>Settings Content</Text>}
       </View>
     </View>

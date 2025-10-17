@@ -3,17 +3,23 @@ import DashboardStatGrid from './dashboardStatGrid';
 import { View, Text, ScrollView } from 'react-native';
 import { BarChart2 } from 'lucide-react-native';
 import BookingChart from './bookingChart';
+import Reservation from './reservation';
 
-export default function Dashboard() {
+interface DashboardProps {
+  restaurantId: number;
+}
+
+export default function Dashboard({ restaurantId }: DashboardProps) {
   return (
-    <ScrollView className="w-full h-full">
+    <ScrollView className="w-full p-6">
       <Text className="text-2xl font-bold mb-4">Dashboard</Text>
-      <DashboardStatGrid />
+      <DashboardStatGrid restaurantId={1} month={1} />
+
       <View className="mt-6">
         <Text className="text-lg font-semibold mb-2">Overview</Text>
 
-        <View className="mt-flex flex-row gap-4 w-full">
-          <BookingChart />
+        <View className="flex-row gap-4 w-full">
+          <BookingChart restaurantId={1} month={1} />
         </View>
       </View>
       <View className="mt-6">

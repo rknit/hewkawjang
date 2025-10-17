@@ -122,7 +122,7 @@ export default class ReservationService {
   }
 
   static async getReservationsByRestaurantIdInOneMonth(
-    restarantId: number,
+    restaurantId: number,
     month: number,
     year: number,
   ): Promise<Reservation[]> {
@@ -132,9 +132,9 @@ export default class ReservationService {
       .orderBy(reservationTable.reserveAt)
       .where(
         and(
-          eq(reservationTable.restaurantId, restarantId),
-          gte(reservationTable.reserveAt, new Date(year, month, 1)),
-          lt(reservationTable.reserveAt, new Date(year, month + 1, 1)),
+          eq(reservationTable.restaurantId, restaurantId),
+          gte(reservationTable.reserveAt, new Date(year, month - 1, 1)),
+          lt(reservationTable.reserveAt, new Date(year, month, 1)),
         ),
       );
 

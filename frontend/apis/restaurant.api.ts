@@ -155,33 +155,35 @@ export async function searchRestaurants(params: {
     const res = await ApiService.post('/restaurants/search', requestBody);
 
     // Parse and validate the response data
-    const restaurants = res.data.restaurants.map((restaurant: RestaurantWithRating) => ({
-      ...RestaurantSchema.parse({
-        id: restaurant.id,
-        ownerId: restaurant.ownerId,
-        name: restaurant.name,
-        phoneNo: restaurant.phoneNo,
-        // address
-        houseNo: restaurant.houseNo,
-        village: restaurant.village,
-        building: restaurant.building,
-        road: restaurant.road,
-        soi: restaurant.soi,
-        subDistrict: restaurant.subDistrict,
-        district: restaurant.district,
-        province: restaurant.province,
-        postalCode: restaurant.postalCode,
-        // detail
-        cuisineType: restaurant.cuisineType,
-        priceRange: restaurant.priceRange,  
-        status: restaurant.status,
-        activation: restaurant.activation,
-        isDeleted: restaurant.isDeleted,
+    const restaurants = res.data.restaurants.map(
+      (restaurant: RestaurantWithRating) => ({
+        ...RestaurantSchema.parse({
+          id: restaurant.id,
+          ownerId: restaurant.ownerId,
+          name: restaurant.name,
+          phoneNo: restaurant.phoneNo,
+          // address
+          houseNo: restaurant.houseNo,
+          village: restaurant.village,
+          building: restaurant.building,
+          road: restaurant.road,
+          soi: restaurant.soi,
+          subDistrict: restaurant.subDistrict,
+          district: restaurant.district,
+          province: restaurant.province,
+          postalCode: restaurant.postalCode,
+          // detail
+          cuisineType: restaurant.cuisineType,
+          priceRange: restaurant.priceRange,
+          status: restaurant.status,
+          activation: restaurant.activation,
+          isDeleted: restaurant.isDeleted,
+        }),
+        // Add the rating fields
+        avgRating: restaurant.avgRating || 0,
+        reviewCount: restaurant.reviewCount || 0,
       }),
-      // Add the rating fields
-      avgRating: restaurant.avgRating || 0,
-      reviewCount: restaurant.reviewCount || 0,
-    }));
+    );
 
     return {
       restaurants,
@@ -190,7 +192,7 @@ export async function searchRestaurants(params: {
     };
   } catch (error) {
     normalizeError(error);
-    
+
     // Return empty results on error
     return {
       restaurants: [],

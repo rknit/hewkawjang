@@ -66,14 +66,14 @@ router.post('/create', authHandler, async (req, res) => {
   return res.status(201).json(reservation);
 });
 
-router.get('/:id/reservations/inspect', async (req, res) => {
+router.get('/:id/inspect', async (req, res) => {
   const restaurantId = Number(req.params.id);
   if (isNaN(restaurantId)) {
     return res.status(400).json({ error: 'restaurant id must be a number' });
   }
 
-  const year = req.body.year;
-  const month = req.body.month;
+  const month = Number(req.query.month);
+  const year = Number(req.query.year);
   if (!year || !month || month < 1 || month > 12) {
     return res
       .status(400)

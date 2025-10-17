@@ -68,3 +68,21 @@ export async function updateReservationStatus(
     return false;
   }
 }
+
+export async function fetchReservationsByRestaurantInOneMonth(
+  restaurantId: number,
+  month: number,
+  year: number,
+): Promise<Reservation[] | null> {
+  try {
+    const res = await ApiService.get(
+      `/reservations/${restaurantId}/inspect?month=${month}&year=${year}`,
+      {},
+    );
+    const reservations = res.data.map((r: any) => ReservationSchema.parse(r));
+    return reservations;
+  } catch (error) {
+    normalizeError(error);
+    return null;
+  }
+}
