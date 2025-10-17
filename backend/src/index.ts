@@ -10,6 +10,7 @@ import reservationRoute from './routes/reservation.routes';
 import errorHandler from './middleware/error.middleware';
 import { authHandler } from './middleware/auth.middleware';
 import cookieParser from 'cookie-parser';
+import { startScheduledJobs } from './jobs';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -44,6 +45,9 @@ app.use((_: Request, res: Response) => {
 app.use(errorHandler);
 
 if (process.env.NODE_ENV !== 'test') {
+  // Start scheduled background jobs
+  startScheduledJobs();
+
   app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
   });

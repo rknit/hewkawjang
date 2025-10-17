@@ -1,4 +1,4 @@
-import { InferSelectModel, eq, and, inArray, asc, gte, lt, desc } from 'drizzle-orm';
+import { InferSelectModel, eq, and, inArray, asc, gte, lt, sql, desc } from 'drizzle-orm';
 import { reservationTable, restaurantTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
@@ -209,5 +209,23 @@ export default class ReservationService {
       ...row.reservation,
       restaurant: row.restaurant!,
     }));
+  }
+}
+  static async expireUnconfirmedReservations(
+    expiryMinutes: number,
+  ): Promise<number> {
+    // Find and update all unconfirmed reservations that are older than expiryMinutes
+    const result = await db
+      .update(reservationTable)
+      .set({ status: 'expired' })
+      .where(
+        and(
+          eq(reservationTable.status, 'unconfirmed'),
+          sql`${reservationTable.createdAt} < NOW() - INTERVAL '${sql.raw(expiryMinutes.toString())} minutes'`,
+        ),
+      )
+      .returning({ id: reservationTable.id });
+
+    return result.length;
   }
 }

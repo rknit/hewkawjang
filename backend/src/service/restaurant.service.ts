@@ -11,8 +11,9 @@ import {
   lte,
   sql,
   getTableColumns,
+  desc,
 } from 'drizzle-orm';
-import { restaurantTable, reservationTable, reviewTable } from '../db/schema';
+import { restaurantTable, reservationTable, reviewTable, usersTable } from '../db/schema';
 import { db } from '../db';
 import {
   CreateRestaurantInput,
@@ -46,6 +47,26 @@ export interface RestaurantWithRating extends Restaurant {
 export interface SearchResult {
   restaurants: RestaurantWithRating[];
   total: number;
+  hasMore: boolean;
+}
+
+export interface ReviewWithUser {
+  id: number;
+  rating: number;
+  comment: string | null;
+  attachPhotos: string[] | null;
+  createdAt: Date;
+  user: {
+    id: number;
+    displayName: string | null;
+    firstName: string;
+    lastName: string;
+    profileUrl: string | null;
+  };
+}
+
+export interface ReviewsResult {
+  reviews: ReviewWithUser[];
   hasMore: boolean;
 }
 
@@ -354,6 +375,72 @@ export default class RestaurantService {
     return {
       restaurants: paginatedResults,
       total,
+      hasMore,
+    };
+  }
+
+  static async getReviewsByRestaurantId(props: {
+    restaurantId: number;
+    offset?: number;
+    limit?: number;
+  }): Promise<ReviewsResult> {
+    const { restaurantId, offset = 0, limit = 10 } = props;
+
+    // Query reviews with user information
+    const reviews = await db
+      .select({
+        id: reviewTable.id,
+        rating: reviewTable.rating,
+        comment: reviewTable.comment,
+        attachPhotos: reviewTable.attachPhotos,
+        createdAt: reviewTable.createdAt,
+        userId: usersTable.id,
+        userDisplayName: usersTable.displayName,
+        userFirstName: usersTable.firstName,
+        userLastName: usersTable.lastName,
+        userProfileUrl: usersTable.profileUrl,
+      })
+      .from(reviewTable)
+      .innerJoin(
+        reservationTable,
+        eq(reviewTable.reservationId, reservationTable.id),
+      )
+      .innerJoin(
+        usersTable,
+        eq(reservationTable.userId, usersTable.id),
+      )
+      .where(
+        and(
+          eq(reservationTable.restaurantId, restaurantId),
+          eq(reservationTable.status, 'completed'),
+        ),
+      )
+      .orderBy(desc(reviewTable.createdAt))
+      .limit(limit + 1) // Fetch one extra to determine hasMore
+      .offset(offset);
+
+    // Check if there are more results
+    const hasMore = reviews.length > limit;
+    const reviewsToReturn = hasMore ? reviews.slice(0, limit) : reviews;
+
+    // Transform the results to match the interface
+    const transformedReviews: ReviewWithUser[] = reviewsToReturn.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      attachPhotos: r.attachPhotos,
+      createdAt: r.createdAt,
+      user: {
+        id: r.userId,
+        displayName: r.userDisplayName,
+        firstName: r.userFirstName,
+        lastName: r.userLastName,
+        profileUrl: r.userProfileUrl,
+      },
+    }));
+
+    return {
+      reviews: transformedReviews,
       hasMore,
     };
   }
