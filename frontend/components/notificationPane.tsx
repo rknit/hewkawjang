@@ -17,7 +17,14 @@ export default function NotificationPane({
     alert('TODO: Mark all as read');
   };
 
-  const groupedNotifications = groupNotificationsByDay(MOCK_DATA);
+  const groupedNotifications = groupNotificationsByDay(
+    MOCK_DATA.map((n) => ({
+      ...n,
+      onPress: () => {
+        alert(`TODO: Read Notification: ${n.title}`);
+      },
+    })),
+  );
 
   return (
     <Modal
