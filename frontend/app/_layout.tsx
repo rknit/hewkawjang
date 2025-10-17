@@ -5,6 +5,7 @@ import NavBarUser from '@/components/navbar-user';
 import { useEffect, useState } from 'react';
 import { isUserLoggedIn } from '@/utils/jwt';
 import AuthService from '@/services/auth.service';
+import { NotificationProvider } from '@/context/NotificationContext';
 
 export default function RootLayout() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
@@ -23,11 +24,11 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <>
+    <NotificationProvider offsetY={80}>
       {loggedIn === null && null /* or spinner */}
       {loggedIn === false && <NavBarGuest />}
       {loggedIn === true && <NavBarUser />}
       <Stack screenOptions={{ headerShown: false }} />
-    </>
+    </NotificationProvider>
   );
 }

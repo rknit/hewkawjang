@@ -18,7 +18,7 @@ export default function NotificationPane({
   };
 
   const groupedNotifications = groupNotificationsByDay(
-    MOCK_DATA.map((n) => ({
+    MOCK_NOTI_DATA.map((n) => ({
       ...n,
       onPress: () => {
         alert(`TODO: Read Notification: ${n.title}`);
@@ -98,7 +98,7 @@ function groupNotificationsByDay(notifications: NotificationPaneItemProps[]) {
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 }
 
-const MOCK_DATA: NotificationPaneItemProps[] = [
+export const MOCK_NOTI_DATA: NotificationPaneItemProps[] = [
   // Today - 3 notifications
   {
     title: 'Reservation Confirmed',
