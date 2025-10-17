@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import ReservationService from '../service/reservation.service';
 
 // Configuration - Change these values as needed
-const RESERVATION_EXPIRY_MINUTES = 10; // Minutes before unconfirmed reservations expire (set to 1 for testing)
+const RESERVATION_EXPIRY_MINUTES = 10; // Minutes before unconfirmed reservations expire 
 const EXPIRY_CHECK_INTERVAL = '* * * * *'; // Cron schedule: every minute
 
 /**
