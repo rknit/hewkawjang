@@ -77,7 +77,7 @@ export default function RecommendedRestaurantCard({
               {tags.map((tag, idx) => (
                 <Text
                   key={idx}
-                  className="text-gray-700 bg-gray-200 px-2 py-1 rounded mr-2 max-w-[80px]"
+                  className="text-gray-700 bg-gray-200 px-2 py-1 rounded mr-2"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
