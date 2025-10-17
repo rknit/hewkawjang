@@ -88,3 +88,30 @@ export function getRelativeTime(date: Date): string {
   const years = Math.floor(diffInDays / 365);
   return years === 1 ? '1 year ago' : `${years} years ago`;
 }
+
+// Format date label for display (Today, Yesterday, or DD/MM/YYYY)
+export function getDatePretty(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const isToday = date.toDateString() === today.toDateString();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) {
+    return 'Today';
+  } else if (isYesterday) {
+    return 'Yesterday';
+  } else {
+    return getDateDDMMYYYY(date);
+  }
+}
+
+// Format date label for display (DD/MM/YYYY)
+export function getDateDDMMYYYY(date: Date): string {
+  return date.toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+}

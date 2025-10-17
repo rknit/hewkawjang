@@ -5,16 +5,22 @@ import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import UserDropdown from './user-dropdown';
+import NotificationPane from './notificationPane';
 
 export default function NavBarUser() {
   const { user } = useProfile();
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const [isNotiPaneVisible, setNotiPaneVisible] = useState(false);
 
   // Get display name with fallback
   const displayName = user?.displayName || user?.firstName || 'Loading...';
 
   const toggleDropdown = () => {
     setDropdownVisible(!isDropdownVisible);
+  };
+
+  const handleCloseNotiPane = () => {
+    setNotiPaneVisible(false);
   };
 
   return (
@@ -28,14 +34,14 @@ export default function NavBarUser() {
       </TouchableOpacity>
 
       <View>
-        <TouchableOpacity className="flex flex-row items-center">
+        <TouchableOpacity
+          className="flex flex-row items-center"
+          onPress={() => setNotiPaneVisible(true)}
+        >
           <Feather name="bell" size={24} color="black" className="ml-1 mr-1" />
           <UnderlinedPressableText
             text="Notification"
-            onPress={() => {
-              // TODO: Navigate to notifications page
-              console.log('Navigate to Notifications');
-            }}
+            onPress={() => setNotiPaneVisible(true)}
             textClassName="text-black text-base"
           />
         </TouchableOpacity>
@@ -76,6 +82,11 @@ export default function NavBarUser() {
       </View>
 
       <UserDropdown visible={isDropdownVisible} onClose={toggleDropdown} />
+
+      <NotificationPane
+        visible={isNotiPaneVisible}
+        onClose={handleCloseNotiPane}
+      />
     </View>
   );
 }
