@@ -16,7 +16,7 @@ import {
   ReservationStatus,
 } from '@/apis/user.api';
 
-import {  cancelReservation} from '@/apis/reservation.api';
+import { cancelReservation } from '@/apis/reservation.api';
 import { FontAwesome5, MaterialIcons, Entypo } from '@expo/vector-icons';
 import { fetchRestaurantById } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
@@ -115,6 +115,11 @@ export default function UserReservationsScreen() {
       new Set(newFiltered.map((r) => r.id)),
     ).map((id) => newFiltered.find((r) => r.id === id)) as UserReservation[];
 
+    uniqueFiltered.sort(
+      (a, b) =>
+        new Date(a.reserveAt).getTime() - new Date(b.reserveAt).getTime(),
+    );
+
     setFilteredReservations(uniqueFiltered);
   };
 
@@ -167,7 +172,8 @@ export default function UserReservationsScreen() {
   const canCancelReservation = (reservation: UserReservation) => {
     const reserveDate = new Date(reservation.reserveAt);
     const now = new Date();
-    const hoursDiff = 90;
+    const hoursDiff =
+      (reserveDate.getTime() - now.getTime()) / (1000 * 60 * 60);
     console.log('cancale?', hoursDiff);
     return (
       ['unconfirmed', 'confirmed'].includes(reservation.status) &&
@@ -195,7 +201,7 @@ export default function UserReservationsScreen() {
     );
 
     // === Cancel ===
-    if (canCancelReservation(r)) {
+    if (['unconfirmed', 'confirmed'].includes(r.status)) {
       actions.push(
         addTextAction(
           'Cancel',
@@ -203,16 +209,25 @@ export default function UserReservationsScreen() {
             ×
           </Text>,
           () => {
-            console.log('Cancel clicked for', r.id);
+            if (!canCancelReservation(r)) {
+              Alert.alert(
+                'Too Late to Cancel',
+                'Cancellations must be made at least 24 hours in advance.',
+                [{ text: 'OK', style: 'default' }],
+              );
+              return;
+            }
+
             Alert.alert('Cancel Reservation', 'Are you sure?', [
               { text: 'No', style: 'cancel' },
               {
                 text: 'Yes',
                 onPress: async () => {
-                  console.log('⚠️ Attempting to cancel reservation:', r.id);
                   try {
-                    const success = await cancelReservation(r.id, r.restaurantId);
-                    console.log('✅ cancelReservation returned:', success);
+                    const success = await cancelReservation(
+                      r.id,
+                      r.restaurantId,
+                    );
                     if (success) {
                       Alert.alert(
                         'Cancelled',
@@ -223,7 +238,6 @@ export default function UserReservationsScreen() {
                       Alert.alert('Error', 'Could not cancel reservation.');
                     }
                   } catch (e) {
-                    console.error('❌ Cancel API call failed:', e);
                     Alert.alert('Error', 'Something went wrong.');
                   }
                 },
