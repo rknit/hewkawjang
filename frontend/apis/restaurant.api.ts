@@ -6,6 +6,11 @@ import {
   UpdateRestaurantInfo,
   RestaurantWithRating,
 } from '@/types/restaurant.type';
+import {
+  ReviewsResultSchema,
+  ReviewWithUser,
+  Comment,
+} from '@/types/review.type';
 import { normalizeError } from '@/utils/api-error';
 
 export async function fetchRestaurants(): Promise<Restaurant[]> {
@@ -196,6 +201,97 @@ export async function searchRestaurants(params: {
       restaurants: [],
       total: 0,
       hasMore: false,
+    };
+  }
+}
+
+// Helper function to format relative time
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) return 'Today';
+  if (diffInDays === 1) return '1 day ago';
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7);
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+  if (diffInDays < 365) {
+    const months = Math.floor(diffInDays / 30);
+    return months === 1 ? '1 month ago' : `${months} months ago`;
+  }
+  const years = Math.floor(diffInDays / 365);
+  return years === 1 ? '1 year ago' : `${years} years ago`;
+}
+
+// Fetch all reviews for a restaurant
+export async function fetchReviewsByRestaurantId(
+  restaurantId: number,
+  options?: { offset?: number; limit?: number },
+): Promise<{ reviews: Comment[]; avgRating: number; breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number } }> {
+  try {
+    const params: any = {};
+
+    // Fetch all reviews by default (high limit)
+    if (options?.offset !== undefined) params.offset = options.offset;
+    if (options?.limit !== undefined) {
+      params.limit = options.limit;
+    } else {
+      params.limit = 1000; // Fetch up to 1000 reviews by default
+    }
+
+    const res = await ApiService.get(`/restaurants/${restaurantId}/reviews`, {
+      params,
+    });
+
+    // Validate response
+    const result = ReviewsResultSchema.parse(res.data);
+
+    // Transform to Comment format for UI
+    const comments: Comment[] = result.reviews.map((review: ReviewWithUser) => {
+      // Use displayName if available, otherwise use firstName only
+      const name = review.user.displayName || review.user.firstName;
+
+      return {
+        id: review.id.toString(),
+        name: name,
+        avatar: review.user.profileUrl || '', // Empty string will be handled by component
+        rating: review.rating,
+        comment: review.comment || 'No comment provided',
+        date: getRelativeTime(new Date(review.createdAt)),
+      };
+    });
+
+    // Calculate average rating
+    const avgRating =
+      comments.length > 0
+        ? comments.reduce((sum, c) => sum + c.rating, 0) / comments.length
+        : 0;
+
+    // Calculate breakdown (count of each rating 1-5)
+    const breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    comments.forEach((comment) => {
+      if (comment.rating >= 1 && comment.rating <= 5) {
+        breakdown[comment.rating as 1 | 2 | 3 | 4 | 5]++;
+      }
+    });
+
+    return {
+      reviews: comments,
+      avgRating,
+      breakdown,
+    };
+  } catch (error) {
+    console.error('Failed to fetch reviews:', error);
+    normalizeError(error);
+
+    // Return empty results on error
+    return {
+      reviews: [],
+      avgRating: 0,
+      breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     };
   }
 }
