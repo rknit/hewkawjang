@@ -1,6 +1,6 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { StarIcon as StarSolid } from "react-native-heroicons/solid";
+import React from 'react';
+import { View, Text } from 'react-native';
+import { StarIcon as StarSolid } from 'react-native-heroicons/solid';
 
 type SummaryProps = {
   average: number;
@@ -14,7 +14,11 @@ type SummaryProps = {
   };
 };
 
-const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdown }) => {
+const CommentSummary: React.FC<SummaryProps> = ({
+  average,
+  totalReviews,
+  breakdown,
+}) => {
   const maxCount = Math.max(...Object.values(breakdown));
 
   const renderBar = (stars: 1 | 2 | 3 | 4 | 5, color: string) => {
@@ -43,11 +47,11 @@ const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdo
       {/* Rating Bars */}
       <View className="flex-row">
         <View className="flex-1">
-          {renderBar(5, "green")}
-          {renderBar(4, "limegreen")}
-          {renderBar(3, "gold")}
-          {renderBar(2, "orange")}
-          {renderBar(1, "red")}
+          {renderBar(5, 'green')}
+          {renderBar(4, 'limegreen')}
+          {renderBar(3, 'gold')}
+          {renderBar(2, 'orange')}
+          {renderBar(1, 'red')}
         </View>
 
         {/* Average rating */}
@@ -58,7 +62,7 @@ const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdo
               <StarSolid
                 key={i}
                 size={18}
-                color={i < Math.round(average) ? "gold" : "#ddd"}
+                color={i < Math.round(average) ? 'gold' : '#ddd'}
               />
             ))}
           </View>
