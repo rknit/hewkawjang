@@ -5,7 +5,6 @@ import UserService from '../service/user.service';
 import MailerService from '../service/mailer.service';
 import ReservationService from '../service/reservation.service';
 import { authHandler } from '../middleware/auth.middleware';
-import createHttpError from 'http-errors';
 
 const router = express.Router();
 
@@ -97,8 +96,6 @@ router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
   }
 });
 
-// Get user by id (public)
-router.get('/:id', async (req, res) => {
 // GET /users/me/reservations - Get reservations for current user
 import { z } from 'zod';
 import { ZodError } from 'zod'; // ✅ make sure this is at the top

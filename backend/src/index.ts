@@ -39,8 +39,8 @@ app.get('/', (_: Request, res: Response) => {
   res.status(200).send('Hello, World!');
 });
 
-app.use((_: Request, res: Response) => {
-  res.status(404).send('Not Found');
+app.use((req: Request, res: Response) => {
+  res.status(404).send(`Not Found: ${req.path}`);
 });
 
 // make sure error handler is the last middleware

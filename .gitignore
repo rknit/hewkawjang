@@ -8,6 +8,7 @@
 
 # local env files
 **/*.env*.local
+*.env.vercel
 
 # typescript
 **/*.tsbuildinfo
@@ -18,3 +19,4 @@
 **/coverage/
 
 backend/drizzle
+.vercel
