@@ -203,6 +203,12 @@ export function ToastProvider({
     (type: string, options: ToastOptions): string => {
       const id = options?.id || Math.random().toString();
 
+      if (!mappings[type]) {
+        throw new Error(
+          `Toast type "${type}" is not registered in ToastProvider mappings.`,
+        );
+      }
+
       requestAnimationFrame(() => {
         setToasts((prev) => [
           {

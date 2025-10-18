@@ -28,6 +28,7 @@ export default function RootLayout() {
         mappings={{
           default: DefaultNotification,
           reservation_status: DefaultNotification,
+          chat: DefaultNotification,
         }}
       >
         {/* Make sure Auth and Toast providers are parent of noti provider */}

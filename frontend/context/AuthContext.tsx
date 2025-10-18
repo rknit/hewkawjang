@@ -32,22 +32,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loadUser = useCallback(async () => {
     setIsLoading(true);
     try {
-      const loggedIn = await TokenStorage.getAccessToken().then((t) =>
-        t ? !isJwtTokenExpired(t) : false,
-      );
-
-      const hasUnexpiredRefreshToken =
-        await TokenStorage.getRefreshToken().then((t) =>
-          t ? !isJwtTokenExpired(t) : false,
-        );
-
-      // If logged in or has a valid refresh token, fetch user data
-      if (loggedIn || hasUnexpiredRefreshToken) {
-        const userData = await fetchCurrentUser();
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
+      const userData = await fetchCurrentUser();
+      setUser(userData);
     } catch {
       setUser(null);
     } finally {
