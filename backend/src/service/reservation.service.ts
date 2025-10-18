@@ -210,7 +210,7 @@ export default class ReservationService {
       restaurant: row.restaurant!,
     }));
   }
-}
+  
   static async expireUnconfirmedReservations(
     expiryMinutes: number,
   ): Promise<number> {
