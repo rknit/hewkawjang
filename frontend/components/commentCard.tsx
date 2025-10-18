@@ -11,10 +11,19 @@ type CommentProps = {
 };
 
 const CommentCard: React.FC<CommentProps> = ({ name, avatar, rating, comment, date }) => {
+  // Use default profile image if avatar is empty or null
+  const avatarSource = avatar && avatar.trim() !== ''
+    ? { uri: avatar }
+    : require('@/assets/images/default_profile.png');
+
   return (
     <View className="flex-row items-start space-x-3 p-4 rounded-xl">
       {/* Avatar */}
-      <Image source={{ uri: avatar }} className="w-10 h-10 rounded-full" />
+      <Image
+        source={avatarSource}
+        className="rounded-full"
+        style={{ width: 60, height: 60, resizeMode: 'cover' }}
+      />
 
       {/* Content */}
       <View className="flex-1">

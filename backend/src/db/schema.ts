@@ -165,3 +165,22 @@ export const reviewTable = pgTable('review', {
   attachPhotos: text('attach_photos').array(), // URL to the photos
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export const notificationTypesEnum = pgEnum('notification_type', [
+  'reservation_status',
+  'chat',
+]);
+
+export const notificationTable = pgTable('notification', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => usersTable.id),
+  message: text('message'),
+  imageUrl: text('image_url'),
+  reservationId: integer('reservation_id')
+    .references(() => reservationTable.id),
+  notificationType: notificationTypesEnum('notification_type').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  isRead: boolean('is_read').notNull().default(false),
+});

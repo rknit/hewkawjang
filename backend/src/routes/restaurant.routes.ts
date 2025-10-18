@@ -114,6 +114,29 @@ router.get('/:id/reservations', async (req, res, next) => {
   }
 });
 
+// Public: list all reviews for a restaurant
+router.get('/:id/reviews', async (req, res, next) => {
+  try {
+    const restaurantId = Number(req.params.id);
+    if (isNaN(restaurantId)) {
+      return res.status(400).json({ error: 'restaurant id must be a number' });
+    }
+
+    const offset = req.query.offset ? Number(req.query.offset) : undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+
+    const result = await RestaurantService.getReviewsByRestaurantId({
+      restaurantId,
+      offset,
+      limit,
+    });
+
+    return res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/reject', authHandler, async (req, res) => {
   await RestaurantService.rejectReservation(req.body.id);
   res.status(200).send();
