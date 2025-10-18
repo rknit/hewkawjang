@@ -13,6 +13,7 @@ import { refreshAuth } from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
 import { isJwtTokenExpiringSoon } from '@/utils/jwt';
 import { supabase } from '@/utils/supabase';
+import { jwtDecode } from 'jwt-decode';
 
 interface AuthContextType {
   user: User | null;

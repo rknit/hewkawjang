@@ -11,6 +11,8 @@ export type LoginUser = {
 };
 
 export type UserAuthPayload = {
+  sub: number; // subject claim (also user ID)
+  role: 'authenticated'; // fixed role for supabase
   userId: number;
 };
 
@@ -29,7 +31,11 @@ export default class AuthService {
       throw createHttpError.Unauthorized('Invalid email or password');
     }
 
-    const payload: UserAuthPayload = { userId: user.id };
+    const payload: UserAuthPayload = {
+      userId: user.id,
+      sub: user.id,
+      role: 'authenticated',
+    };
     const tokens = genJwtTokens(payload);
 
     // Store refresh token in database
@@ -53,7 +59,6 @@ export default class AuthService {
     }
   }
 
-
   static async refreshTokens(
     refreshToken: string,
     data: UserAuthPayload,
@@ -66,7 +71,11 @@ export default class AuthService {
       throw createHttpError.Unauthorized();
     }
 
-    const payload: UserAuthPayload = { userId: user.id };
+    const payload: UserAuthPayload = {
+      userId: user.id,
+      sub: user.id,
+      role: 'authenticated',
+    };
     const tokens = genJwtTokens(payload);
 
     // Store refresh token in database

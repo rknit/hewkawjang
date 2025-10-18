@@ -31,14 +31,14 @@ ApiService.interceptors.request.use(async (config) => {
 // Response interceptor: handle 401 Unauthorized
 ApiService.interceptors.response.use(undefined, async (error) => {
   if (error.response?.status === 401) {
-    const success = refreshAuth();
-    if (!success) {
+    const success = await refreshAuth();
+    if (success) {
+      // Successfully refreshed tokens, retry original request
+      return ApiService(error.config);
+    } else {
       router.replace('/');
       return Promise.reject(new Error('Unauthorized'));
     }
-
-    // Successfully refreshed tokens, retry original request
-    return ApiService(error.config);
   }
 
   // TODO: handle other status codes globally if needed
@@ -49,30 +49,35 @@ export default ApiService;
 
 export async function refreshAuth(): Promise<boolean> {
   const token = await TokenStorage.getRefreshToken();
+  try {
+    const resp = await refreshApi.post('/auth/refresh', undefined, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available
+      },
+    });
 
-  const resp = await refreshApi.post('/auth/refresh', undefined, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available
-    },
-  });
+    if (resp.status === 200) {
+      const newAccessToken = resp.data.accessToken;
+      const newRefreshToken = resp.data.refreshToken;
 
-  if (resp.status === 200) {
-    const newAccessToken = resp.data.accessToken;
-    const newRefreshToken = resp.data.refreshToken;
+      // Store new tokens
+      await Promise.all([
+        TokenStorage.setAccessToken(newAccessToken),
+        TokenStorage.setRefreshToken(newRefreshToken),
+      ]);
 
-    // Store new tokens
-    await Promise.all([
-      TokenStorage.setAccessToken(newAccessToken),
-      TokenStorage.setRefreshToken(newRefreshToken),
-    ]);
-
-    return true;
-  } else {
-    await Promise.all([
-      TokenStorage.removeAccessToken(),
-      TokenStorage.removeRefreshToken(),
-    ]);
-
-    return false;
+      return true;
+    }
+  } catch (error) {
+    if (__DEV__) {
+      console.log('Failed to refresh auth:', error);
+    }
   }
+
+  // On failure, clear tokens
+  await Promise.all([
+    TokenStorage.removeAccessToken(),
+    TokenStorage.removeRefreshToken(),
+  ]);
+  return false;
 }
