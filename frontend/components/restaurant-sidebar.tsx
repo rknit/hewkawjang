@@ -127,7 +127,7 @@ export default function Sidebar({ setContent }: SidebarProps) {
         </View>
       </View>
       {/* Footer: Status + Button */}
-      <View className="gap-20 items-center">
+      <View className="gap-10 items-center bottom-20">
         <Text
           className={`${isOpen ? 'text-green-600' : 'text-red-600'} font-medium`}
         >
@@ -135,7 +135,7 @@ export default function Sidebar({ setContent }: SidebarProps) {
         </Text>
         <TouchableOpacity
           onPress={toggleStatus}
-          className={`px-6 py-2 rounded-md items-center ${isOpen ? 'bg-red-500' : 'bg-green-500'}`}
+          className={`px-6 py-2 bottom-5 rounded-md items-center ${isOpen ? 'bg-red-500' : 'bg-green-500'}`}
         >
           <Text className="text-white font-semibold">
             {isOpen ? 'Close Restaurant' : 'Open Restaurant'}
