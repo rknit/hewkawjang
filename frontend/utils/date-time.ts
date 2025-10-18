@@ -68,6 +68,33 @@ export function getDefaultMinute(now: Date): number {
   return MINUTE_STEPS.reduce((prev, step) => (m <= step ? step : prev), 45);
 }
 
+// Format date label for display (Today, Yesterday, or DD/MM/YYYY)
+export function getDatePretty(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const isToday = date.toDateString() === today.toDateString();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) {
+    return 'Today';
+  } else if (isYesterday) {
+    return 'Yesterday';
+  } else {
+    return getDateDDMMYYYY(date);
+  }
+}
+
+// Format date label for display (DD/MM/YYYY)
+export function getDateDDMMYYYY(date: Date): string {
+  return date.toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+}
+
 // Format relative time for display (e.g., "Today", "2 days ago", "1 week ago")
 export function getRelativeTime(date: Date): string {
   const now = new Date();
@@ -87,4 +114,18 @@ export function getRelativeTime(date: Date): string {
   }
   const years = Math.floor(diffInDays / 365);
   return years === 1 ? '1 year ago' : `${years} years ago`;
+}
+
+// Parse date string and create Date object in local timezone
+export function parseLocalDate(dateString: string): Date {
+  if (dateString.includes(' ')) {
+    // Format: "YYYY-MM-DD HH:mm:ss"
+    const [datePart, timePart] = dateString.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+    return new Date(year, month - 1, day, hour, minute, second);
+  } else {
+    // Fallback: parse as ISO string or other format
+    return new Date(dateString.replace('T', ' ').replace('Z', ''));
+  }
 }

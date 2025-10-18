@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
-import { User } from '@/types/user.type';
-import { deleteCurrentUser, fetchCurrentUser } from '@/apis/user.api';
+import { deleteCurrentUser } from '@/apis/user.api';
+import { useAuth } from '@/context/AuthContext';
 
 export interface UserFormData {
   displayName: string;
@@ -17,8 +17,7 @@ export interface DeleteModalState {
 }
 
 export const useProfile = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: authLoading, logout } = useAuth();
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
     showDeleteModal: false,
     isDeleteChecked: false,
@@ -33,33 +32,18 @@ export const useProfile = () => {
     email: '',
   });
 
-  // Fetch current user data
+  // Update form data when user changes
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        setIsLoading(true);
-        const userData = await fetchCurrentUser();
-        setUser(userData);
-
-        // Update form data when user is loaded
-        if (userData) {
-          setUserForm({
-            displayName: userData.displayName ?? userData.firstName ?? '',
-            firstName: userData.firstName ?? '',
-            lastName: userData.lastName ?? '',
-            phoneNo: userData.phoneNo ?? '',
-            email: userData.email ?? '',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUser();
-  }, []);
+    if (user) {
+      setUserForm({
+        displayName: user.displayName ?? user.firstName ?? '',
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        phoneNo: user.phoneNo ?? '',
+        email: user.email ?? '',
+      });
+    }
+  }, [user]);
 
   // Update form field
   const updateFormField = (field: keyof UserFormData, value: string) => {
@@ -113,6 +97,7 @@ export const useProfile = () => {
       setDeleteModal((prev) => ({ ...prev, showDeleteModal: false }));
       const success = await deleteCurrentUser();
       if (success) {
+        await logout();
         router.replace('/');
       }
     } catch (error) {
@@ -136,7 +121,7 @@ export const useProfile = () => {
 
   return {
     user,
-    isLoading,
+    isLoading: authLoading,
     userForm,
     deleteModal,
     updateFormField,

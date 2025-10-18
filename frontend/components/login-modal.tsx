@@ -5,7 +5,7 @@ import FormField from './form-field';
 import FormButton from './form-button';
 import PressableText from './pressable-text';
 import SimpleAlert from './simple-alert';
-import { login } from '@/apis/auth.api';
+import { useAuth } from '@/context/AuthContext';
 import { isAxiosError } from 'axios';
 
 interface LoginModalProps {
@@ -21,6 +21,7 @@ export default function LoginModal({
   onSignUpPress,
   onLoginSuccess,
 }: LoginModalProps) {
+  const { login: authLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +67,7 @@ export default function LoginModal({
 
     setIsLoading(true);
     try {
-      await login(email, password);
+      await authLogin(email, password);
       onLoginSuccess?.();
       setIsLoading(false);
     } catch (error) {

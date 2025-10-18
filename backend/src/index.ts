@@ -7,6 +7,7 @@ import authRoute from './routes/auth.routes';
 import userRoute from './routes/user.routes';
 import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
+import notificationRoute from './routes/notification.routes';
 import errorHandler from './middleware/error.middleware';
 import { authHandler } from './middleware/auth.middleware';
 import cookieParser from 'cookie-parser';
@@ -32,6 +33,7 @@ app.use('/auth', authRoute);
 app.use('/users', userRoute);
 app.use('/restaurants', restaurantRoute);
 app.use('/reservations', reservationRoute);
+app.use('/notifications', notificationRoute);
 
 app.get('/', (_: Request, res: Response) => {
   res.status(200).send('Hello, World!');
