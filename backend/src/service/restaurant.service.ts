@@ -13,14 +13,19 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
-import Fuse from 'fuse.js';
-import createHttpError from 'http-errors';
 import { db } from '../db';
-import { reservationTable, restaurantTable, reviewTable, usersTable } from '../db/schema';
+import {
+  reservationTable,
+  restaurantTable,
+  reviewTable,
+  usersTable,
+} from '../db/schema';
 import {
   CreateRestaurantInput,
   UpdateRestaurantInfo,
 } from '../validators/restaurant.validator';
+import createHttpError from 'http-errors';
+import Fuse from 'fuse.js';
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
@@ -72,21 +77,32 @@ export interface ReviewsResult {
 
 export default class RestaurantService {
   static async getRestaurants(
-    props: { ids?: number[]; offset?: number; limit?: number } = {},
+    props: {
+      ids?: number[];
+      offset?: number;
+      limit?: number;
+      sortOrder?: 'asc' | 'desc';
+    } = {},
   ): Promise<Restaurant[]> {
-    let offset = props.offset ?? 0;
-    let limit = props.limit ?? 10;
-
-    let query = db
-      .select()
-      .from(restaurantTable)
-      .orderBy(asc(restaurantTable.id))
-      .offset(offset)
-      .limit(limit);
+    let query: any = db.select().from(restaurantTable);
 
     if (props.ids && props.ids.length > 0) {
-      return await query.where(inArray(restaurantTable.id, props.ids));
+      query = query.where(inArray(restaurantTable.id, props.ids));
     }
+
+    if (props.sortOrder !== undefined) {
+      const sortOrder = props.sortOrder === 'desc' ? desc : asc;
+      query = query.orderBy(sortOrder(restaurantTable.id));
+    }
+
+    if (props.offset !== undefined) {
+      query = query.offset(props.offset);
+    }
+
+    if (props.limit !== undefined) {
+      query = query.limit(props.limit);
+    }
+
     return await query;
   }
 
@@ -259,7 +275,7 @@ export default class RestaurantService {
       eq(restaurantTable.isDeleted, false),
     ];
 
-    if(province) {
+    if (province) {
       conditions.push(eq(restaurantTable.province, province));
     }
 
@@ -275,7 +291,9 @@ export default class RestaurantService {
 
     // Cuisine types filter
     if (cuisineTypes.length > 0) {
-      conditions.push(inArray(restaurantTable.cuisineType, cuisineTypes as any));
+      conditions.push(
+        inArray(restaurantTable.cuisineType, cuisineTypes as any),
+      );
     }
 
     // Base query with rating calculation and all conditions applied
@@ -305,7 +323,7 @@ export default class RestaurantService {
     // Execute query to get filtered results (limit to 200 for performance)
     let allResults = await finalQuery.limit(200);
 
-    // Apply fuzzy search 
+    // Apply fuzzy search
     if (query && query.trim().length > 0) {
       const fuseOptions = {
         keys: [
@@ -405,10 +423,7 @@ export default class RestaurantService {
         reservationTable,
         eq(reviewTable.reservationId, reservationTable.id),
       )
-      .innerJoin(
-        usersTable,
-        eq(reservationTable.userId, usersTable.id),
-      )
+      .innerJoin(usersTable, eq(reservationTable.userId, usersTable.id))
       .where(
         and(
           eq(reservationTable.restaurantId, restaurantId),
@@ -445,64 +460,65 @@ export default class RestaurantService {
     };
   }
 
-static async getFilteredReviews(
-  restaurantId: number,
-  minRating?: number,
-  maxRating?: number
-) {
-  // Base conditions
-  const conditions = [
-    eq(reservationTable.restaurantId, restaurantId),
-    eq(reservationTable.status, 'completed'),
-  ];
+  static async getFilteredReviews(
+    restaurantId: number,
+    minRating?: number,
+    maxRating?: number,
+  ) {
+    // Base conditions
+    const conditions = [
+      eq(reservationTable.restaurantId, restaurantId),
+      eq(reservationTable.status, 'completed'),
+    ];
 
-  if (minRating !== undefined) {
-    conditions.push(gte(reviewTable.rating, minRating));
+    if (minRating !== undefined) {
+      conditions.push(gte(reviewTable.rating, minRating));
+    }
+
+    if (maxRating !== undefined) {
+      conditions.push(lte(reviewTable.rating, maxRating));
+    }
+
+    const reviews = await db
+      .select({
+        id: reviewTable.id,
+        rating: reviewTable.rating,
+        comment: reviewTable.comment,
+        attachPhotos: reviewTable.attachPhotos,
+        createdAt: reviewTable.createdAt,
+        userId: usersTable.id,
+        userDisplayName: usersTable.displayName,
+        userFirstName: usersTable.firstName,
+        userLastName: usersTable.lastName,
+        userProfileUrl: usersTable.profileUrl,
+      })
+      .from(reviewTable)
+      .innerJoin(
+        reservationTable,
+        eq(reviewTable.reservationId, reservationTable.id),
+      )
+      .innerJoin(usersTable, eq(reservationTable.userId, usersTable.id))
+      .where(and(...conditions)) // <-- all conditions combined here
+      .orderBy(desc(reviewTable.createdAt));
+
+    const transformedReviews: ReviewWithUser[] = reviews.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      attachPhotos: r.attachPhotos,
+      createdAt: r.createdAt,
+      user: {
+        id: r.userId,
+        displayName: r.userDisplayName,
+        firstName: r.userFirstName,
+        lastName: r.userLastName,
+        profileUrl: r.userProfileUrl,
+      },
+    }));
+
+    return {
+      reviews: transformedReviews,
+      hasMore: false,
+    };
   }
-
-  if (maxRating !== undefined) {
-    conditions.push(lte(reviewTable.rating, maxRating));
-  }
-
-  const reviews = await db
-    .select({
-      id: reviewTable.id,
-      rating: reviewTable.rating,
-      comment: reviewTable.comment,
-      attachPhotos: reviewTable.attachPhotos,
-      createdAt: reviewTable.createdAt,
-      userId: usersTable.id,
-      userDisplayName: usersTable.displayName,
-      userFirstName: usersTable.firstName,
-      userLastName: usersTable.lastName,
-      userProfileUrl: usersTable.profileUrl,
-    })
-    .from(reviewTable)
-    .innerJoin(reservationTable, eq(reviewTable.reservationId, reservationTable.id))
-    .innerJoin(usersTable, eq(reservationTable.userId, usersTable.id))
-    .where(and(...conditions)) // <-- all conditions combined here
-    .orderBy(desc(reviewTable.createdAt));
-
-  const transformedReviews: ReviewWithUser[] = reviews.map((r) => ({
-    id: r.id,
-    rating: r.rating,
-    comment: r.comment,
-    attachPhotos: r.attachPhotos,
-    createdAt: r.createdAt,
-    user: {
-      id: r.userId,
-      displayName: r.userDisplayName,
-      firstName: r.userFirstName,
-      lastName: r.userLastName,
-      profileUrl: r.userProfileUrl,
-    },
-  }));
-
-  return {
-    reviews: transformedReviews,
-    hasMore: false,
-  };
-}
-
-
 }

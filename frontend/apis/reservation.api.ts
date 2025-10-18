@@ -35,12 +35,11 @@ export async function createReservation(payload: {
 
 export async function cancelReservation(
   reservationId: number,
-  restaurantId: number,
+  cancelBy: 'user' | 'restaurant_owner',
 ): Promise<boolean> {
   try {
-    await ApiService.post('/reservations/cancel', {
-      reservationId,
-      restaurantId,
+    await ApiService.post(`/reservations/${reservationId}/cancel`, {
+      cancelBy,
     });
     return true;
   } catch (error) {
@@ -49,20 +48,16 @@ export async function cancelReservation(
   }
 }
 
-export async function deleteRestaurant(restaurantId: number): Promise<void> {
-  try {
-    await ApiService.delete(`/restaurant/${restaurantId}`);
-  } catch (error) {
-    normalizeError(error);
-  }
-}
-
 export async function updateReservationStatus(
   reservationId: number,
   status: string,
+  updateBy: 'user' | 'restaurant_owner',
 ): Promise<boolean> {
   try {
-    await ApiService.patch(`/reservations/${reservationId}/status`, { status });
+    await ApiService.patch(`/reservations/${reservationId}/status`, {
+      status,
+      updateBy,
+    });
     return true;
   } catch (error) {
     normalizeError(error);

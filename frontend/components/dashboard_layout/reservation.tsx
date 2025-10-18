@@ -197,7 +197,11 @@ export default function Reservation({ restaurantId }: ReservationProps) {
       p.map((r) => (r.id === id ? { ...r, status: 'confirmed' } : r)),
     );
     (async () => {
-      const ok = await updateReservationStatus(id, 'confirmed');
+      const ok = await updateReservationStatus(
+        id,
+        'confirmed',
+        'restaurant_owner',
+      );
       if (!ok) {
         setReservations(prev);
         Alert.alert('Failed', `Failed to approve reservation #${id}`);
@@ -213,7 +217,11 @@ export default function Reservation({ restaurantId }: ReservationProps) {
       p.map((r) => (r.id === id ? { ...r, status: 'rejected' } : r)),
     );
     (async () => {
-      const ok = await updateReservationStatus(id, 'rejected');
+      const ok = await updateReservationStatus(
+        id,
+        'rejected',
+        'restaurant_owner',
+      );
       if (!ok) {
         setReservations(prev);
         Alert.alert('Failed', `Failed to reject reservation #${id}`);

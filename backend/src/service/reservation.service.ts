@@ -12,6 +12,7 @@ import {
 import createHttpError from 'http-errors';
 import { db } from '../db';
 import { reservationTable, restaurantTable } from '../db/schema';
+import NotificationService from './notification.service';
 
 export type Reservation = InferSelectModel<typeof reservationTable>;
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
@@ -80,7 +81,7 @@ export default class ReservationService {
 
   static async cancelReservation(data: {
     reservationId: number;
-    userId: number;
+    cancelBy: 'user' | 'restaurant_owner';
   }): Promise<void> {
     let reservationId = data.reservationId;
 
@@ -108,10 +109,19 @@ export default class ReservationService {
         'Reservation status must be unconfirmed or confirmed to cancel',
       );
     }
-    await db
+
+    let [updated] = await db
       .update(reservationTable)
       .set({ status: 'cancelled' })
-      .where(eq(reservationTable.id, reservationId));
+      .where(eq(reservationTable.id, reservationId))
+      .returning();
+
+    await NotificationService.notifyReservationStatuses([
+      {
+        reservation: updated,
+        target: data.cancelBy === 'user' ? 'restaurant_owner' : 'user',
+      },
+    ]);
   }
 
   static async createReservation(data: {
@@ -121,7 +131,7 @@ export default class ReservationService {
     numberOfAdult?: number;
     numberOfChildren?: number;
   }) {
-    const inserted = await db
+    const [inserted] = await db
       .insert(reservationTable)
       .values({
         userId: data.userId,
@@ -133,7 +143,8 @@ export default class ReservationService {
       })
       .returning();
 
-    return inserted[0];
+    await NotificationService.notifyNewReservation(inserted);
+    return inserted;
   }
 
   static async getReservationsByRestaurantIdInOneMonth(
@@ -159,7 +170,8 @@ export default class ReservationService {
   static async updateReservationStatus(
     reservationId: number,
     newStatus: Reservation['status'],
-  ): Promise<void> {
+    updateBy: 'user' | 'restaurant_owner',
+  ): Promise<Reservation> {
     // ensure reservation exists
     const rows = await db
       .select()
@@ -171,10 +183,19 @@ export default class ReservationService {
       throw new createHttpError.NotFound('Reservation not found');
     }
 
-    await db
+    const [updated] = await db
       .update(reservationTable)
       .set({ status: newStatus })
-      .where(eq(reservationTable.id, reservationId));
+      .where(eq(reservationTable.id, reservationId))
+      .returning();
+
+    await NotificationService.notifyReservationStatuses([
+      {
+        reservation: updated,
+        target: updateBy === 'user' ? 'restaurant_owner' : 'user',
+      },
+    ]);
+    return updated;
   }
 
   // USER RESERVATION METHODS
@@ -220,7 +241,7 @@ export default class ReservationService {
       restaurant: row.restaurant!,
     }));
   }
-  
+
   static async expireUnconfirmedReservations(
     expiryMinutes: number,
   ): Promise<number> {
@@ -231,11 +252,18 @@ export default class ReservationService {
       .where(
         and(
           eq(reservationTable.status, 'unconfirmed'),
-          sql`${reservationTable.createdAt} < NOW() - INTERVAL '${sql.raw(expiryMinutes.toString())} minutes'`,
+          sql`${reservationTable.createdAt} < NOW() - INTERVAL '${sql.raw(
+            expiryMinutes.toString(),
+          )} minutes'`,
         ),
       )
-      .returning({ id: reservationTable.id });
+      .returning();
 
+    await NotificationService.notifyReservationStatuses(
+      result.map((reservation) => {
+        return { reservation, target: 'both' };
+      }),
+    );
     return result.length;
   }
 }
