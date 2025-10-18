@@ -12,9 +12,7 @@ function RootLayoutContent() {
 
   return (
     <>
-      {isLoading && null /* or spinner */}
-      {!isLoading && user === null && <NavBarGuest />}
-      {!isLoading && user !== null && <NavBarUser />}
+      {isLoading || !user ? <NavBarGuest /> : <NavBarUser />}
       <Stack screenOptions={{ headerShown: false }} />
     </>
   );
