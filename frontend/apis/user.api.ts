@@ -48,6 +48,15 @@ export async function submitReview(
   }
 }
 
+export async function deleteReview(reviewId: number): Promise<boolean> {
+  try {
+    await ApiService.delete(`/users/me/reviews/${reviewId}`);
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
 // Reservation schemas
 const RestaurantSchema = z.object({
   id: z.number(),

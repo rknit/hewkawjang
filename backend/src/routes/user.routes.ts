@@ -5,6 +5,7 @@ import UserService from '../service/user.service';
 import MailerService from '../service/mailer.service';
 import ReservationService from '../service/reservation.service';
 import { authHandler } from '../middleware/auth.middleware';
+import createHttpError from 'http-errors';
 
 const router = express.Router();
 
@@ -79,6 +80,25 @@ router.post('/me/reviews', authHandler, async (req: Request, res: Response) => {
   res.status(201).send();
 });
 
+router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
+  //console.log('DELETE /me/reviews/:id called', req.params);
+  try {
+    const reviewId = Number(req.params.id);
+    const userId = req.userAuthPayload?.userId;
+
+    if (!userId) {
+      throw createHttpError.Unauthorized('Missing user authentication');
+    }
+
+    await UserService.deleteReview(reviewId, userId);
+    res.status(200).json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get user by id (public)
+router.get('/:id', async (req, res) => {
 // GET /users/me/reservations - Get reservations for current user
 import { z } from 'zod';
 import { ZodError } from 'zod'; // ✅ make sure this is at the top
