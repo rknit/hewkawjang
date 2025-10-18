@@ -1,14 +1,16 @@
-import { View, TouchableOpacity, Image } from 'react-native';
+import { View, TouchableOpacity, Image, Text } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import UnderlinedPressableText from './underlined-pressable-text';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import UserDropdown from './user-dropdown';
 import NotificationPane from './notificationPane';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function NavBarUser() {
   const { user } = useProfile();
+  const { notifications } = useNotifications();
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [isNotiPaneVisible, setNotiPaneVisible] = useState(false);
 
@@ -22,6 +24,11 @@ export default function NavBarUser() {
   const handleCloseNotiPane = () => {
     setNotiPaneVisible(false);
   };
+
+  const unreadNotiCount = useMemo(
+    () => notifications.filter((noti) => !noti.isRead).length,
+    [notifications],
+  );
 
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16 space-x-5 pr-6">
@@ -38,7 +45,21 @@ export default function NavBarUser() {
           className="flex flex-row items-center"
           onPress={() => setNotiPaneVisible(true)}
         >
-          <Feather name="bell" size={24} color="black" className="ml-1 mr-1" />
+          <View className="relative">
+            <Feather
+              name="bell"
+              size={24}
+              color="black"
+              className="ml-1 mr-1"
+            />
+            {unreadNotiCount > 0 && (
+              <View className="absolute -top-1 -right-0 bg-[#EF4C4C] rounded-full w-[16px] h-[16px] items-center justify-center px-1">
+                <Text className="text-white text-xs font-bold">
+                  {unreadNotiCount > 99 ? '99+' : unreadNotiCount}
+                </Text>
+              </View>
+            )}
+          </View>
           <UnderlinedPressableText
             text="Notification"
             onPress={() => setNotiPaneVisible(true)}
