@@ -444,4 +444,63 @@ export default class RestaurantService {
       hasMore,
     };
   }
+
+  static async getFilteredReviews(
+    restaurantId: number,
+    minRating?: number,
+    maxRating?: number
+  ) {
+    // Base conditions
+    const conditions = [
+      eq(reservationTable.restaurantId, restaurantId),
+      eq(reservationTable.status, 'completed'),
+    ];
+
+    if (minRating !== undefined) {
+      conditions.push(gte(reviewTable.rating, minRating));
+    }
+
+    if (maxRating !== undefined) {
+      conditions.push(lte(reviewTable.rating, maxRating));
+    }
+
+    const reviews = await db
+      .select({
+        id: reviewTable.id,
+        rating: reviewTable.rating,
+        comment: reviewTable.comment,
+        attachPhotos: reviewTable.attachPhotos,
+        createdAt: reviewTable.createdAt,
+        userId: usersTable.id,
+        userDisplayName: usersTable.displayName,
+        userFirstName: usersTable.firstName,
+        userLastName: usersTable.lastName,
+        userProfileUrl: usersTable.profileUrl,
+      })
+      .from(reviewTable)
+      .innerJoin(reservationTable, eq(reviewTable.reservationId, reservationTable.id))
+      .innerJoin(usersTable, eq(reservationTable.userId, usersTable.id))
+      .where(and(...conditions)) // <-- all conditions combined here
+      .orderBy(desc(reviewTable.createdAt));
+
+    const transformedReviews: ReviewWithUser[] = reviews.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      attachPhotos: r.attachPhotos,
+      createdAt: r.createdAt,
+      user: {
+        id: r.userId,
+        displayName: r.userDisplayName,
+        firstName: r.userFirstName,
+        lastName: r.userLastName,
+        profileUrl: r.userProfileUrl,
+      },
+    }));
+
+    return {
+      reviews: transformedReviews,
+      hasMore: false,
+    };
+  }
 }
