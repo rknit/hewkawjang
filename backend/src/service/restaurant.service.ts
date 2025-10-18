@@ -1,26 +1,26 @@
 import {
+  and,
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  gt,
+  gte,
   inArray,
   InferInsertModel,
   InferSelectModel,
-  asc,
-  eq,
-  and,
-  or,
-  gt,
-  gte,
   lte,
+  or,
   sql,
-  getTableColumns,
-  desc,
 } from 'drizzle-orm';
-import { restaurantTable, reservationTable, reviewTable, usersTable } from '../db/schema';
+import Fuse from 'fuse.js';
+import createHttpError from 'http-errors';
 import { db } from '../db';
+import { reservationTable, restaurantTable, reviewTable, usersTable } from '../db/schema';
 import {
   CreateRestaurantInput,
   UpdateRestaurantInfo,
 } from '../validators/restaurant.validator';
-import createHttpError from 'http-errors';
-import Fuse from 'fuse.js';
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
@@ -445,62 +445,64 @@ export default class RestaurantService {
     };
   }
 
-  static async getFilteredReviews(
-    restaurantId: number,
-    minRating?: number,
-    maxRating?: number
-  ) {
-    // Base conditions
-    const conditions = [
-      eq(reservationTable.restaurantId, restaurantId),
-      eq(reservationTable.status, 'completed'),
-    ];
+static async getFilteredReviews(
+  restaurantId: number,
+  minRating?: number,
+  maxRating?: number
+) {
+  // Base conditions
+  const conditions = [
+    eq(reservationTable.restaurantId, restaurantId),
+    eq(reservationTable.status, 'completed'),
+  ];
 
-    if (minRating !== undefined) {
-      conditions.push(gte(reviewTable.rating, minRating));
-    }
-
-    if (maxRating !== undefined) {
-      conditions.push(lte(reviewTable.rating, maxRating));
-    }
-
-    const reviews = await db
-      .select({
-        id: reviewTable.id,
-        rating: reviewTable.rating,
-        comment: reviewTable.comment,
-        attachPhotos: reviewTable.attachPhotos,
-        createdAt: reviewTable.createdAt,
-        userId: usersTable.id,
-        userDisplayName: usersTable.displayName,
-        userFirstName: usersTable.firstName,
-        userLastName: usersTable.lastName,
-        userProfileUrl: usersTable.profileUrl,
-      })
-      .from(reviewTable)
-      .innerJoin(reservationTable, eq(reviewTable.reservationId, reservationTable.id))
-      .innerJoin(usersTable, eq(reservationTable.userId, usersTable.id))
-      .where(and(...conditions)) // <-- all conditions combined here
-      .orderBy(desc(reviewTable.createdAt));
-
-    const transformedReviews: ReviewWithUser[] = reviews.map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      comment: r.comment,
-      attachPhotos: r.attachPhotos,
-      createdAt: r.createdAt,
-      user: {
-        id: r.userId,
-        displayName: r.userDisplayName,
-        firstName: r.userFirstName,
-        lastName: r.userLastName,
-        profileUrl: r.userProfileUrl,
-      },
-    }));
-
-    return {
-      reviews: transformedReviews,
-      hasMore: false,
-    };
+  if (minRating !== undefined) {
+    conditions.push(gte(reviewTable.rating, minRating));
   }
+
+  if (maxRating !== undefined) {
+    conditions.push(lte(reviewTable.rating, maxRating));
+  }
+
+  const reviews = await db
+    .select({
+      id: reviewTable.id,
+      rating: reviewTable.rating,
+      comment: reviewTable.comment,
+      attachPhotos: reviewTable.attachPhotos,
+      createdAt: reviewTable.createdAt,
+      userId: usersTable.id,
+      userDisplayName: usersTable.displayName,
+      userFirstName: usersTable.firstName,
+      userLastName: usersTable.lastName,
+      userProfileUrl: usersTable.profileUrl,
+    })
+    .from(reviewTable)
+    .innerJoin(reservationTable, eq(reviewTable.reservationId, reservationTable.id))
+    .innerJoin(usersTable, eq(reservationTable.userId, usersTable.id))
+    .where(and(...conditions)) // <-- all conditions combined here
+    .orderBy(desc(reviewTable.createdAt));
+
+  const transformedReviews: ReviewWithUser[] = reviews.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    comment: r.comment,
+    attachPhotos: r.attachPhotos,
+    createdAt: r.createdAt,
+    user: {
+      id: r.userId,
+      displayName: r.userDisplayName,
+      firstName: r.userFirstName,
+      lastName: r.userLastName,
+      profileUrl: r.userProfileUrl,
+    },
+  }));
+
+  return {
+    reviews: transformedReviews,
+    hasMore: false,
+  };
+}
+
+
 }

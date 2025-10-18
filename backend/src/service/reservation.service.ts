@@ -1,7 +1,17 @@
-import { InferSelectModel, eq, and, inArray, asc, gte, lt, sql, desc } from 'drizzle-orm';
-import { reservationTable, restaurantTable } from '../db/schema';
-import { db } from '../db';
+import {
+  InferSelectModel,
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  lt,
+  sql,
+} from 'drizzle-orm';
 import createHttpError from 'http-errors';
+import { db } from '../db';
+import { reservationTable, restaurantTable } from '../db/schema';
 
 export type Reservation = InferSelectModel<typeof reservationTable>;
 export type Restaurant = InferSelectModel<typeof restaurantTable>;

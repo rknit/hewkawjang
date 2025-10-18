@@ -1,7 +1,7 @@
 import express from 'express';
-import RestaurantService from '../service/restaurant.service';
-import ReservationService from '../service/reservation.service';
 import { authHandler } from '../middleware/auth.middleware';
+import ReservationService from '../service/reservation.service';
+import RestaurantService from '../service/restaurant.service';
 import {
   createRestaurantSchema,
   updateRestaurantInfoSchema,
@@ -344,5 +344,6 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
     next(error);
   }
 });
+
 
 export default router;
