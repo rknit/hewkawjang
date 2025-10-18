@@ -1,17 +1,17 @@
 import {
   InferSelectModel,
-  eq,
   and,
-  inArray,
   asc,
+  desc,
+  eq,
   gte,
+  inArray,
   lt,
   sql,
-  desc,
 } from 'drizzle-orm';
-import { reservationTable, restaurantTable } from '../db/schema';
-import { db } from '../db';
 import createHttpError from 'http-errors';
+import { db } from '../db';
+import { reservationTable, restaurantTable } from '../db/schema';
 
 export type Reservation = InferSelectModel<typeof reservationTable>;
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
@@ -220,7 +220,7 @@ export default class ReservationService {
       restaurant: row.restaurant!,
     }));
   }
-
+  
   static async expireUnconfirmedReservations(
     expiryMinutes: number,
   ): Promise<number> {
@@ -231,9 +231,7 @@ export default class ReservationService {
       .where(
         and(
           eq(reservationTable.status, 'unconfirmed'),
-          sql`${reservationTable.createdAt} < NOW() - INTERVAL '${sql.raw(
-            expiryMinutes.toString(),
-          )} minutes'`,
+          sql`${reservationTable.createdAt} < NOW() - INTERVAL '${sql.raw(expiryMinutes.toString())} minutes'`,
         ),
       )
       .returning({ id: reservationTable.id });

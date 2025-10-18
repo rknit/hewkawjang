@@ -3,13 +3,13 @@ import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
   Restaurant,
   RestaurantSchema,
-  UpdateRestaurantInfo,
   RestaurantWithRating,
+  UpdateRestaurantInfo,
 } from '@/types/restaurant.type';
 import {
+  Comment,
   ReviewsResultSchema,
   ReviewWithUser,
-  Comment,
 } from '@/types/review.type';
 import { normalizeError } from '@/utils/api-error';
 import { getRelativeTime } from '@/utils/date-time';
@@ -275,5 +275,40 @@ export async function fetchReviewsByRestaurantId(
       avgRating: 0,
       breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     };
+  }
+}
+
+// Fetch filtered reviews for a restaurant
+export async function fetchFilteredReviews(
+  restaurantId: number,
+  options?: { minRating?: number; maxRating?: number; offset?: number; limit?: number }
+): Promise<{ reviews: Comment[]; hasMore: boolean }> {
+  try {
+    const params: any = {};
+    if (options?.minRating !== undefined) params.minRating = options.minRating;
+    if (options?.maxRating !== undefined) params.maxRating = options.maxRating;
+    if (options?.offset !== undefined) params.offset = options.offset;
+    if (options?.limit !== undefined) params.limit = options.limit;
+
+    const res = await ApiService.get(`/restaurants/${restaurantId}/reviews/filter`, { params });
+
+    // Transform to Comment format (like fetchReviewsByRestaurantId)
+    const comments: Comment[] = res.data.reviews.map((review: ReviewWithUser) => {
+      const name = review.user.displayName || review.user.firstName;
+      return {
+        id: review.id.toString(),
+        name: name,
+        avatar: review.user.profileUrl || '',
+        rating: review.rating,
+        comment: review.comment || 'No comment provided',
+        date: getRelativeTime(new Date(review.createdAt)),
+      };
+    });
+
+    return { reviews: comments, hasMore: res.data.hasMore };
+  } catch (error) {
+    console.error('Failed to fetch filtered reviews:', error);
+    normalizeError(error);
+    return { reviews: [], hasMore: false };
   }
 }
