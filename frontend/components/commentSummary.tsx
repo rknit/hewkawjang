@@ -25,7 +25,7 @@ const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdo
     return (
       <View className="flex-row items-center mb-1" key={stars}>
         <Text className="w-4 text-sm">{stars}</Text>
-        <StarSolid size={14} color="#999" />
+        <StarSolid size={14} color="#FACC15" />
         <View className="flex-1 h-2 mx-2 bg-gray-300 rounded-full overflow-hidden">
           <View
             className="h-2 rounded-full"
@@ -51,7 +51,7 @@ const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdo
         </View>
 
         {/* Average rating */}
-        <View className="w-[100px] items-center justify-center">
+        <View className="w-[120px] items-center justify-center">
           <Text className="text-3xl font-bold">{average.toFixed(1)}</Text>
           <View className="flex-row my-1">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -62,7 +62,7 @@ const CommentSummary: React.FC<SummaryProps> = ({ average, totalReviews, breakdo
               />
             ))}
           </View>
-          <Text className="text-xs text-gray-500">
+          <Text className="text-xs text-gray-500 text-center">
             Based on {totalReviews.toLocaleString()} reviews
           </Text>
         </View>

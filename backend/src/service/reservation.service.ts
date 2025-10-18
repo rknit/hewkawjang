@@ -1,9 +1,14 @@
-import { InferSelectModel, eq, and, inArray, asc, gte, lt, sql } from 'drizzle-orm';
-import { reservationTable } from '../db/schema';
+import { InferSelectModel, eq, and, inArray, asc, gte, lt, sql, desc } from 'drizzle-orm';
+import { reservationTable, restaurantTable } from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 
 export type Reservation = InferSelectModel<typeof reservationTable>;
+export type Restaurant = InferSelectModel<typeof restaurantTable>;
+
+export type ReservationWithRestaurant = Reservation & {
+  restaurant: Restaurant;
+};
 
 export default class ReservationService {
   static async getUnconfirmedReservationsByRestaurant(props: {
@@ -162,6 +167,50 @@ export default class ReservationService {
       .where(eq(reservationTable.id, reservationId));
   }
 
+  // USER RESERVATION METHODS
+  static async getReservationsByUser(props: {
+    userId: number;
+    status?: Reservation['status'] | Reservation['status'][];
+    offset?: number;
+    limit?: number;
+  }): Promise<ReservationWithRestaurant[]> {
+    const userId = props.userId;
+    const status = props.status;
+    const offset = props.offset ?? 0;
+    const limit = props.limit ?? 50;
+
+    const conditions: any[] = [eq(reservationTable.userId, userId)];
+
+    if (status) {
+      if (Array.isArray(status)) {
+        conditions.push(
+          inArray(reservationTable.status, status as Reservation['status'][]),
+        );
+      } else {
+        conditions.push(
+          eq(reservationTable.status, status as Reservation['status']),
+        );
+      }
+    }
+
+    const reservations = await db
+      .select()
+      .from(reservationTable)
+      .leftJoin(
+        restaurantTable,
+        eq(reservationTable.restaurantId, restaurantTable.id),
+      )
+      .where(and(...conditions))
+      .orderBy(desc(reservationTable.reserveAt))
+      .offset(offset)
+      .limit(limit);
+
+    return reservations.map((row) => ({
+      ...row.reservation,
+      restaurant: row.restaurant!,
+    }));
+  }
+}
   static async expireUnconfirmedReservations(
     expiryMinutes: number,
   ): Promise<number> {

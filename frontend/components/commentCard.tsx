@@ -22,7 +22,7 @@ const CommentCard: React.FC<CommentProps> = ({ name, avatar, rating, comment, da
       <Image
         source={avatarSource}
         className="rounded-full"
-        style={{ width: 24, height: 24, resizeMode: 'cover' }}
+        style={{ width: 60, height: 60, resizeMode: 'cover' }}
       />
 
       {/* Content */}
