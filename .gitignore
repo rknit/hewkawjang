@@ -17,4 +17,8 @@
 # jest coverage reports
 **/coverage/
 
+# drizzle orm
 backend/drizzle
+
+# vercel
+.vercel
