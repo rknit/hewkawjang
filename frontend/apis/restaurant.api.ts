@@ -212,7 +212,11 @@ export async function searchRestaurants(params: {
 export async function fetchReviewsByRestaurantId(
   restaurantId: number,
   options?: { offset?: number; limit?: number },
-): Promise<{ reviews: Comment[]; avgRating: number; breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number } }> {
+): Promise<{
+  reviews: Comment[];
+  avgRating: number;
+  breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
+}> {
   try {
     const params: any = {};
 
@@ -253,7 +257,8 @@ export async function fetchReviewsByRestaurantId(
         : 0;
 
     // Calculate breakdown (count of each rating 1-5)
-    const breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number } = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    const breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number } =
+      { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     comments.forEach((comment) => {
       if (comment.rating >= 1 && comment.rating <= 5) {
         breakdown[comment.rating as 1 | 2 | 3 | 4 | 5]++;
@@ -281,7 +286,12 @@ export async function fetchReviewsByRestaurantId(
 // Fetch filtered reviews for a restaurant
 export async function fetchFilteredReviews(
   restaurantId: number,
-  options?: { minRating?: number; maxRating?: number; offset?: number; limit?: number }
+  options?: {
+    minRating?: number;
+    maxRating?: number;
+    offset?: number;
+    limit?: number;
+  },
 ): Promise<{ reviews: Comment[]; hasMore: boolean }> {
   try {
     const params: any = {};
@@ -290,25 +300,38 @@ export async function fetchFilteredReviews(
     if (options?.offset !== undefined) params.offset = options.offset;
     if (options?.limit !== undefined) params.limit = options.limit;
 
-    const res = await ApiService.get(`/restaurants/${restaurantId}/reviews/filter`, { params });
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/reviews/filter`,
+      { params },
+    );
 
     // Transform to Comment format (like fetchReviewsByRestaurantId)
-    const comments: Comment[] = res.data.reviews.map((review: ReviewWithUser) => {
-      const name = review.user.displayName || review.user.firstName;
-      return {
-        id: review.id.toString(),
-        name: name,
-        avatar: review.user.profileUrl || '',
-        rating: review.rating,
-        comment: review.comment || 'No comment provided',
-        date: getRelativeTime(new Date(review.createdAt)),
-      };
-    });
+    const comments: Comment[] = res.data.reviews.map(
+      (review: ReviewWithUser) => {
+        const name = review.user.displayName || review.user.firstName;
+        return {
+          id: review.id.toString(),
+          name: name,
+          avatar: review.user.profileUrl || '',
+          rating: review.rating,
+          comment: review.comment || 'No comment provided',
+          date: getRelativeTime(new Date(review.createdAt)),
+        };
+      },
+    );
 
     return { reviews: comments, hasMore: res.data.hasMore };
   } catch (error) {
     console.error('Failed to fetch filtered reviews:', error);
     normalizeError(error);
     return { reviews: [], hasMore: false };
+  }
+}
+
+export async function deleteRestaurant(restaurantId: number): Promise<void> {
+  try {
+    await ApiService.delete(`/restaurant/${restaurantId}`);
+  } catch (error) {
+    normalizeError(error);
   }
 }

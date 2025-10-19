@@ -128,7 +128,7 @@ export function refreshAuthHandler(
 
 function getPayloadFrom(data: any): UserAuthPayload | undefined {
   if (data && data.userId) {
-    return { userId: data.userId };
+    return { userId: data.userId, sub: data.sub, role: data.role };
   }
   return undefined;
 }

@@ -1,9 +1,10 @@
 import express, { Request, Response } from 'express';
+import createHttpError from 'http-errors';
 import UserService from '../service/user.service';
 import MailerService from '../service/mailer.service';
-import ReservationService from '../service/reservation.service';
 import { authHandler } from '../middleware/auth.middleware';
-import createHttpError from 'http-errors';
+import { ReservationQuerySchema } from '../validators/reservation.validator';
+import ReservationService from '../service/reservation.service';
 
 const router = express.Router();
 
@@ -95,38 +96,10 @@ router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
   }
 });
 
-// GET /users/me/reservations - Get reservations for current user
-import { z } from 'zod';
-import { ZodError } from 'zod'; // ✅ make sure this is at the top
-
-import UserReservationService from '../service/reservation.service';
-
-// Define allowed reservation statuses
-export const ReservationStatusEnum = z.enum([
-  'unconfirmed',
-  'expired',
-  'confirmed',
-  'cancelled',
-  'rejected',
-  'completed',
-  'uncompleted',
-]);
-
-export type ReservationStatus = z.infer<typeof ReservationStatusEnum>;
-
-// Zod schema for query validation
-const ReservationQuerySchema = z.object({
-  status: z
-    .union([ReservationStatusEnum, z.array(ReservationStatusEnum)])
-    .optional(),
-  offset: z.coerce.number().int().min(0).default(0),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-});
-
 router.get(
   '/me/reservations',
   authHandler,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next) => {
     try {
       const userId = req.userAuthPayload?.userId;
 
@@ -137,7 +110,7 @@ router.get(
       // Validate and parse query params
       const parsedQuery = ReservationQuerySchema.parse(req.query);
 
-      const reservations = await UserReservationService.getReservationsByUser({
+      const reservations = await ReservationService.getReservationsByUser({
         userId,
         status: parsedQuery.status,
         offset: parsedQuery.offset,
@@ -146,52 +119,7 @@ router.get(
 
       res.status(200).json(reservations);
     } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          message: 'Invalid query parameters',
-          issues: error.issues, // ✅ the correct property
-        });
-      }
-
-      if (error instanceof createHttpError.HttpError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-
-      console.error(error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  },
-);
-
-// POST /users/me/reservations/:id/cancel - Cancel a reservation
-router.post(
-  '/me/reservations/:id/cancel',
-  authHandler,
-  async (req: Request, res: Response) => {
-    try {
-      const userId = req.userAuthPayload?.userId;
-
-      if (!userId) {
-        throw new createHttpError.Unauthorized('User not authenticated');
-      }
-
-      const reservationId = parseInt(req.params.id);
-      if (isNaN(reservationId)) {
-        throw new createHttpError.BadRequest('Invalid reservation ID');
-      }
-
-      await ReservationService.cancelReservation({
-        reservationId,
-        userId,
-      });
-
-      res.status(200).json({ message: 'Reservation cancelled successfully' });
-    } catch (error) {
-      if (error instanceof createHttpError.HttpError) {
-        res.status(error.statusCode).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: 'Internal server error' });
-      }
+      next(error);
     }
   },
 );

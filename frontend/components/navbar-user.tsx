@@ -71,10 +71,7 @@ export default function NavBarUser() {
       <View>
         <UnderlinedPressableText
           text="My Reservation"
-          onPress={() => {
-            // TODO: Navigate to reservations page
-            alert('Navigate to My Reservation');
-          }}
+          onPress={() => router.push('/UserReservationsScreen')}
           textClassName="text-black text-base"
         />
       </View>

@@ -224,10 +224,7 @@ export default function UserReservationsScreen() {
                 text: 'Yes',
                 onPress: async () => {
                   try {
-                    const success = await cancelReservation(
-                      r.id,
-                      r.restaurantId,
-                    );
+                    const success = await cancelReservation(r.id, 'user');
                     if (success) {
                       Alert.alert(
                         'Cancelled',

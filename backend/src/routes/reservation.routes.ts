@@ -23,16 +23,23 @@ router.get('/unconfirmed/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
-router.post('/cancel/:id', authHandler, async (req, res) => {
+router.post('/:id/cancel', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
   const reservationId = Number(req.params.id);
   if (!reservationId || !userId) {
     return res.status(400).json({ error: 'reservationId is required' });
   }
 
+  const { cancelBy } = req.body;
+  if (!cancelBy || (cancelBy !== 'user' && cancelBy !== 'restaurant_owner')) {
+    return res
+      .status(400)
+      .json({ error: 'cancelBy must be either user or restaurant_owner' });
+  }
+
   await ReservationService.cancelReservation({
     reservationId,
-    userId,
+    cancelBy,
   });
   return res.sendStatus(200);
 });
@@ -95,9 +102,14 @@ router.patch('/:id/status', authHandler, async (req, res, next) => {
       return res.status(400).json({ error: 'reservation id must be a number' });
     }
 
-    const { status } = req.body;
+    const { status, updateBy } = req.body;
     if (!status || typeof status !== 'string') {
       return res.status(400).json({ error: 'status is required' });
+    }
+    if (!updateBy || (updateBy !== 'user' && updateBy !== 'restaurant_owner')) {
+      return res
+        .status(400)
+        .json({ error: 'updateBy must be either user or restaurant_owner' });
     }
 
     const allowed = [
@@ -123,6 +135,7 @@ router.patch('/:id/status', authHandler, async (req, res, next) => {
         | 'rejected'
         | 'completed'
         | 'uncompleted',
+      updateBy,
     );
     return res.json(updated);
   } catch (err) {

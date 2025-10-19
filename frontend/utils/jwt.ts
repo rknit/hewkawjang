@@ -15,3 +15,25 @@ export function isJwtTokenExpired(token: string): boolean {
     return true;
   }
 }
+
+export function isJwtTokenExpiringSoon(
+  token: string,
+  thresholdSeconds: number = 120,
+): boolean {
+  try {
+    const decoded = jwtDecode<{ exp?: number }>(token);
+    if (!decoded.exp) {
+      return true;
+    }
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    const timeUntilExpiry = decoded.exp - currentTime;
+
+    return timeUntilExpiry < thresholdSeconds;
+  } catch (error) {
+    if (__DEV__) {
+      console.error('Error checking JWT expiry:', error);
+    }
+    return true;
+  }
+}

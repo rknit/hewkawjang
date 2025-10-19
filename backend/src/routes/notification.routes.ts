@@ -44,8 +44,8 @@ router.post('/', authHandler, async (req, res) => {
         });
     }
 
-    const newNotification = await NotificationService.createNotification(
-      validationResult.data
+    const newNotification = await NotificationService.createNotifications(
+      [validationResult.data]
     );
     
     res.status(201).json(newNotification);
