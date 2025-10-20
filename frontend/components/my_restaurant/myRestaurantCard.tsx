@@ -5,11 +5,15 @@ import { router } from 'expo-router';
 import { MyRestaurantEntry } from '@/app/(tabs)/myRestaurant';
 import StarRating from '../starRating';
 
+type MyRestaurantCardProps = {
+  entry: MyRestaurantEntry;
+  onToggleStatus?: (newStatus: 'open' | 'closed') => void;
+};
+
 export default function MyRestaurantCard({
   entry,
-}: {
-  entry: MyRestaurantEntry;
-}) {
+  onToggleStatus,
+}: MyRestaurantCardProps) {
   const [isOpen, setIsOpen] = React.useState(
     entry.restaurant.status === 'open',
   );
@@ -19,11 +23,10 @@ export default function MyRestaurantCard({
   };
 
   const handleToggleStatus = async () => {
-    await updateRestaurantStatus(
-      entry.restaurant.id,
-      isOpen ? 'closed' : 'open',
-    );
+    const newStatus = isOpen ? 'closed' : 'open';
+    await updateRestaurantStatus(entry.restaurant.id, newStatus);
     setIsOpen(!isOpen);
+    onToggleStatus?.(newStatus);
   };
 
   return (
@@ -48,7 +51,7 @@ export default function MyRestaurantCard({
           {/* info */}
           <View className="flex-col">
             <View className="flex-row items-center gap-2 mb-2">
-              <StarRating rating={entry.averageRating} maxRating={5} />
+              <StarRating rating={entry.averageRating} />
               <Text>{entry.averageRating}</Text>
             </View>
 

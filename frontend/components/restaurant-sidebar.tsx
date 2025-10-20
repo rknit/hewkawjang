@@ -1,19 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Calendar, BarChart2, Settings } from 'lucide-react-native';
+import {
+  fetchRestaurantById,
+  updateRestaurantStatus,
+} from '@/apis/restaurant.api';
 
 interface SidebarProps {
+  restaurantId: number;
+  content: string;
   setContent: (content: string) => void;
 }
 
-export default function Sidebar({ setContent }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(true);
+export default function Sidebar({
+  restaurantId,
+  content,
+  setContent,
+}: SidebarProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [isSetting, setIsSetting] = useState(false);
   const [isDashboard, setIsDashboard] = useState(false);
   const [isReservation, setIsReservation] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
 
-  const toggleStatus = () => {
+  useEffect(() => {
+    setIsSetting(content === 'settings');
+    setIsDashboard(content === 'dashboard');
+    setIsReservation(content === 'reservation');
+    setIsPreview(content === 'preview');
+  }, [content]);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      const restaurant = await fetchRestaurantById(restaurantId);
+      setIsOpen(restaurant ? restaurant.status === 'open' : false);
+    };
+    fetchStatus();
+  }, [restaurantId]);
+
+  const toggleStatus = async () => {
+    await updateRestaurantStatus(restaurantId, isOpen ? 'closed' : 'open');
     setIsOpen(!isOpen);
   };
 

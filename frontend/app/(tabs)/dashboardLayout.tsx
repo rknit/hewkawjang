@@ -1,26 +1,53 @@
-import React, { use, useState } from 'react';
+import React, { useState } from 'react';
 import SideBar from '../../components/restaurant-sidebar';
 import { View, Text } from 'react-native';
-import RestaurantScreen from '@/app/(tabs)/Restaurant';
 import Dashboard from '../../components/dashboard_layout/dashboard';
 import Reservation from '../../components/dashboard_layout/reservation';
-import Restaurant from '@/app/(tabs)/RestaurantPreview';
+import RestaurantPreview from '@/app/(tabs)/RestaurantPreview';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function DashboardLayout() {
-  const [content, setContent] = useState('preview');
-  const params = useLocalSearchParams<{ restaurantId?: string }>();
-  const restaurantId = Number(params.restaurantId || 1);
+  const params = useLocalSearchParams<{ restaurantId: string }>();
+  const restaurantId = Number(params.restaurantId);
+
+  const [content, setContent] = useState('dashboard');
+  const [previousContent, setPreviousContent] = useState('dashboard');
+
+  const handleSetContent = (newContent: string) => {
+    if (newContent === content) {
+      // Toggle back to previous content
+      setContent(previousContent);
+    } else {
+      setPreviousContent(content);
+      setContent(newContent);
+    }
+  };
+
+  const handlePreviewExit = () => {
+    setContent(previousContent);
+  };
+
   return (
     <View className="flex flex-row bg-neutral-100 h-screen w-screen overflow-auto">
-      <SideBar setContent={setContent} />
+      <SideBar
+        restaurantId={restaurantId}
+        content={content}
+        setContent={handleSetContent}
+      />
       <View className="w-full flex-1">
-        {content === 'preview' && <Restaurant />}
+        {content === 'preview' && (
+          <RestaurantPreview
+            restaurantId={restaurantId}
+            onExit={handlePreviewExit}
+          />
+        )}
         {content === 'reservation' && (
           <Reservation restaurantId={restaurantId} />
         )}
         {content === 'dashboard' && <Dashboard restaurantId={restaurantId} />}
-        {content === 'settings' && <Restaurant />}
+        {content === 'settings' && (
+          <Text className="text-xl">丫 (๑°□°๑)丫</Text>
+        )}
       </View>
     </View>
   );

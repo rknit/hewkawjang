@@ -9,6 +9,7 @@ import {
 import {
   Comment,
   ReviewsResultSchema,
+  ReviewsWithBreakdown,
   ReviewWithUser,
 } from '@/types/review.type';
 import { normalizeError } from '@/utils/api-error';
@@ -212,11 +213,7 @@ export async function searchRestaurants(params: {
 export async function fetchReviewsByRestaurantId(
   restaurantId: number,
   options?: { offset?: number; limit?: number },
-): Promise<{
-  reviews: Comment[];
-  avgRating: number;
-  breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
-}> {
+): Promise<ReviewsWithBreakdown> {
   try {
     const params: any = {};
 

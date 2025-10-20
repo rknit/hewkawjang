@@ -7,7 +7,7 @@ import MyRestaurantCard from '@/components/my_restaurant/myRestaurantCard';
 import { useAuth } from '@/context/AuthContext';
 import { Restaurant } from '@/types/restaurant.type';
 import { router } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 
 export type MyRestaurantEntry = {
@@ -19,8 +19,19 @@ export type MyRestaurantEntry = {
 
 export default function MyRestaurant() {
   const { user } = useAuth();
-  const [entries, setEntries] = React.useState<MyRestaurantEntry[]>([]);
-  const [openRestaurants, setOpenRestaurants] = React.useState(0);
+  const [entries, setEntries] = useState<MyRestaurantEntry[]>([]);
+  const [openRestaurants, setOpenRestaurants] = useState(0);
+
+  const handleToggleStatus = (
+    restaurantId: number,
+    newStatus: 'open' | 'closed',
+  ) => {
+    if (newStatus === 'open') {
+      setOpenRestaurants((prev) => prev + 1);
+    } else {
+      setOpenRestaurants((prev) => prev - 1);
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -75,7 +86,13 @@ export default function MyRestaurant() {
       <ScrollView showsVerticalScrollIndicator={false} className="items-center">
         <View className="flex-row flex-wrap gap-8">
           {entries.map((entry) => (
-            <MyRestaurantCard key={entry.restaurant.id} entry={entry} />
+            <MyRestaurantCard
+              key={entry.restaurant.id}
+              entry={entry}
+              onToggleStatus={(newStatus) =>
+                handleToggleStatus(entry.restaurant.id, newStatus)
+              }
+            />
           ))}
         </View>
       </ScrollView>
