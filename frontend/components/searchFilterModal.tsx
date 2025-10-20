@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { TouchableOpacity, View, Text, ScrollView, TextInput } from 'react-native';
-import BaseModal from './base-modal';
 import { THAI_PROVINCES } from '@/constants/thailand-provinces';
+import React, { useState } from 'react';
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import BaseModal from './base-modal';
 
 interface SearchFilters {
   province: string;
@@ -39,8 +45,8 @@ export default function SearchFilterModal({
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
   const [provinceSearch, setProvinceSearch] = useState('');
 
-  const filteredProvinces = THAI_PROVINCES.filter(province =>
-    province.toLowerCase().includes(provinceSearch.toLowerCase())
+  const filteredProvinces = THAI_PROVINCES.filter((province) =>
+    province.toLowerCase().includes(provinceSearch.toLowerCase()),
   );
 
   const cuisineTypes = ['Buffet', 'Indian', 'Italian', 'Japanese', 'Chinese'];
@@ -54,9 +60,9 @@ export default function SearchFilterModal({
 
   const toggleCuisineType = (type: string) => {
     const newCuisineTypes = filters.cuisineTypes.includes(type)
-      ? filters.cuisineTypes.filter(t => t !== type)
+      ? filters.cuisineTypes.filter((t) => t !== type)
       : [...filters.cuisineTypes, type];
-    
+
     onFiltersChange({
       ...filters,
       cuisineTypes: newCuisineTypes,
@@ -96,17 +102,23 @@ export default function SearchFilterModal({
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Province - Dropdown */}
         <View className="mb-4">
-          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">Province</Text>
+          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">
+            Province
+          </Text>
           <TouchableOpacity
             className="bg-gray-100 rounded-lg p-2 flex-row justify-between items-center"
             onPress={() => setShowProvinceDropdown(!showProvinceDropdown)}
           >
-            <Text className={`text-sm ${filters.province ? 'text-gray-800' : 'text-gray-500'}`}>
+            <Text
+              className={`text-sm ${filters.province ? 'text-gray-800' : 'text-gray-500'}`}
+            >
               {filters.province || 'Select Province'}
             </Text>
-            <Text className="text-gray-400">{showProvinceDropdown ? '▲' : '▼'}</Text>
+            <Text className="text-gray-400">
+              {showProvinceDropdown ? '▲' : '▼'}
+            </Text>
           </TouchableOpacity>
-          
+
           {/* Dropdown List */}
           {showProvinceDropdown && (
             <View className="bg-white border border-gray-200 rounded-lg mt-1 max-h-40">
@@ -133,14 +145,18 @@ export default function SearchFilterModal({
                       setProvinceSearch('');
                     }}
                   >
-                    <Text className={`text-sm ${
-                      filters.province === province ? 'font-bold text-[#8B5C2A]' : 'text-gray-700'
-                    }`}>
+                    <Text
+                      className={`text-sm ${
+                        filters.province === province
+                          ? 'font-bold text-[#8B5C2A]'
+                          : 'text-gray-700'
+                      }`}
+                    >
                       {province}
                     </Text>
                   </TouchableOpacity>
                 ))}
-                
+
                 {/* Show "No results" if no provinces match */}
                 {filteredProvinces.length === 0 && (
                   <View className="py-4 px-3">
@@ -162,19 +178,25 @@ export default function SearchFilterModal({
               <TouchableOpacity
                 key={range.label}
                 className={`px-3 py-1 rounded-lg border ${
-                  filters.priceRange.min === range.min && filters.priceRange.max === range.max
+                  filters.priceRange.min === range.min &&
+                  filters.priceRange.max === range.max
                     ? 'bg-[#8B5C2A] border-[#8B5C2A]'
                     : 'bg-white border-gray-300'
                 }`}
-                onPress={() => updateFilters({ 
-                  priceRange: { min: range.min, max: range.max } 
-                })}
+                onPress={() =>
+                  updateFilters({
+                    priceRange: { min: range.min, max: range.max },
+                  })
+                }
               >
-                <Text className={`text-sm ${
-                  filters.priceRange.min === range.min && filters.priceRange.max === range.max
-                    ? 'text-white'
-                    : 'text-gray-700'
-                }`}>
+                <Text
+                  className={`text-sm ${
+                    filters.priceRange.min === range.min &&
+                    filters.priceRange.max === range.max
+                      ? 'text-white'
+                      : 'text-gray-700'
+                  }`}
+                >
                   {range.label}
                 </Text>
               </TouchableOpacity>
@@ -184,7 +206,9 @@ export default function SearchFilterModal({
 
         {/* Cuisine - Compact */}
         <View className="mb-4">
-          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">Cuisine Type</Text>
+          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">
+            Cuisine Type
+          </Text>
           <View className="flex-row flex-wrap gap-1">
             {cuisineTypes.map((type) => (
               <TouchableOpacity
@@ -196,11 +220,13 @@ export default function SearchFilterModal({
                 }`}
                 onPress={() => toggleCuisineType(type)}
               >
-                <Text className={`text-sm ${
-                  filters.cuisineTypes.includes(type)
-                    ? 'text-white'
-                    : 'text-gray-700'
-                }`}>
+                <Text
+                  className={`text-sm ${
+                    filters.cuisineTypes.includes(type)
+                      ? 'text-white'
+                      : 'text-gray-700'
+                  }`}
+                >
                   {type}
                 </Text>
               </TouchableOpacity>
@@ -210,7 +236,9 @@ export default function SearchFilterModal({
 
         {/* Rating - Compact */}
         <View className="mb-4">
-          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">Min Rating</Text>
+          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">
+            Min Rating
+          </Text>
           <View className="flex-row gap-1">
             {[0, 2, 3, 4, 5].map((rating) => (
               <TouchableOpacity
@@ -222,9 +250,13 @@ export default function SearchFilterModal({
                 }`}
                 onPress={() => updateFilters({ minRating: rating })}
               >
-                <Text className={`text-sm ${
-                  filters.minRating === rating ? 'text-white' : 'text-gray-700'
-                }`}>
+                <Text
+                  className={`text-sm ${
+                    filters.minRating === rating
+                      ? 'text-white'
+                      : 'text-gray-700'
+                  }`}
+                >
                   {rating === 0 ? 'Any' : `${rating} ⭐`}
                 </Text>
               </TouchableOpacity>
@@ -234,7 +266,9 @@ export default function SearchFilterModal({
 
         {/* Sort - Compact Toggle */}
         <View className="mb-4">
-          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">Sort By</Text>
+          <Text className="text-[#8B5C2A] font-medium mb-2 text-sm">
+            Sort By
+          </Text>
           <View className="flex-row gap-2">
             {/* Rating Toggle */}
             <TouchableOpacity
@@ -246,9 +280,9 @@ export default function SearchFilterModal({
               onPress={() => {
                 if (sortBy.field === 'rating') {
                   // Toggle between asc/desc if already on rating
-                  onSortChange({ 
-                    field: 'rating', 
-                    order: sortBy.order === 'asc' ? 'desc' : 'asc' 
+                  onSortChange({
+                    field: 'rating',
+                    order: sortBy.order === 'asc' ? 'desc' : 'asc',
                   });
                 } else {
                   // Set to rating desc as default
@@ -256,10 +290,17 @@ export default function SearchFilterModal({
                 }
               }}
             >
-              <Text className={`text-sm ${
-                sortBy.field === 'rating' ? 'text-white' : 'text-gray-700'
-              }`}>
-                Rating {sortBy.field === 'rating' ? (sortBy.order === 'desc' ? '↓' : '↑') : ''}
+              <Text
+                className={`text-sm ${
+                  sortBy.field === 'rating' ? 'text-white' : 'text-gray-700'
+                }`}
+              >
+                Rating{' '}
+                {sortBy.field === 'rating'
+                  ? sortBy.order === 'desc'
+                    ? '↓'
+                    : '↑'
+                  : ''}
               </Text>
             </TouchableOpacity>
 
@@ -273,9 +314,9 @@ export default function SearchFilterModal({
               onPress={() => {
                 if (sortBy.field === 'price') {
                   // Toggle between asc/desc if already on price
-                  onSortChange({ 
-                    field: 'price', 
-                    order: sortBy.order === 'asc' ? 'desc' : 'asc' 
+                  onSortChange({
+                    field: 'price',
+                    order: sortBy.order === 'asc' ? 'desc' : 'asc',
                   });
                 } else {
                   // Set to price asc as default (low to high is more common)
@@ -283,10 +324,17 @@ export default function SearchFilterModal({
                 }
               }}
             >
-              <Text className={`text-sm ${
-                sortBy.field === 'price' ? 'text-white' : 'text-gray-700'
-              }`}>
-                Price {sortBy.field === 'price' ? (sortBy.order === 'asc' ? '↑' : '↓') : ''}
+              <Text
+                className={`text-sm ${
+                  sortBy.field === 'price' ? 'text-white' : 'text-gray-700'
+                }`}
+              >
+                Price{' '}
+                {sortBy.field === 'price'
+                  ? sortBy.order === 'asc'
+                    ? '↑'
+                    : '↓'
+                  : ''}
               </Text>
             </TouchableOpacity>
 
@@ -299,19 +347,26 @@ export default function SearchFilterModal({
               }`}
               onPress={() => {
                 if (sortBy.field === 'name') {
-                  onSortChange({ 
-                    field: 'name', 
-                    order: sortBy.order === 'asc' ? 'desc' : 'asc' 
+                  onSortChange({
+                    field: 'name',
+                    order: sortBy.order === 'asc' ? 'desc' : 'asc',
                   });
                 } else {
                   onSortChange({ field: 'name', order: 'asc' });
                 }
               }}
             >
-              <Text className={`text-sm ${
-                sortBy.field === 'name' ? 'text-white' : 'text-gray-700'
-              }`}>
-                Name {sortBy.field === 'name' ? (sortBy.order === 'asc' ? '↑' : '↓') : ''}
+              <Text
+                className={`text-sm ${
+                  sortBy.field === 'name' ? 'text-white' : 'text-gray-700'
+                }`}
+              >
+                Name{' '}
+                {sortBy.field === 'name'
+                  ? sortBy.order === 'asc'
+                    ? '↑'
+                    : '↓'
+                  : ''}
               </Text>
             </TouchableOpacity>
           </View>
