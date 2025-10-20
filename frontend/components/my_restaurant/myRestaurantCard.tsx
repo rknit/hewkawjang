@@ -1,88 +1,91 @@
-import React, { useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Scroll } from 'lucide-react-native';
-import {
-  fetchOwnerRestaurants,
-  fetchRestaurantById,
-  updateRestaurantStatus,
-} from '@/apis/restaurant.api';
-import { useAuth } from '@/context/AuthContext';
-import Restaurant from '@/app/(tabs)/RestaurantPreview';
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
+import { updateRestaurantStatus } from '@/apis/restaurant.api';
 import { router } from 'expo-router';
-import RestaurantActivationButton from '../restaurant-activation-button';
-
-interface MyRestaurantCardProps {
-  restaurant: {
-    id: number;
-    name: string;
-    phoneNo: string;
-    cuisineType: string;
-    location: string;
-  };
-}
+import { MyRestaurantEntry } from '@/app/(tabs)/myRestaurant';
+import StarRating from '../starRating';
 
 export default function MyRestaurantCard({
-  restaurant,
-}: MyRestaurantCardProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const LoadData = async () => {
-    try {
-      const data = await fetchRestaurantById(restaurant.id);
-      if (!data) return;
-      setIsOpen(data.status === 'open');
-    } catch (error) {
-      console.error('Error fetching restaurant status:', error);
-    }
-  };
-  useEffect(() => {
-    LoadData();
-  }, [restaurant.id]);
+  entry,
+}: {
+  entry: MyRestaurantEntry;
+}) {
+  const [isOpen, setIsOpen] = React.useState(
+    entry.restaurant.status === 'open',
+  );
 
   const onDashboard = () => {
-    router.push(`/dashboardLayout?restaurantId=${restaurant.id}`);
+    router.push(`/dashboardLayout?restaurantId=${entry.restaurant.id}`);
+  };
+
+  const handleToggleStatus = async () => {
+    await updateRestaurantStatus(
+      entry.restaurant.id,
+      isOpen ? 'closed' : 'open',
+    );
+    setIsOpen(!isOpen);
   };
 
   return (
-    <TouchableOpacity
-      onPress={() => {
-        onDashboard();
-      }}
-      className="bg-[#FEF9F3] rounded-lg shadow p-2 flex-colunm flex-1 gap-10"
+    <Pressable
+      onPress={onDashboard}
+      className="bg-[#FEF9F3] border border-[#E05910] rounded-lg"
     >
-      <View className="w-full">
-        <Image
-          source={{
-            uri: 'https://th.bing.com/th/id/OIP.XY9twaWvDwJsHOwftj4V6QHaE8?w=288&h=192&c=7&r=0&o=7&cb=12&dpr=1.3&pid=1.7&rm=3',
-          }}
-          className="rounded-lg"
-          style={{ width: '100%', height: 125 }}
-          resizeMode="cover"
-        />
-      </View>
+      <Image
+        source={{
+          uri: 'https://th.bing.com/th/id/OIP.XY9twaWvDwJsHOwftj4V6QHaE8?w=288&h=192&c=7&r=0&o=7&cb=12&dpr=1.3&pid=1.7&rm=3',
+        }}
+        className="rounded-lg rounded-b-none"
+        style={{ width: 393, height: 240 }}
+        resizeMode="cover"
+      />
 
-      <View className="flex-row justify-btween ">
-        <View>
-          <Text>bb</Text>
-        </View>
-        <View className="flex-colunm">
-          <TouchableOpacity
-            onPress={async () => {
-              await updateRestaurantStatus(
-                restaurant.id,
-                isOpen ? 'closed' : 'open',
-              );
-              setIsOpen(!isOpen);
-            }}
-            className={`px-6 py-2 bottom-5 rounded-md items-center ${isOpen ? 'bg-red-500' : 'bg-green-500'}`}
-          >
-            <Text className="text-white font-semibold">
-              {isOpen ? 'Close Restaurant' : 'Open Restaurant'}
+      <View className="flex-col p-4 gap-2">
+        <Text className="text-base font-semibold underline">
+          {entry.restaurant.name}
+        </Text>
+        <View className="flex-row justify-between">
+          {/* info */}
+          <View className="flex-col">
+            <View className="flex-row items-center gap-2 mb-2">
+              <StarRating rating={entry.averageRating} maxRating={5} />
+              <Text>{entry.averageRating}</Text>
+            </View>
+
+            <Text className="text-xs text-[#808080]">
+              Today Reservations: {entry.reservationCount}
             </Text>
-          </TouchableOpacity>
+
+            <Text className="text-xs text-[#808080]">
+              Pending Reservations: {entry.pendingReservations}
+            </Text>
+
+            <Text className="text-xs text-[#808080]">
+              {entry.restaurant.cuisineType} • {entry.restaurant.district}
+            </Text>
+          </View>
+
+          {/* open/close button/status */}
+          <View className="flex-col items-center gap-2 justify-end">
+            <View className="border-[#E05910] border-2 rounded-full p-1">
+              <Text className="text-xs text-[#E05910]">
+                {isOpen ? 'Status: Open' : 'Status: Closed'}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleToggleStatus}
+              className={`px-3 py-1 rounded ${
+                !isOpen ? 'bg-green-500' : 'bg-red-500'
+              } ml-auto w-32 h-8 items-center justify-center`}
+            >
+              <Text className="text-white text-xs font-semibold">
+                {!isOpen ? 'Open Restaurant' : 'Close Restaurant'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

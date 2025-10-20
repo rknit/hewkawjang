@@ -103,7 +103,7 @@ export async function fetchReservationsForOwner(
 export async function fetchReservationsByRestaurant(
   restaurantId: number,
   options?: { status?: string | string[]; offset?: number; limit?: number },
-): Promise<Reservation[] | null> {
+): Promise<Reservation[]> {
   try {
     const params: any = {};
 
@@ -125,7 +125,7 @@ export async function fetchReservationsByRestaurant(
     return res.data.map((r: any) => ReservationSchema.parse(r));
   } catch (error) {
     normalizeError(error);
-    return null;
+    return [];
   }
 }
 
@@ -338,8 +338,8 @@ export async function deleteRestaurant(restaurantId: number): Promise<void> {
 
 export async function fetchOwnerRestaurants(
   userId: number,
-  offset: number,
-  limit: number,
+  offset?: number,
+  limit?: number,
 ): Promise<Restaurant[]> {
   try {
     const res = await ApiService.get(`/restaurants/owner/${userId}`, {
