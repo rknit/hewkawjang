@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, Text } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { fetchRestaurantById, fetchReviewsByRestaurantId } from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
+import ReserveButton from '@/components/reserve-button';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
-import { fetchRestaurantById, fetchReviewsByRestaurantId } from '@/apis/restaurant.api';
-import ReserveButton from '@/components/reserve-button';
 import { Comment } from '@/types/review.type';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 
 const pictures: string[] = [
   'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
@@ -77,11 +77,13 @@ export default function RestaurantScreen() {
               <ImageGallery images={pictures} />
 
               <ReviewSection
+                restaurantId={restaurantId}
                 comments={reviews}
                 average={avgRating}
                 totalReviews={reviews.length}
                 breakdown={breakdown}
               />
+
 
               <RestaurantAbout
                 address={restaurant ? makeAddress(restaurant) : ''}
