@@ -49,7 +49,7 @@ export default function Sidebar({ setContent }: SidebarProps) {
   };
 
   return (
-    <View className="w-64 h-full bg-[#faf7f2] p-4 border-r border-gray-200 items-center">
+    <View className="fix w-64 h-full bg-[#faf7f2] p-4 border-r border-gray-200 items-center">
       {/* Main column */}
       <View className="flex-1 gap-8 w-full top-5">
         {/* Menu items */}

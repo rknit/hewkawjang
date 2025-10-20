@@ -335,3 +335,21 @@ export async function deleteRestaurant(restaurantId: number): Promise<void> {
     normalizeError(error);
   }
 }
+
+export async function fetchOwnerRestaurants(
+  userId: number,
+  offset: number,
+  limit: number,
+): Promise<Restaurant[]> {
+  try {
+    const res = await ApiService.get(`/restaurants/owner/${userId}`, {
+      params: { offset, limit },
+    });
+    return res.data.map((restaurant: any) =>
+      RestaurantSchema.parse(restaurant),
+    );
+  } catch (error) {
+    console.error('Failed to fetch owner restaurants:', error);
+    return [];
+  }
+}
