@@ -25,7 +25,9 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
   totalReviews,
   breakdown,
 }) => {
-  const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
+  const [selectedRatings, setSelectedRatings] = useState<number[]>([
+    1, 2, 3, 4, 5,
+  ]);
   const [filteredComments, setFilteredComments] =
     useState<CommentListProps['comments']>(comments);
   const [loading, setLoading] = useState(false);
