@@ -132,28 +132,21 @@ export default function RecommendedRestaurantGrid() {
   };
 
   return (
-    <View className="p-4 w-full max-w-5xl mx-auto">
-      <View className="flex-row flex-wrap justify-center gap-x-8 gap-y-4">
-        {restaurants &&
-          restaurants.map((restaurant, index) => (
-            <View key={index} className="flex-1 min-w-[340px] max-w-[500px]">
-              <RecommendedRestaurantCard
-                id={restaurant.id}
-                name={restaurant.name}
-                address={makeAddress(restaurant)}
-                tags={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].tags}
-                rating={
-                  RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].rating
-                }
-                prices={
-                  RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].prices
-                }
-                image={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].image}
-                isNew={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].isNew}
-              />
-            </View>
-          ))}
-      </View>
+    <View className="p-4 w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+      {restaurants &&
+        restaurants.map((restaurant, index) => (
+          <RecommendedRestaurantCard
+            key={restaurant.id}
+            id={restaurant.id}
+            name={restaurant.name}
+            address={makeAddress(restaurant)}
+            tags={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].tags}
+            rating={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].rating}
+            prices={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].prices}
+            image={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].image}
+            isNew={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].isNew}
+          />
+        ))}
     </View>
   );
 }
