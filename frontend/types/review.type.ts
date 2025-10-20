@@ -34,3 +34,9 @@ export type Comment = {
   comment: string;
   date: string;
 };
+
+export type ReviewsWithBreakdown = {
+  reviews: Comment[];
+  avgRating: number;
+  breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
+};

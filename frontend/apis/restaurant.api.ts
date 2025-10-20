@@ -9,6 +9,7 @@ import {
 import {
   Comment,
   ReviewsResultSchema,
+  ReviewsWithBreakdown,
   ReviewWithUser,
 } from '@/types/review.type';
 import { normalizeError } from '@/utils/api-error';
@@ -103,7 +104,7 @@ export async function fetchReservationsForOwner(
 export async function fetchReservationsByRestaurant(
   restaurantId: number,
   options?: { status?: string | string[]; offset?: number; limit?: number },
-): Promise<Reservation[] | null> {
+): Promise<Reservation[]> {
   try {
     const params: any = {};
 
@@ -125,7 +126,7 @@ export async function fetchReservationsByRestaurant(
     return res.data.map((r: any) => ReservationSchema.parse(r));
   } catch (error) {
     normalizeError(error);
-    return null;
+    return [];
   }
 }
 
@@ -212,11 +213,7 @@ export async function searchRestaurants(params: {
 export async function fetchReviewsByRestaurantId(
   restaurantId: number,
   options?: { offset?: number; limit?: number },
-): Promise<{
-  reviews: Comment[];
-  avgRating: number;
-  breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
-}> {
+): Promise<ReviewsWithBreakdown> {
   try {
     const params: any = {};
 
@@ -333,5 +330,23 @@ export async function deleteRestaurant(restaurantId: number): Promise<void> {
     await ApiService.delete(`/restaurant/${restaurantId}`);
   } catch (error) {
     normalizeError(error);
+  }
+}
+
+export async function fetchOwnerRestaurants(
+  userId: number,
+  offset?: number,
+  limit?: number,
+): Promise<Restaurant[]> {
+  try {
+    const res = await ApiService.get(`/restaurants/owner/${userId}`, {
+      params: { offset, limit },
+    });
+    return res.data.map((restaurant: any) =>
+      RestaurantSchema.parse(restaurant),
+    );
+  } catch (error) {
+    console.error('Failed to fetch owner restaurants:', error);
+    return [];
   }
 }
