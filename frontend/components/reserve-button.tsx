@@ -3,6 +3,7 @@ import { TouchableOpacity, Text } from 'react-native';
 import ReservationForm from '@/components/ReservationForm';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from './login-modal';
+import SignUpModal from './signup-modal';
 
 type Props = {
   restaurantId?: number;
@@ -11,13 +12,14 @@ type Props = {
 export default function ReserveButton({ restaurantId }: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginModalVisible, setLoginModalVisible] = useState(false);
+  const [signUpModalVisible, setSignUpModalVisible] = useState(false);
 
   const handlePress = () => {
     if (user) {
       setOpen(true);
     } else {
-      setShowLoginModal(true);
+      setLoginModalVisible(true);
     }
   };
 
@@ -39,9 +41,24 @@ export default function ReserveButton({ restaurantId }: Props) {
         onClose={() => setOpen(false)}
       />
 
+      {/* Login Modal */}
       <LoginModal
-        visible={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
+        visible={loginModalVisible}
+        onClose={() => setLoginModalVisible(false)}
+        onSignUpPress={() => {
+          setLoginModalVisible(false);
+          setSignUpModalVisible(true);
+        }}
+      />
+
+      {/* Sign Up Modal */}
+      <SignUpModal
+        visible={signUpModalVisible}
+        onClose={() => setSignUpModalVisible(false)}
+        onLoginPress={() => {
+          setSignUpModalVisible(false);
+          setLoginModalVisible(true);
+        }}
       />
     </>
   );

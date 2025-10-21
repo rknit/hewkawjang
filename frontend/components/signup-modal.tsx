@@ -9,14 +9,18 @@ import { isAxiosError } from 'axios';
 import OtpModal from './OTP-Modal';
 import PolicyModal from './policy-modal';
 import { PRIVACY_POLICY } from '../constants/policy-content';
-import LoginModal from './login-modal';
 
 interface SignUpModalProps {
   visible: boolean;
   onClose: () => void;
+  onLoginPress?: () => void;
 }
 
-export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
+export default function SignUpModal({
+  visible,
+  onClose,
+  onLoginPress,
+}: SignUpModalProps) {
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [phone, setPhone] = useState('');
@@ -26,7 +30,6 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
   const [checked, setChecked] = useState(false);
   const [otpModalVisible, setotpModalVisible] = useState(false);
   const [showPolicy, setShowPolicy] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Alert states
   const [showAlert, setShowAlert] = useState(false);
@@ -251,13 +254,8 @@ export default function SignUpModal({ visible, onClose }: SignUpModalProps) {
         linkText="Login"
         onPress={() => {
           onClose?.();
-          setShowLoginModal(true);
+          onLoginPress?.();
         }}
-      />
-
-      <LoginModal
-        visible={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
       />
 
       {/* OTP */}

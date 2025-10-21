@@ -7,14 +7,18 @@ import PressableText from './pressable-text';
 import SimpleAlert from './simple-alert';
 import { useAuth } from '@/context/AuthContext';
 import { isAxiosError } from 'axios';
-import SignUpModal from './signup-modal';
 
 interface LoginModalProps {
   visible: boolean;
   onClose?: () => void;
+  onSignUpPress?: () => void;
 }
 
-export default function LoginModal({ visible, onClose }: LoginModalProps) {
+export default function LoginModal({
+  visible,
+  onClose,
+  onSignUpPress,
+}: LoginModalProps) {
   const { login: authLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +28,6 @@ export default function LoginModal({ visible, onClose }: LoginModalProps) {
   );
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   const resetComponent = () => {
     setEmail('');
@@ -64,6 +67,7 @@ export default function LoginModal({ visible, onClose }: LoginModalProps) {
     try {
       await authLogin(email, password);
       setIsLoading(false);
+      onClose?.();
     } catch (error) {
       setIsLoading(false);
       if (isAxiosError(error)) {
@@ -144,13 +148,8 @@ export default function LoginModal({ visible, onClose }: LoginModalProps) {
         linkText="Sign up"
         onPress={() => {
           onClose?.();
-          setShowSignUpModal(true);
+          onSignUpPress?.();
         }}
-      />
-
-      <SignUpModal
-        visible={showSignUpModal}
-        onClose={() => setShowSignUpModal(false)}
       />
 
       {/* Alert Box */}
