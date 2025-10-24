@@ -26,7 +26,7 @@ import AlertModal from '@/components/AlertModal';
 
 type ReservationWithRestaurant = UserReservation & { restaurant: Restaurant };
 
-type FilterType = 'upcoming' | 'completed' | 'cancelled';
+type FilterType = 'upcoming' | 'completed' | 'canceled';
 
 export default function UserReservationsScreen() {
   const router = useRouter();
@@ -125,10 +125,10 @@ export default function UserReservationsScreen() {
         );
       } else if (filter === 'completed') {
         newFiltered.push(...list.filter((r) => r.status === 'completed'));
-      } else if (filter === 'cancelled') {
+      } else if (filter === 'canceled') {
         newFiltered.push(
           ...list.filter((r) =>
-            ['cancelled', 'rejected', 'expired'].includes(r.status),
+            ['canceled', 'rejected', 'expired'].includes(r.status),
           ),
         );
       }
@@ -171,7 +171,7 @@ export default function UserReservationsScreen() {
         return '#10b981';
       case 'unconfirmed':
         return '#ec5b24';
-      case 'cancelled':
+      case 'canceled':
         return '#ef4444';
       case 'rejected':
         return '#ef4444';
@@ -236,7 +236,7 @@ export default function UserReservationsScreen() {
           </Text>,
           () => {
             // Only check 24-hour restriction for confirmed reservations
-            // Unconfirmed reservations can be cancelled at any time
+            // Unconfirmed reservations can be canceled at any time
             if (r.status === 'confirmed' && !canCancelReservation(r)) {
               setAlertModalConfig({
                 title: 'Too Late to Cancel',
@@ -256,8 +256,8 @@ export default function UserReservationsScreen() {
                   const success = await cancelReservation(r.id, 'user');
                   if (success) {
                     setAlertModalConfig({
-                      title: 'Cancelled',
-                      message: 'Reservation has been cancelled.',
+                      title: 'canceled',
+                      message: 'Reservation has been canceled.',
                       buttonText: 'OK',
                     });
                     setAlertModalVisible(true);
@@ -312,8 +312,8 @@ export default function UserReservationsScreen() {
       );
     }
 
-    // === Cancelled / Rejected / Expired ===
-    if (['cancelled', 'rejected', 'expired'].includes(r.status)) {
+    // === canceled / Rejected / Expired ===
+    if (['canceled', 'rejected', 'expired'].includes(r.status)) {
       actions.push(
         addTextAction(
           'Book Again',
@@ -321,7 +321,7 @@ export default function UserReservationsScreen() {
           () => {
             router.push(`/Restaurant?restaurantId=${r.restaurant.id}`);
           },
-          'book-again-cancelled',
+          'book-again-canceled',
         ),
       );
     }
@@ -334,9 +334,9 @@ export default function UserReservationsScreen() {
       <View style={styles.innerContainer}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={styles.headerText}>Your Reservation</Text>
+          <Text style={styles.headerText}>My Reservation</Text>
           <View style={styles.filterContainer}>
-            {['upcoming', 'completed', 'cancelled'].map((filter) => (
+            {['upcoming', 'completed', 'canceled'].map((filter) => (
               <TouchableOpacity
                 key={filter}
                 style={[
