@@ -195,18 +195,6 @@ export default function UserReservationsScreen() {
     }
   };
 
-  const canCancelReservation = (reservation: ReservationWithRestaurant) => {
-    const reserveDate = new Date(reservation.reserveAt);
-    const now = new Date();
-    const hoursDiff =
-      (reserveDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    console.log('cancale?', hoursDiff);
-    return (
-      ['unconfirmed', 'confirmed'].includes(reservation.status) &&
-      hoursDiff > 24
-    );
-  };
-
   const renderActionButtons = (r: ReservationWithRestaurant) => {
     const actions: React.JSX.Element[] = [];
 
@@ -235,18 +223,6 @@ export default function UserReservationsScreen() {
             ×
           </Text>,
           () => {
-            // Only check 24-hour restriction for confirmed reservations
-            // Unconfirmed reservations can be canceled at any time
-            if (r.status === 'confirmed' && !canCancelReservation(r)) {
-              setAlertModalConfig({
-                title: 'Too Late to Cancel',
-                message: 'Cancellations must be made at least 24 hours in advance.',
-                buttonText: 'OK',
-              });
-              setAlertModalVisible(true);
-              return;
-            }
-
             setConfirmModalConfig({
               title: 'Cancel Reservation',
               message: 'Are you sure you want to cancel this reservation?',
@@ -489,6 +465,7 @@ const styles = StyleSheet.create({
   },
 
   innerContainer: {
+    flex: 1,
     backgroundColor: '#ffffffff',
     borderRadius: 5,
     padding: 16,
