@@ -142,7 +142,7 @@ router.get('/reject', authHandler, async (req, res) => {
   res.status(200).send();
 });
 
-router.get('/update/status', authHandler, async (req, res) => {
+router.put('/update/status', authHandler, async (req, res) => {
   await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
   res.status(200).send();
 });
@@ -328,15 +328,19 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
       return res.status(400).json({ error: 'restaurant id must be a number' });
     }
 
-    const minRating = req.query.minRating ? Number(req.query.minRating) : undefined;
-    const maxRating = req.query.maxRating ? Number(req.query.maxRating) : undefined;
+    const minRating = req.query.minRating
+      ? Number(req.query.minRating)
+      : undefined;
+    const maxRating = req.query.maxRating
+      ? Number(req.query.maxRating)
+      : undefined;
     const offset = req.query.offset ? Number(req.query.offset) : 0;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
 
     const reviews = await RestaurantService.getFilteredReviews(
       restaurantId,
       minRating,
-      maxRating
+      maxRating,
     );
 
     res.status(200).json(reviews);
@@ -344,6 +348,5 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
     next(error);
   }
 });
-
 
 export default router;

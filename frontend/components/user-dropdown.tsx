@@ -3,8 +3,11 @@ import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MyWallet from './my-wallet';
+import { fetchOwnerRestaurants } from '@/apis/restaurant.api';
+import { supabase } from '@/utils/supabase';
+import { number } from 'zod';
 
 export default function UserDropdown({
   visible,
@@ -13,11 +16,50 @@ export default function UserDropdown({
   visible: boolean;
   onClose: () => void;
 }) {
-  const { logout } = useAuth();
-  const { user } = useProfile();
+  const { logout, user } = useAuth();
   const fullname = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   const email = user?.email || 'Loading...';
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [numberOfRestaurants, setNumberOfRestaurants] = useState(0);
+
+  const loadData = async () => {
+    if (!user?.id) return;
+    try {
+      const restaurantsResponse = await fetchOwnerRestaurants(user.id, 0, 10);
+      setNumberOfRestaurants(restaurantsResponse.length);
+    } catch (error) {
+      console.error('Failed to load owner restaurants', error);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('realtime:reservations')
+      .on(
+        'postgres_changes' as any,
+        {
+          event: 'INSERT,DELETE', // <-- listen to all (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'restaurantTable', // <-- make sure this is the correct table
+          filter: `owner_id=eq.${user.id}`, // or whatever field matches the user
+        } as any,
+        () => {
+          loadData(); // re-fetch the updated count or chart data
+        },
+      )
+      .subscribe();
+
+    return () => {
+      // clean up the subscription
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   // Placeholder balance - you might want to get this from user profile or API
   const walletBalance = 1500.0;
@@ -30,6 +72,11 @@ export default function UserDropdown({
   const onRestaurantSignup = () => {
     onClose();
     router.push('/restaurant-signup');
+  };
+
+  const onRestaurantManagement = () => {
+    onClose();
+    router.push('/myRestaurant');
   };
 
   const onOpenWallet = () => {
@@ -77,18 +124,33 @@ export default function UserDropdown({
                 <Feather name="user" size={16} color="black" />
                 <Text>My profile</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPressOut={onRestaurantSignup}
-                className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100"
-              >
-                {/* Using MaterialCommunityIcons for the store icon */}
-                <MaterialCommunityIcons
-                  name="storefront"
-                  size={16}
-                  color="black"
-                />
-                <Text>Sign up for restaurant</Text>
-              </TouchableOpacity>
+              {numberOfRestaurants == 0 ? (
+                <TouchableOpacity
+                  onPressOut={onRestaurantSignup}
+                  className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100"
+                >
+                  {/* Using MaterialCommunityIcons for the store icon */}
+                  <MaterialCommunityIcons
+                    name="storefront"
+                    size={16}
+                    color="black"
+                  />
+                  <Text>Sign up for restaurant</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPressOut={onRestaurantManagement}
+                  className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100"
+                >
+                  {/* Using MaterialCommunityIcons for the store icon */}
+                  <MaterialCommunityIcons
+                    name="storefront"
+                    size={16}
+                    color="black"
+                  />
+                  <Text>My Restaurant</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100">
                 <MaterialCommunityIcons
                   name="headphones"

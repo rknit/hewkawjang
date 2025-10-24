@@ -12,14 +12,12 @@ interface LoginModalProps {
   visible: boolean;
   onClose?: () => void;
   onSignUpPress?: () => void;
-  onLoginSuccess?: () => void;
 }
 
 export default function LoginModal({
   visible,
   onClose,
   onSignUpPress,
-  onLoginSuccess,
 }: LoginModalProps) {
   const { login: authLogin } = useAuth();
   const [email, setEmail] = useState('');
@@ -68,8 +66,8 @@ export default function LoginModal({
     setIsLoading(true);
     try {
       await authLogin(email, password);
-      onLoginSuccess?.();
       setIsLoading(false);
+      onClose?.();
     } catch (error) {
       setIsLoading(false);
       if (isAxiosError(error)) {
@@ -148,7 +146,10 @@ export default function LoginModal({
       <PressableText
         text="Don't have an account?"
         linkText="Sign up"
-        onPress={onSignUpPress || (() => {})}
+        onPress={() => {
+          onClose?.();
+          onSignUpPress?.();
+        }}
       />
 
       {/* Alert Box */}

@@ -130,10 +130,6 @@ export default function SignUpModal({
     }
   };
 
-  // Deprecated: use isFormValid to control button state
-  const allFilled =
-    firstname && lastname && phone && email && password && checked;
-
   return (
     <BaseModal visible={visible} onClose={handleClose}>
       {/* Sign Up content */}
@@ -238,7 +234,6 @@ export default function SignUpModal({
       <FormButton
         title="Sign Up"
         onPress={() => {
-          // TODO: Handle sign up logic
           if (isFormValid) {
             handleSignUp();
           }
@@ -257,7 +252,10 @@ export default function SignUpModal({
       <PressableText
         text="Already have an account?"
         linkText="Login"
-        onPress={onLoginPress || (() => {})}
+        onPress={() => {
+          onClose?.();
+          onLoginPress?.();
+        }}
       />
 
       {/* OTP */}

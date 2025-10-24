@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, ScrollView, Text } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import {
+  fetchRestaurantById,
+  fetchReviewsByRestaurantId,
+} from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
+import ReserveButton from '@/components/reserve-button';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
-import { fetchRestaurantById, fetchReviewsByRestaurantId } from '@/apis/restaurant.api';
-import ReserveButton from '@/components/reserve-button';
 import { Comment } from '@/types/review.type';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 
 const pictures: string[] = [
   'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
@@ -29,7 +32,13 @@ export default function RestaurantScreen() {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [reviews, setReviews] = useState<Comment[]>([]);
   const [avgRating, setAvgRating] = useState<number>(0);
-  const [breakdown, setBreakdown] = useState<{ 5: number; 4: number; 3: number; 2: number; 1: number }>({
+  const [breakdown, setBreakdown] = useState<{
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  }>({
     1: 0,
     2: 0,
     3: 0,
@@ -77,6 +86,7 @@ export default function RestaurantScreen() {
               <ImageGallery images={pictures} />
 
               <ReviewSection
+                restaurantId={restaurantId}
                 comments={reviews}
                 average={avgRating}
                 totalReviews={reviews.length}

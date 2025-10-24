@@ -13,13 +13,20 @@ export default function Dashboard({ restaurantId }: DashboardProps) {
   return (
     <ScrollView className="w-full p-6">
       <Text className="text-2xl font-bold mb-4">Dashboard</Text>
-      <DashboardStatGrid restaurantId={1} month={1} />
+
+      <DashboardStatGrid
+        restaurantId={restaurantId}
+        month={new Date().getMonth() + 1}
+      />
 
       <View className="mt-6">
         <Text className="text-lg font-semibold mb-2">Overview</Text>
 
         <View className="flex-row gap-4 w-full">
-          <BookingChart restaurantId={1} month={1} />
+          <BookingChart
+            restaurantId={restaurantId}
+            month={new Date().getMonth() + 1}
+          />
         </View>
       </View>
       <View className="mt-6">
