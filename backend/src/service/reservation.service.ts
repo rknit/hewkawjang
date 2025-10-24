@@ -88,18 +88,10 @@ export default class ReservationService {
     let reservation = await db
       .select()
       .from(reservationTable)
-      .where(eq(reservationTable.restaurantId, reservationId));
+      .where(eq(reservationTable.id, reservationId));
 
     if (!reservation || reservation.length === 0) {
       throw new createHttpError.NotFound('Reservation not found');
-    }
-    if (
-      new Date(reservation[0].reserveAt).getTime() - Date.now() <=
-      24 * 60 * 60 * 1000
-    ) {
-      throw new createHttpError.BadRequest(
-        'Cannot cancel reservation within 24 hours',
-      );
     }
     if (
       reservation[0].status !== 'unconfirmed' &&
@@ -108,6 +100,18 @@ export default class ReservationService {
       throw new createHttpError.BadRequest(
         'Reservation status must be unconfirmed or confirmed to cancel',
       );
+    }
+    // Only check 24-hour restriction for confirmed reservations
+    // Unconfirmed reservations can be cancelled at any time
+    if (reservation[0].status === 'confirmed') {
+      if (
+        new Date(reservation[0].reserveAt).getTime() - Date.now() <=
+        24 * 60 * 60 * 1000
+      ) {
+        throw new createHttpError.BadRequest(
+          'Cannot cancel reservation within 24 hours',
+        );
+      }
     }
 
     let [updated] = await db
