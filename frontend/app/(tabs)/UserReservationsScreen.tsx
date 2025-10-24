@@ -127,8 +127,11 @@ export default function UserReservationsScreen() {
         newFiltered.push(...list.filter((r) => r.status === 'completed'));
       } else if (filter === 'canceled') {
         newFiltered.push(
-          ...list.filter((r) =>
-            ['canceled', 'rejected', 'expired'].includes(r.status),
+          ...list.filter(
+            (r) =>
+              r.status === 'cancelled' ||
+              r.status === 'rejected' ||
+              r.status === 'expired',
           ),
         );
       }
@@ -137,8 +140,8 @@ export default function UserReservationsScreen() {
     // Remove duplicates
     const uniqueFiltered = Array.from(
       new Set(newFiltered.map((r) => r.id)),
-    ).map(
-      (id) => newFiltered.find((r) => r.id === id),
+    ).map((id) =>
+      newFiltered.find((r) => r.id === id),
     ) as ReservationWithRestaurant[];
 
     uniqueFiltered.sort(
@@ -171,7 +174,7 @@ export default function UserReservationsScreen() {
         return '#10b981';
       case 'unconfirmed':
         return '#ec5b24';
-      case 'canceled':
+      case 'cancelled':
         return '#ef4444';
       case 'rejected':
         return '#ef4444';
@@ -188,8 +191,6 @@ export default function UserReservationsScreen() {
         return 'Restaurant has not confirmed your order';
       case 'confirmed':
         return 'Restaurant has confirmed your order';
-      case 'completed':
-        return 'Completed';
       default:
         return status.charAt(0).toUpperCase() + status.slice(1);
     }
@@ -215,7 +216,7 @@ export default function UserReservationsScreen() {
     );
 
     // === Cancel ===
-    if (['unconfirmed', 'confirmed'].includes(r.status)) {
+    if (r.status === 'unconfirmed' || r.status === 'confirmed') {
       actions.push(
         addTextAction(
           'Cancel',
@@ -232,7 +233,7 @@ export default function UserReservationsScreen() {
                   const success = await cancelReservation(r.id, 'user');
                   if (success) {
                     setAlertModalConfig({
-                      title: 'canceled',
+                      title: 'Canceled',
                       message: 'Reservation has been canceled.',
                       buttonText: 'OK',
                     });
@@ -289,7 +290,11 @@ export default function UserReservationsScreen() {
     }
 
     // === canceled / Rejected / Expired ===
-    if (['canceled', 'rejected', 'expired'].includes(r.status)) {
+    if (
+      r.status === 'cancelled' ||
+      r.status === 'rejected' ||
+      r.status === 'expired'
+    ) {
       actions.push(
         addTextAction(
           'Book Again',
@@ -427,7 +432,7 @@ export default function UserReservationsScreen() {
           restaurant={{
             name: selectedReservation.restaurant.name,
             location: `${selectedReservation.restaurant.district}`,
-            image: selectedReservation.restaurant.coverImage,
+            image: selectedReservation.restaurant.images?.[0] ?? '',
           }}
           reservationId={selectedReservation.id}
         />
