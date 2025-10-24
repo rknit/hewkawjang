@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   RefreshControl,
   StyleSheet,
-  Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import {
   fetchUserReservations,
   UserReservation,
@@ -20,23 +20,44 @@ import { cancelReservation } from '@/apis/reservation.api';
 import { FontAwesome5, MaterialIcons, Entypo } from '@expo/vector-icons';
 import { fetchRestaurantById } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
+import ReviewModal from '@/components/reviewForm';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import AlertModal from '@/components/AlertModal';
 
 type ReservationWithRestaurant = UserReservation & { restaurant: Restaurant };
 
-type FilterType = 'upcoming' | 'completed' | 'cancelled';
+type FilterType = 'upcoming' | 'completed' | 'canceled';
 
 export default function UserReservationsScreen() {
+  const router = useRouter();
   const [reservations, setReservations] = useState<ReservationWithRestaurant[]>(
     [],
   );
   const [filteredReservations, setFilteredReservations] = useState<
-    UserReservation[]
+    ReservationWithRestaurant[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterType[]>([
     'upcoming',
   ]);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [selectedReservation, setSelectedReservation] =
+    useState<ReservationWithRestaurant | null>(null);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [confirmModalConfig, setConfirmModalConfig] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+  });
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+  const [alertModalConfig, setAlertModalConfig] = useState({
+    title: '',
+    message: '',
+    buttonText: 'OK',
+  });
 
   const loadReservations = useCallback(async () => {
     setLoading(true);
@@ -61,7 +82,12 @@ export default function UserReservationsScreen() {
       setReservations(enrichedReservations);
       applyFilter(activeFilters, enrichedReservations);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load reservations');
+      setAlertModalConfig({
+        title: 'Error',
+        message: 'Failed to load reservations',
+        buttonText: 'OK',
+      });
+      setAlertModalVisible(true);
     } finally {
       setLoading(false);
     }
@@ -78,19 +104,17 @@ export default function UserReservationsScreen() {
   }, [loadReservations]);
 
   const toggleFilter = (filter: FilterType) => {
-    let updatedFilters: FilterType[];
-    if (activeFilters.includes(filter)) {
-      updatedFilters = activeFilters.filter((f) => f !== filter);
-    } else {
-      updatedFilters = [...activeFilters, filter];
-    }
+    const updatedFilters: FilterType[] = [filter];
     setActiveFilters(updatedFilters);
     applyFilter(updatedFilters);
   };
 
-  const applyFilter = (filters: FilterType[], data?: UserReservation[]) => {
+  const applyFilter = (
+    filters: FilterType[],
+    data?: ReservationWithRestaurant[],
+  ) => {
     const list = data || reservations;
-    let newFiltered: UserReservation[] = [];
+    let newFiltered: ReservationWithRestaurant[] = [];
 
     filters.forEach((filter) => {
       if (filter === 'upcoming') {
@@ -101,10 +125,10 @@ export default function UserReservationsScreen() {
         );
       } else if (filter === 'completed') {
         newFiltered.push(...list.filter((r) => r.status === 'completed'));
-      } else if (filter === 'cancelled') {
+      } else if (filter === 'canceled') {
         newFiltered.push(
           ...list.filter((r) =>
-            ['cancelled', 'rejected', 'expired'].includes(r.status),
+            ['canceled', 'rejected', 'expired'].includes(r.status),
           ),
         );
       }
@@ -113,7 +137,9 @@ export default function UserReservationsScreen() {
     // Remove duplicates
     const uniqueFiltered = Array.from(
       new Set(newFiltered.map((r) => r.id)),
-    ).map((id) => newFiltered.find((r) => r.id === id)) as UserReservation[];
+    ).map(
+      (id) => newFiltered.find((r) => r.id === id),
+    ) as ReservationWithRestaurant[];
 
     uniqueFiltered.sort(
       (a, b) =>
@@ -145,7 +171,7 @@ export default function UserReservationsScreen() {
         return '#10b981';
       case 'unconfirmed':
         return '#ec5b24';
-      case 'cancelled':
+      case 'canceled':
         return '#ef4444';
       case 'rejected':
         return '#ef4444';
@@ -169,19 +195,7 @@ export default function UserReservationsScreen() {
     }
   };
 
-  const canCancelReservation = (reservation: UserReservation) => {
-    const reserveDate = new Date(reservation.reserveAt);
-    const now = new Date();
-    const hoursDiff =
-      (reserveDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    console.log('cancale?', hoursDiff);
-    return (
-      ['unconfirmed', 'confirmed'].includes(reservation.status) &&
-      hoursDiff > 24
-    );
-  };
-
-  const renderActionButtons = (r: UserReservation) => {
+  const renderActionButtons = (r: ReservationWithRestaurant) => {
     const actions: React.JSX.Element[] = [];
 
     const addTextAction = (
@@ -209,37 +223,42 @@ export default function UserReservationsScreen() {
             ×
           </Text>,
           () => {
-            if (!canCancelReservation(r)) {
-              Alert.alert(
-                'Too Late to Cancel',
-                'Cancellations must be made at least 24 hours in advance.',
-                [{ text: 'OK', style: 'default' }],
-              );
-              return;
-            }
-
-            Alert.alert('Cancel Reservation', 'Are you sure?', [
-              { text: 'No', style: 'cancel' },
-              {
-                text: 'Yes',
-                onPress: async () => {
-                  try {
-                    const success = await cancelReservation(r.id, 'user');
-                    if (success) {
-                      Alert.alert(
-                        'Cancelled',
-                        'Reservation has been cancelled.',
-                      );
-                      loadReservations();
-                    } else {
-                      Alert.alert('Error', 'Could not cancel reservation.');
-                    }
-                  } catch (e) {
-                    Alert.alert('Error', 'Something went wrong.');
+            setConfirmModalConfig({
+              title: 'Cancel Reservation',
+              message: 'Are you sure you want to cancel this reservation?',
+              onConfirm: async () => {
+                setConfirmModalVisible(false);
+                try {
+                  const success = await cancelReservation(r.id, 'user');
+                  if (success) {
+                    setAlertModalConfig({
+                      title: 'canceled',
+                      message: 'Reservation has been canceled.',
+                      buttonText: 'OK',
+                    });
+                    setAlertModalVisible(true);
+                    loadReservations();
+                  } else {
+                    setAlertModalConfig({
+                      title: 'Error',
+                      message: 'Could not cancel reservation.',
+                      buttonText: 'OK',
+                    });
+                    setAlertModalVisible(true);
                   }
-                },
+                } catch (e) {
+                  setAlertModalConfig({
+                    title: 'Error',
+                    message: 'Something went wrong.',
+                    buttonText: 'OK',
+                  });
+                  setAlertModalVisible(true);
+                }
               },
-            ]);
+              confirmText: 'Yes',
+              cancelText: 'No',
+            });
+            setConfirmModalVisible(true);
           },
           'cancel',
         ),
@@ -253,8 +272,8 @@ export default function UserReservationsScreen() {
           'Give Rating',
           <Entypo name="chevron-right" size={14} color="#e05910" />,
           () => {
-            console.log('Give Rating pressed for', r.id);
-            // TODO: Implement rating navigation here
+            setSelectedReservation(r);
+            setReviewModalVisible(true);
           },
           'rating',
         ),
@@ -262,25 +281,23 @@ export default function UserReservationsScreen() {
           'Book Again',
           <Entypo name="chevron-right" size={14} color="#e05910" />,
           () => {
-            console.log('Book Again pressed for', r.id);
-            // TODO: Implement book again logic here
+            router.push(`/Restaurant?restaurantId=${r.restaurant.id}`);
           },
           'book-again-completed',
         ),
       );
     }
 
-    // === Cancelled / Rejected / Expired ===
-    if (['cancelled', 'rejected', 'expired'].includes(r.status)) {
+    // === canceled / Rejected / Expired ===
+    if (['canceled', 'rejected', 'expired'].includes(r.status)) {
       actions.push(
         addTextAction(
           'Book Again',
           <Entypo name="chevron-right" size={14} color="#e05910" />,
           () => {
-            console.log('Book Again pressed for', r.id);
-            // TODO: Implement book again logic here
+            router.push(`/Restaurant?restaurantId=${r.restaurant.id}`);
           },
-          'book-again-cancelled',
+          'book-again-canceled',
         ),
       );
     }
@@ -293,9 +310,9 @@ export default function UserReservationsScreen() {
       <View style={styles.innerContainer}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={styles.headerText}>Your Reservation</Text>
+          <Text style={styles.headerText}>My Reservation</Text>
           <View style={styles.filterContainer}>
-            {['upcoming', 'completed', 'cancelled'].map((filter) => (
+            {['upcoming', 'completed', 'canceled'].map((filter) => (
               <TouchableOpacity
                 key={filter}
                 style={[
@@ -397,6 +414,44 @@ export default function UserReservationsScreen() {
           )}
         </ScrollView>
       </View>
+
+      {/* Review Modal */}
+      {selectedReservation && (
+        <ReviewModal
+          visible={reviewModalVisible}
+          onClose={() => {
+            setReviewModalVisible(false);
+            setSelectedReservation(null);
+            loadReservations();
+          }}
+          restaurant={{
+            name: selectedReservation.restaurant.name,
+            location: `${selectedReservation.restaurant.district}`,
+            image: selectedReservation.restaurant.coverImage,
+          }}
+          reservationId={selectedReservation.id}
+        />
+      )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        visible={confirmModalVisible}
+        title={confirmModalConfig.title}
+        message={confirmModalConfig.message}
+        confirmText={confirmModalConfig.confirmText}
+        cancelText={confirmModalConfig.cancelText}
+        onConfirm={confirmModalConfig.onConfirm}
+        onCancel={() => setConfirmModalVisible(false)}
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        visible={alertModalVisible}
+        title={alertModalConfig.title}
+        message={alertModalConfig.message}
+        buttonText={alertModalConfig.buttonText}
+        onClose={() => setAlertModalVisible(false)}
+      />
     </View>
   );
 }
@@ -410,6 +465,7 @@ const styles = StyleSheet.create({
   },
 
   innerContainer: {
+    flex: 1,
     backgroundColor: '#ffffffff',
     borderRadius: 5,
     padding: 16,

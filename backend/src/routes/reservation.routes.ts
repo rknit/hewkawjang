@@ -23,25 +23,29 @@ router.get('/unconfirmed/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
-router.post('/:id/cancel', authHandler, async (req, res) => {
-  const userId = req.userAuthPayload?.userId;
-  const reservationId = Number(req.params.id);
-  if (!reservationId || !userId) {
-    return res.status(400).json({ error: 'reservationId is required' });
-  }
+router.post('/:id/cancel', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload?.userId;
+    const reservationId = Number(req.params.id);
+    if (!reservationId || !userId) {
+      return res.status(400).json({ error: 'reservationId is required' });
+    }
 
-  const { cancelBy } = req.body;
-  if (!cancelBy || (cancelBy !== 'user' && cancelBy !== 'restaurant_owner')) {
-    return res
-      .status(400)
-      .json({ error: 'cancelBy must be either user or restaurant_owner' });
-  }
+    const { cancelBy } = req.body;
+    if (!cancelBy || (cancelBy !== 'user' && cancelBy !== 'restaurant_owner')) {
+      return res
+        .status(400)
+        .json({ error: 'cancelBy must be either user or restaurant_owner' });
+    }
 
-  await ReservationService.cancelReservation({
-    reservationId,
-    cancelBy,
-  });
-  return res.sendStatus(200);
+    await ReservationService.cancelReservation({
+      reservationId,
+      cancelBy,
+    });
+    return res.sendStatus(200);
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post('/create', authHandler, async (req, res) => {
