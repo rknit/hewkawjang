@@ -136,7 +136,7 @@ export default function RecommendedRestaurantGrid() {
     <View className="p-4 w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
       {restaurants &&
         restaurants.map((restaurant, index) => {
-          const fallbackImage = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop';
+          const fallbackImage = 'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
           const imageUri = restaurant.images?.[0] || fallbackImage;
 
           return (
