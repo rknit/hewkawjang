@@ -25,9 +25,9 @@ router.get('/unconfirmed/inspect', async (req, res) => {
 
 router.post('/:id/cancel', authHandler, async (req, res, next) => {
   try {
-    const userId = req.userAuthPayload?.userId;
+    const userId = req.userAuthPayload!.userId;
     const reservationId = Number(req.params.id);
-    if (!reservationId || !userId) {
+    if (!reservationId) {
       return res.status(400).json({ error: 'reservationId is required' });
     }
 
@@ -40,6 +40,7 @@ router.post('/:id/cancel', authHandler, async (req, res, next) => {
 
     await ReservationService.cancelReservation({
       reservationId,
+      userId,
       cancelBy,
     });
     return res.sendStatus(200);
@@ -101,6 +102,7 @@ router.get('/:id/inspect', async (req, res) => {
 
 router.patch('/:id/status', authHandler, async (req, res, next) => {
   try {
+    const userId = req.userAuthPayload!.userId;
     const reservationId = Number(req.params.id);
     if (isNaN(reservationId)) {
       return res.status(400).json({ error: 'reservation id must be a number' });
@@ -131,6 +133,7 @@ router.patch('/:id/status', authHandler, async (req, res, next) => {
 
     const updated = await ReservationService.updateReservationStatus(
       reservationId,
+      userId,
       status as
         | 'unconfirmed'
         | 'expired'
