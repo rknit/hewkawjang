@@ -3,6 +3,7 @@ import { User, UserSchema } from '@/types/user.type';
 import { normalizeError } from '@/utils/api-error';
 import { z } from 'zod';
 
+
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
     const res = await ApiService.get('/users/me');
@@ -126,4 +127,25 @@ export async function fetchUserReservations(
     normalizeError(error);
     return [];
   }
+}
+
+export async function updateUserProfile(data: any): Promise<boolean> {
+  try {
+    await ApiService.post('/users/updateProfile', data);
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
+
+export async function uploadProfileImage(file: File | Blob): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await ApiService.post('/users/me/uploadProfileImage', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  return res.data.imageUrl;
 }
