@@ -5,7 +5,7 @@ export const UpdateRestaurantInfoSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().optional(),
   phoneNo: z.string().optional(),
-  location: z.string().optional(), // TODO: this mismatch with backend
+  location: z.string().optional(), 
   province: z.string().optional(),
   district: z.string().optional(),
   subDistrict: z.string().optional(),
@@ -32,6 +32,7 @@ export const RestaurantSchema = z.object({
   status: z.enum(['open', 'closed']),
   activation: z.enum(['active', 'inactive']),
   isDeleted: z.boolean(),
+  images: z.array(z.string()).nullish(),
 });
 
 export type RestaurantWithRating = z.infer<typeof RestaurantSchema> & {
