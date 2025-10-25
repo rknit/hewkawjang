@@ -81,40 +81,39 @@ export const useProfile = () => {
 
   // Change profile image
   const changeProfileImage = async () => {
-  console.log("changing frontend profile");
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.8,
-  });
+    console.log('changing frontend profile');
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
 
-  if (!result.canceled) {
-    const image = result.assets[0];
-    const uri = image.uri; // 'blob' URL
-    const fileType = 'image/jpeg'; // or image/png depending on the image format
-    const fileName = 'profile.jpg'; // You can change this as needed
-    
-    // Fetch the file content from the Blob URL
-    const response = await fetch(uri);
-    const fileBlob = await response.blob();
+    if (!result.canceled) {
+      const image = result.assets[0];
+      const uri = image.uri; // 'blob' URL
+      const fileType = 'image/jpeg'; // or image/png depending on the image format
+      const fileName = 'profile.jpg'; // You can change this as needed
 
-    // Create a File object from the blob
-    const file = new File([fileBlob], fileName, { type: fileType });
+      // Fetch the file content from the Blob URL
+      const response = await fetch(uri);
+      const fileBlob = await response.blob();
 
-    console.log(file);  // Check if it's a File object now
-    
-    try {
-      const imageUrl = await uploadProfileImage(file);
-      alert('Profile image updated!');
-      console.log('Uploaded image URL:', imageUrl);
-    } catch (error) {
-      console.error(error);
-      alert('Failed to upload image');
+      // Create a File object from the blob
+      const file = new File([fileBlob], fileName, { type: fileType });
+
+      console.log(file); // Check if it's a File object now
+
+      try {
+        const imageUrl = await uploadProfileImage(file);
+        alert('Profile image updated!');
+        console.log('Uploaded image URL:', imageUrl);
+      } catch (error) {
+        console.error(error);
+        alert('Failed to upload image');
+      }
     }
-  }
-};
-
+  };
 
   // Delete account handlers
   const handleDeleteButtonPress = () => {

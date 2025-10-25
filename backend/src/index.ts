@@ -10,6 +10,7 @@ import reservationRoute from './routes/reservation.routes';
 import notificationRoute from './routes/notification.routes';
 import errorHandler from './middleware/error.middleware';
 import { authHandler } from './middleware/auth.middleware';
+import imgRoute from './routes/image.routes';
 import cookieParser from 'cookie-parser';
 import { startScheduledJobs } from './jobs';
 
@@ -34,6 +35,7 @@ app.use('/users', userRoute);
 app.use('/restaurants', restaurantRoute);
 app.use('/reservations', reservationRoute);
 app.use('/notifications', notificationRoute);
+app.use('/img', imgRoute);
 
 app.get('/', (_: Request, res: Response) => {
   res.status(200).send('Hello, World!');

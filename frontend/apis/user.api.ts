@@ -36,16 +36,22 @@ export async function fetchUserById(id: number): Promise<User | null> {
 export async function submitReview(
   reservationId: number,
   review: { rating: number; attachPhotos: string[]; comment: string },
-): Promise<boolean> {
+): Promise<number | null> {
   try {
-    await ApiService.post('/users/me/reviews', {
+    const res = await ApiService.post('/users/me/reviews', {
       reservationId,
       ...review,
     });
-    return true;
+
+    // Assuming the backend response is { reviewId: number }
+    if (res.data && res.data.reviewId) {
+      return res.data.reviewId;
+    } else {
+      throw new Error('Review ID not found in response');
+    }
   } catch (error) {
     normalizeError(error);
-    return false;
+    return null;
   }
 }
 

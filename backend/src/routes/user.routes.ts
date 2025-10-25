@@ -83,9 +83,18 @@ router.delete('/me', authHandler, async (req: Request, res: Response) => {
 });
 
 // POST /users/me/reviews - Add review as authenticated user
-router.post('/me/reviews', authHandler, async (req: Request, res: Response) => {
-  await UserService.createReview(req.body);
-  res.status(201).send();
+router.post('/me/reviews', authHandler, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const reviewData = req.body;
+    
+    // Create the review and return the review ID
+    const reviewId = await UserService.createReview(reviewData);
+
+    // Return the reviewId in the response
+    res.status(201).json({ reviewId });
+  } catch (error) {
+    next(error); // Pass error to the error handler middleware
+  }
 });
 
 router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
