@@ -27,7 +27,6 @@ import {
   getDefaultMinute,
 } from '@/utils/date-time';
 import { reservationTheme as brand, calendarTheme } from '@/utils/theme';
-import { login } from '@/apis/auth.api';
 
 export default function ReservationPane({
   visible = true,
@@ -39,9 +38,8 @@ export default function ReservationPane({
   restaurantId?: number;
 }) {
   const now = new Date();
-  const [adults, setAdults] = useState<number>(2);
-  const [seniors, setSeniors] = useState<number>(0);
-  const [children, setChildren] = useState<number>(1);
+  const [adults, setAdults] = useState<number>(0);
+  const [children, setChildren] = useState<number>(0);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -120,7 +118,7 @@ export default function ReservationPane({
     }
   }, [visible, restaurantId]);
 
-  const totalGuests = adults + seniors + children;
+  const totalGuests = adults + children;
 
   function onNext() {
     setShowConfirmation(true);

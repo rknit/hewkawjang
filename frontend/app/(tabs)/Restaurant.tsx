@@ -1,4 +1,7 @@
-import { fetchRestaurantById, fetchReviewsByRestaurantId } from '@/apis/restaurant.api';
+import {
+  fetchRestaurantById,
+  fetchReviewsByRestaurantId,
+} from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
 import ReserveButton from '@/components/reserve-button';
 import RestaurantAbout from '@/components/restaurantAbout';
@@ -29,7 +32,13 @@ export default function RestaurantScreen() {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [reviews, setReviews] = useState<Comment[]>([]);
   const [avgRating, setAvgRating] = useState<number>(0);
-  const [breakdown, setBreakdown] = useState<{ 5: number; 4: number; 3: number; 2: number; 1: number }>({
+  const [breakdown, setBreakdown] = useState<{
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  }>({
     1: 0,
     2: 0,
     3: 0,
@@ -83,7 +92,6 @@ export default function RestaurantScreen() {
                 totalReviews={reviews.length}
                 breakdown={breakdown}
               />
-
 
               <RestaurantAbout
                 address={restaurant ? makeAddress(restaurant) : ''}

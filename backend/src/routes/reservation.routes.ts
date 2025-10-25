@@ -23,25 +23,30 @@ router.get('/unconfirmed/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
-router.post('/:id/cancel', authHandler, async (req, res) => {
-  const userId = req.userAuthPayload?.userId;
-  const reservationId = Number(req.params.id);
-  if (!reservationId || !userId) {
-    return res.status(400).json({ error: 'reservationId is required' });
-  }
+router.post('/:id/cancel', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload!.userId;
+    const reservationId = Number(req.params.id);
+    if (!reservationId) {
+      return res.status(400).json({ error: 'reservationId is required' });
+    }
 
-  const { cancelBy } = req.body;
-  if (!cancelBy || (cancelBy !== 'user' && cancelBy !== 'restaurant_owner')) {
-    return res
-      .status(400)
-      .json({ error: 'cancelBy must be either user or restaurant_owner' });
-  }
+    const { cancelBy } = req.body;
+    if (!cancelBy || (cancelBy !== 'user' && cancelBy !== 'restaurant_owner')) {
+      return res
+        .status(400)
+        .json({ error: 'cancelBy must be either user or restaurant_owner' });
+    }
 
-  await ReservationService.cancelReservation({
-    reservationId,
-    cancelBy,
-  });
-  return res.sendStatus(200);
+    await ReservationService.cancelReservation({
+      reservationId,
+      userId,
+      cancelBy,
+    });
+    return res.sendStatus(200);
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post('/create', authHandler, async (req, res) => {
@@ -97,6 +102,7 @@ router.get('/:id/inspect', async (req, res) => {
 
 router.patch('/:id/status', authHandler, async (req, res, next) => {
   try {
+    const userId = req.userAuthPayload!.userId;
     const reservationId = Number(req.params.id);
     if (isNaN(reservationId)) {
       return res.status(400).json({ error: 'reservation id must be a number' });
@@ -127,6 +133,7 @@ router.patch('/:id/status', authHandler, async (req, res, next) => {
 
     const updated = await ReservationService.updateReservationStatus(
       reservationId,
+      userId,
       status as
         | 'unconfirmed'
         | 'expired'
