@@ -20,16 +20,14 @@ export async function uploadImage(file: File | Blob, id: string, bucketName: str
   }
 }
 
-export async function deleteImage(imageUrl: string, bucketName: string = 'profile-images'): Promise<boolean> {
+export async function deleteImage(imageUrl: string): Promise<boolean> {
   try {
-    const res = await ApiService.post('/img/delete', {
-      imageUrl,
-      bucketName,
-    });
-
+    const res = await ApiService.post('/img/delete', { imageUrl });
+    console.log("deleting", imageUrl);
     return res.data.success; // Assuming the response contains success status
   } catch (error) {
-    normalizeError(error);
-    return false; // Returning false to indicate deletion failure
+    console.error('Error deleting image:', error);
+    return false;
   }
 }
+

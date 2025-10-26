@@ -130,7 +130,7 @@ export default class SupabaseService {
     if (!bucketName || !filePath) {
       throw new Error('Invalid URL format or missing bucket/file path.');
     }
-
+    console.log("deleteing",bucketName, filePath)
     // Perform the deletion on Supabase storage
     const { error: deleteError } = await supabase.storage
       .from(bucketName) // Dynamically use the extracted bucket name

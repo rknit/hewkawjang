@@ -12,7 +12,7 @@ import {
 import { X, Camera, Trash2, Star } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { submitReview } from '@/apis/user.api';
-import { uploadImage } from '@/apis/image.api';
+import { uploadImage, deleteImage } from '@/apis/image.api';
 
 type ReviewModalProps = {
   visible: boolean;
@@ -32,8 +32,7 @@ export default function ReviewModal({
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const rndId = Math.random().toString(36).substring(7); // A random string for the review
-  // addPhoto was not my task and the code was for test backend, it upload before even submit lol
+  const rndId = Math.random().toString(36).substring(7);
   const addPhoto = async () => {
     // Request permission to access media library
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -98,40 +97,46 @@ export default function ReviewModal({
   };
 
   const handleSubmit = async () => {
-    if (rating === 0) {
-      alert('Please select a rating.');
-      return;
+  if (rating === 0) {
+    alert('Please select a rating.');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // Attempt to submit the review
+    const success = await submitReview(reservationId, {
+      rating,
+      attachPhotos: photos,
+      comment: text,
+    });
+
+    if (success) {
+      alert('Review submitted successfully!');
+      setRating(0);
+      setText('');
+      setPhotos([]); // Clear the photos on success
+      onClose();
+    } else {
+      // If submission fails, delete all uploaded images
+      await Promise.all(photos.map(deleteImage));
+      alert('Failed to submit review. Please try again.');
     }
+  } catch (error: any) {
+    console.log('Submit review error:', error);
 
-    setLoading(true);
-    try {
-      const success = await submitReview(reservationId, {
-        rating,
-        attachPhotos: photos,
-        comment: text,
-      });
+    // Delete all uploaded images if there's an error
+    await Promise.all(photos.map(deleteImage));
 
-      if (success) {
-        alert('Review submitted successfully!');
-        setRating(0);
-        setText('');
-        setPhotos([]);
-        onClose();
-      } else {
-        alert('Failed to submit review. Please try again.');
-      }
-    } catch (error: any) {
-      console.log('Submit review error:', error);
-
-      if (error.response?.status === 409) {
-        alert('You have already submitted a review for this reservation.');
-      } else {
-        alert('An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
+    if (error.response?.status === 409) {
+      alert('You have already submitted a review for this reservation.');
+    } else {
+      alert('An unexpected error occurred. Please try again.');
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Modal visible={visible} transparent animationType="fade">
