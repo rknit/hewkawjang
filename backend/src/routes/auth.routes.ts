@@ -10,7 +10,52 @@ import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
-// Login and get tokens
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login and obtain JWT tokens
+ *     description: >
+ *       Authenticates the user using email and password.
+ *       Requires the `hkj-auth-client-type` header (must be `"web"`).
+ *       On success, sets a **HttpOnly refreshToken cookie** and returns an **access token**.
+ *     tags:
+ *       - Auth
+ *     parameters:
+ *       - $ref: '#/components/parameters/AuthClientTypeHeader'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: test@user.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: test
+ *     responses:
+ *       200:
+ *         description: Successfully logged in. Returns access token and sets refreshToken cookie.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       400:
+ *         description: Missing email or password.
+ *       401:
+ *         description: Invalid credentials.
+ */
 router.post('/login', authClientTypeHandler, async (req, res) => {
   const user: LoginUser = req.body;
   if (!user.email || !user.password) {
@@ -21,7 +66,26 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
   responseTokens(req, res, tokens);
 });
 
-// Logout
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     description: >
+ *       Logs out the authenticated user and clears the refresh token cookie.
+ *       Requires the `hkj-auth-client-type` header and valid access token.
+ *     tags:
+ *       - Auth
+ *     parameters:
+ *       - $ref: '#/components/parameters/AuthClientTypeHeader'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully logged out.
+ *       401:
+ *         description: Unauthorized or missing token.
+ */
 router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
   if (!req.userAuthPayload) {
     throw createHttpError.Unauthorized('User not authenticated');
@@ -35,11 +99,40 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
     sameSite: 'strict',
   });
 
-  res.status(200).json({message: 'Logged out successfully',});
+  res.status(200).json({ message: 'Logged out successfully' });
 });
 
-
-// Token refresh
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     description: >
+ *       Issues a new **access token** using the **refreshToken cookie**.
+ *       Requires the `hkj-auth-client-type` header (must be `"web"`).
+ *       No request body is required.
+ *     tags:
+ *       - Auth
+ *     parameters:
+ *       - $ref: '#/components/parameters/AuthClientTypeHeader'
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: New access token issued.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
+ *         description: Missing or invalid refresh token.
+ *       500:
+ *         description: Internal server error.
+ */
 router.post(
   '/refresh',
   authClientTypeHandler,

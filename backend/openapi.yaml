@@ -1,0 +1,146 @@
+openapi: 3.0.0
+info:
+  title: HewKawJang API
+  version: 1.0.0
+  description: API documentation for the HewKawJang Restaurant Reservation system
+servers:
+  - url: http://localhost:8080
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token in Authorization header
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+      description: Refresh token stored in HttpOnly cookie
+  parameters:
+    AuthClientTypeHeader:
+      name: hkj-auth-client-type
+      in: header
+      required: true
+      schema:
+        type: string
+        enum:
+          - web
+      description: Client type identifier; must be `"web"` for browser clients
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: Login and obtain JWT tokens
+      description: >
+        Authenticates the user using email and password. Requires the
+        `hkj-auth-client-type` header (must be `"web"`). On success, sets a
+        **HttpOnly refreshToken cookie** and returns an **access token**.
+      tags:
+        - Auth
+      parameters:
+        - $ref: "#/components/parameters/AuthClientTypeHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: test@user.com
+                password:
+                  type: string
+                  format: password
+                  example: test
+      responses:
+        "200":
+          description: Successfully logged in. Returns access token and sets refreshToken
+            cookie.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "400":
+          description: Missing email or password.
+        "401":
+          description: Invalid credentials.
+  /auth/logout:
+    post:
+      summary: Logout user
+      description: >
+        Logs out the authenticated user and clears the refresh token cookie.
+        Requires the `hkj-auth-client-type` header and valid access token.
+      tags:
+        - Auth
+      parameters:
+        - $ref: "#/components/parameters/AuthClientTypeHeader"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully logged out.
+        "401":
+          description: Unauthorized or missing token.
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      description: >
+        Issues a new **access token** using the **refreshToken cookie**.
+        Requires the `hkj-auth-client-type` header (must be `"web"`). No request
+        body is required.
+      tags:
+        - Auth
+      parameters:
+        - $ref: "#/components/parameters/AuthClientTypeHeader"
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: New access token issued.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: Missing or invalid refresh token.
+        "500":
+          description: Internal server error.
+  /users:
+    get:
+      summary: Get a list of users
+      tags:
+        - Users
+      description: Returns a list of all registered users.
+      responses:
+        "200":
+          description: A successful response with a list of users.
+  /users/me:
+    get:
+      summary: Get currently authenticated user
+      tags:
+        - Users
+      description: Return the currently authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: A successful response with a user.
+        "401":
+          description: Unauthorized
+        "404":
+          description: User not found
+tags: []

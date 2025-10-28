@@ -8,13 +8,39 @@ import ReservationService from '../service/reservation.service';
 
 const router = express.Router();
 
-// GET /users - Get all users (not recommended to expose publicly)
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get a list of users
+ *     tags: [Users]
+ *     description: Returns a list of all registered users.
+ *     responses:
+ *       200:
+ *         description: A successful response with a list of users.
+ */
 router.get('/', async (req: Request, res: Response) => {
   const users = await UserService.getUsers(req.body);
   res.json(users);
 });
 
-// GET /users/me - Get authenticated user profile
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get currently authenticated user
+ *     tags: [Users]
+ *     description: Return the currently authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A successful response with a user.
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
 router.get('/me', authHandler, async (req: Request, res: Response) => {
   const userId = req.userAuthPayload?.userId;
 
