@@ -1,10 +1,19 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import UserService from '../service/user.service';
 import MailerService from '../service/mailer.service';
 import { authHandler } from '../middleware/auth.middleware';
 import { ReservationQuerySchema } from '../validators/reservation.validator';
 import ReservationService from '../service/reservation.service';
+import multer from 'multer';
+import SupabaseService from '../service/supabase.service';
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+
+interface MulterRequest extends Request {
+  file?: Express.Multer.File;
+}
 
 const router = express.Router();
 
@@ -74,9 +83,18 @@ router.delete('/me', authHandler, async (req: Request, res: Response) => {
 });
 
 // POST /users/me/reviews - Add review as authenticated user
-router.post('/me/reviews', authHandler, async (req: Request, res: Response) => {
-  await UserService.createReview(req.body);
-  res.status(201).send();
+router.post('/me/reviews', authHandler, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const reviewData = req.body;
+    
+    // Create the review and return the review ID
+    const reviewId = await UserService.createReview(reviewData);
+
+    // Return the reviewId in the response
+    res.status(201).json({ reviewId });
+  } catch (error) {
+    next(error); // Pass error to the error handler middleware
+  }
 });
 
 router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
@@ -138,5 +156,49 @@ router.get('/:id', async (req: Request, res: Response) => {
 
   res.json(user);
 });
+
+router.post(
+  '/me/uploadProfileImage',
+  authHandler,
+  upload.single('file'), // <-- must match frontend
+  async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.file);
+    try {
+      const userId = req.userAuthPayload?.userId;
+      const file = req.file;
+      if (!userId || !file) return res.status(400).json({ message: 'No file uploaded' });
+
+      const imageUrl = await SupabaseService.uploadUserProfileImage(String(userId), file);
+      await UserService.updateUser({ id: userId, profileUrl: imageUrl } as any);
+
+      res.json({ imageUrl });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post('/updateProfile', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload?.userId;
+    const { displayName, firstName, lastName, phoneNo, email } = req.body;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const updatedUser = await UserService.updateUser({
+      id: userId,
+      displayName,
+      firstName,
+      lastName,
+      phoneNo,
+      email,
+    } as any);
+
+    res.json(updatedUser);
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 export default router;

@@ -94,6 +94,7 @@ export const restaurantTable = pgTable('restaurant', {
     .notNull()
     .default('active'), // activate/deactivate restaurant
   isDeleted: boolean('is_deleted').notNull().default(false),
+  images: text('images').array(), // array of image URLs
 });
 
 export const restaurantHoursTable = pgTable(

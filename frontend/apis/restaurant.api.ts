@@ -185,6 +185,7 @@ export async function searchRestaurants(params: {
           status: restaurant.status,
           activation: restaurant.activation,
           isDeleted: restaurant.isDeleted,
+          images: restaurant.images,
         }),
         // Add the rating fields
         avgRating: restaurant.avgRating || 0,
