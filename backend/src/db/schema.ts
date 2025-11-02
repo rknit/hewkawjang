@@ -1,4 +1,3 @@
-import { is } from 'drizzle-orm';
 import {
   pgTable,
   serial,
@@ -9,7 +8,11 @@ import {
   pgEnum,
   boolean,
   uniqueIndex,
+  doublePrecision,
+  real,
+  numeric,
 } from 'drizzle-orm/pg-core';
+import { number } from 'zod';
 
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -72,7 +75,7 @@ export const restaurantTable = pgTable('restaurant', {
     .references(() => usersTable.id),
   name: text('name').notNull().unique(),
   phoneNo: text('phone_no').notNull(),
-  wallet: integer('wallet').notNull().default(0),
+  wallet: doublePrecision('wallet').notNull().default(0.0),
   // address
   houseNo: text('house_no'),
   village: text('village'),
@@ -140,7 +143,7 @@ export const reservationTable = pgTable('reservation', {
     .notNull()
     .references(() => restaurantTable.id),
   reserveAt: timestamp('reserve_at').notNull(),
-  reservationfee: integer('reservation_fee').default(0),
+  reservationFee: integer('reservation_fee').default(0),
   numberOfAdult: integer('number_of_adult').default(0),
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
@@ -185,4 +188,13 @@ export const notificationTable = pgTable('notification', {
   notificationType: notificationTypesEnum('notification_type').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isRead: boolean('is_read').notNull().default(false),
+});
+
+export const withdrawsTable = pgTable('withdraw', {
+  id: serial('id').primaryKey(),
+  restaurantId: integer('restaurant_id')
+    .notNull()
+    .references(() => restaurantTable.id),
+  balance: doublePrecision('balance').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });

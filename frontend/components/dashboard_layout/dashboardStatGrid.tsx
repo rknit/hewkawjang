@@ -1,20 +1,18 @@
 import { View, Text } from 'react-native';
-import React, { use, useEffect } from 'react';
-
-import { ReactNode } from 'react';
+import React, { useEffect } from 'react';
 import { fetchReservationsByRestaurantInOneMonth } from '@/apis/reservation.api';
-import { set } from 'zod';
 import { fetchRestaurantById } from '@/apis/restaurant.api';
 import { supabase } from '@/utils/supabase';
+import { CalendarCheck, Users, Wallet } from 'lucide-react-native'; // ✅ Icons
 
 interface BoxWrapperProps {
   restaurantId: number;
   month: number;
 }
 
-function BoxWrapper({ children }: { children: ReactNode }) {
+function BoxWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <View className="bg-white p-4 rounded-sm flex-1 border border-gray-200 flex items-center shadow-sm">
+    <View className="bg-white p-4 rounded-2xl flex-1 border border-orange-100 flex items-center justify-center shadow-sm">
       {children}
     </View>
   );
@@ -34,20 +32,19 @@ export default function DashboardStatGrid({
       month,
       new Date().getFullYear(),
     );
-
     if (!reservations) return;
 
-    // Example aggregation by day (or by week)
     setBookings(reservations.length);
     const uniqueCustomers = new Set(reservations.map((r) => r.userId));
     setCustomers(uniqueCustomers.size);
+
     const restaurant = await fetchRestaurantById(restaurantId);
     setBalance((restaurant as any)?.wallet || 0);
   };
 
   useEffect(() => {
     loadData();
-  }, [restaurantId]);
+  }, [restaurantId, month]);
 
   useEffect(() => {
     const channel = supabase
@@ -61,61 +58,65 @@ export default function DashboardStatGrid({
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         () => {
-          console.log('Database changed — refreshing chart');
+          console.log('Database changed — refreshing stats');
           loadData();
         },
       )
       .subscribe();
 
     return () => {
-      // Call removeChannel but don't return the Promise to React's cleanup
       void supabase.removeChannel(channel);
     };
   }, [restaurantId]);
 
   return (
-    <View className="flex flex-row w-1200 gap-4">
+    <View className="flex flex-row gap-4">
+      {/* 📅 Total Bookings */}
       <BoxWrapper>
-        <View className="flex flex-row items-center">
-          <View className="rounded-full bg-blue-500 h-12 w-12 flex items-center justify-center">
-            <Text className="text-white font-bold text-lg">A</Text>
+        <View className="flex-row items-center">
+          <View className="rounded-full bg-orange-500 h-12 w-12 flex items-center justify-center">
+            <CalendarCheck size={24} color="white" />
           </View>
           <View className="pl-4">
             <Text className="text-sm text-gray-500 font-light">
               Total Bookings
             </Text>
-            <Text className="text-xl font-semibold text-gray-700">
+            <Text className="text-xl font-semibold text-gray-800">
               {bookings}
             </Text>
           </View>
         </View>
       </BoxWrapper>
+
+      {/* 👥 Total Customers */}
       <BoxWrapper>
-        <View className="flex flex-row items-center">
-          <View className="rounded-full bg-green-500 h-12 w-12 flex items-center justify-center">
-            <Text className="text-white font-bold text-lg">B</Text>
+        <View className="flex-row items-center">
+          <View className="rounded-full bg-yellow-500 h-12 w-12 flex items-center justify-center">
+            <Users size={24} color="white" />
           </View>
           <View className="pl-4">
             <Text className="text-sm text-gray-500 font-light">
               Total Customers
             </Text>
-            <Text className="text-xl font-semibold text-gray-700">
+            <Text className="text-xl font-semibold text-gray-800">
               {customers}
             </Text>
           </View>
         </View>
       </BoxWrapper>
+
+      {/* 💰 Total Revenue */}
       <BoxWrapper>
-        <View className="flex flex-row items-center">
-          <View className="rounded-full bg-red-500 h-12 w-12 flex items-center justify-center">
-            <Text className="text-white font-bold text-lg">C</Text>
+        <View className="flex-row items-center">
+          <View className="rounded-full bg-green-500 h-12 w-12 flex items-center justify-center">
+            <Wallet size={24} color="white" />
           </View>
           <View className="pl-4">
             <Text className="text-sm text-gray-500 font-light">
               Total Revenue
             </Text>
-            <Text className="text-xl font-semibold text-gray-700">
-              ${balance}
+            <Text className="text-xl font-semibold text-gray-800">
+              ${balance.toLocaleString()}
             </Text>
           </View>
         </View>
