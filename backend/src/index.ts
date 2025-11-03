@@ -9,10 +9,12 @@ import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
 import notificationRoute from './routes/notification.routes';
 import errorHandler from './middleware/error.middleware';
+import paymentRoute from './routes/payment.routes';
 import { authHandler } from './middleware/auth.middleware';
 import imgRoute from './routes/image.routes';
 import cookieParser from 'cookie-parser';
 import { startScheduledJobs } from './jobs';
+import paymentService from './service/payment.service';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -35,6 +37,7 @@ app.use('/users', userRoute);
 app.use('/restaurants', restaurantRoute);
 app.use('/reservations', reservationRoute);
 app.use('/notifications', notificationRoute);
+app.use('/payment', paymentRoute);
 app.use('/img', imgRoute);
 
 app.get('/', (_: Request, res: Response) => {

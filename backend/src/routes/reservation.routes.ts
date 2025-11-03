@@ -78,7 +78,7 @@ router.post('/create', authHandler, async (req, res) => {
   return res.status(201).json(reservation);
 });
 
-router.get('/:id/inspect', async (req, res) => {
+router.get('/:id/inspect', authHandler, async (req, res) => {
   const restaurantId = Number(req.params.id);
   if (isNaN(restaurantId)) {
     return res.status(400).json({ error: 'restaurant id must be a number' });

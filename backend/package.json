@@ -49,6 +49,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "postgres": "^3.4.7",
+    "stripe": "^19.2.0",
     "zod": "^4.1.8"
   }
 }
