@@ -31,7 +31,7 @@ export default function ImageChooser() {
 
   return (
     <View>
-      <Text className="mb-2 text-base">Restaurant Images</Text>
+      <Text className="mb-1 text-base">Restaurant Images</Text>
       <View className="flex-row w-full h-48 mb-4">
         {/* Big image slot on the left */}
         <TouchableOpacity

@@ -3,6 +3,7 @@ import { User, UserSchema } from '@/types/user.type';
 import { normalizeError } from '@/utils/api-error';
 import { z } from 'zod';
 
+
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
     const res = await ApiService.get('/users/me');
@@ -35,16 +36,22 @@ export async function fetchUserById(id: number): Promise<User | null> {
 export async function submitReview(
   reservationId: number,
   review: { rating: number; attachPhotos: string[]; comment: string },
-): Promise<boolean> {
+): Promise<number | null> {
   try {
-    await ApiService.post('/users/me/reviews', {
+    const res = await ApiService.post('/users/me/reviews', {
       reservationId,
       ...review,
     });
-    return true;
+
+    // Assuming the backend response is { reviewId: number }
+    if (res.data && res.data.reviewId) {
+      return res.data.reviewId;
+    } else {
+      throw new Error('Review ID not found in response');
+    }
   } catch (error) {
     normalizeError(error);
-    return false;
+    return null;
   }
 }
 
@@ -126,4 +133,25 @@ export async function fetchUserReservations(
     normalizeError(error);
     return [];
   }
+}
+
+export async function updateUserProfile(data: any): Promise<boolean> {
+  try {
+    await ApiService.post('/users/updateProfile', data);
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
+
+export async function uploadProfileImage(file: File | Blob): Promise<string> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await ApiService.post('/users/me/uploadProfileImage', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  return res.data.imageUrl;
 }

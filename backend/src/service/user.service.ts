@@ -158,21 +158,35 @@ export default class UserService {
     return rows[0];
   }
 
-  static async createReview(data: NewReview): Promise<void> {
-    let reservation = await db
-      .select()
-      .from(reservationTable)
-      .where(eq(reservationTable.id, data.reservationId))
-      .limit(1);
-    if (reservation.length === 0) {
-      throw createHttpError.NotFound('Reservation not found');
-    }
-    let review = await db.select().from(reviewTable).where(eq(reviewTable.reservationId, data.reservationId)).limit(1);
-    if (review.length > 0) {
-      throw createHttpError.Conflict('Review for this reservation already exists');
-    }
-    await db.insert(reviewTable).values(data);
+  static async createReview(data: NewReview): Promise<number> {
+  // Check if the reservation exists
+  let reservation = await db
+    .select()
+    .from(reservationTable)
+    .where(eq(reservationTable.id, data.reservationId))
+    .limit(1);
+
+  if (reservation.length === 0) {
+    throw createHttpError.NotFound('Reservation not found');
   }
+
+  // Check if the review already exists
+  let review = await db
+    .select()
+    .from(reviewTable)
+    .where(eq(reviewTable.reservationId, data.reservationId))
+    .limit(1);
+
+  if (review.length > 0) {
+    throw createHttpError.Conflict('Review for this reservation already exists');
+  }
+
+  // Insert the new review
+  const [createdReview] = await db.insert(reviewTable).values(data).returning();
+  
+  return createdReview.id; // Return the ID of the newly created review
+}
+
 
   static async deleteReview(reviewId: number, userId: number): Promise<void> {
     //console.log('deleteReview called with:', { reviewId, userId });
