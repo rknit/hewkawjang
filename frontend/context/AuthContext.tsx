@@ -14,6 +14,7 @@ import TokenStorage from '@/services/token-storage.service';
 import { isJwtTokenExpiringSoon } from '@/utils/jwt';
 import { supabase } from '@/utils/supabase';
 import { jwtDecode } from 'jwt-decode';
+import { router } from 'expo-router';
 
 interface AuthContextType {
   user: User | null;
@@ -120,6 +121,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await authApi.login(email, password);
       await updateAuthState();
+
+      // Read role directly from token instead of state to avoid race condition
+      const token = await TokenStorage.getAccessToken();
+      if (token) {
+        const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
+        if (decoded.authRole === 'admin') {
+          router.replace('/(admin)');
+        }
+      }
     } finally {
       setIsLoading(false);
     }

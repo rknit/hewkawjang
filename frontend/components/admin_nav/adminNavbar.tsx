@@ -4,7 +4,7 @@ import UnderlinedPressableText from '../underlined-pressable-text';
 import { router } from 'expo-router';
 import { useState } from 'react';
 
-export default function NavBarAdmin() {
+export default function AdminNavbar() {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
 
   // Get display name with fallback

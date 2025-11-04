@@ -5,24 +5,24 @@ import { router } from 'expo-router';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireAdmin?: boolean;
+  adminOnly?: boolean;
 }
 
 export default function ProtectedRoute({
   children,
-  requireAdmin = false,
+  adminOnly,
 }: ProtectedRouteProps) {
   const { user, authRole, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.replace('/');
-      } else if (requireAdmin && authRole !== 'admin') {
-        router.replace('/');
-      }
+    if (!isLoading && authRole === 'guest') {
+      router.replace('/');
     }
-  }, [user, authRole, isLoading, requireAdmin]);
+
+    if (!isLoading && adminOnly && authRole !== 'admin') {
+      router.replace('/(user)');
+    }
+  }, [user, authRole, isLoading, adminOnly]);
 
   if (isLoading) {
     return (
@@ -32,11 +32,7 @@ export default function ProtectedRoute({
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
-  if (requireAdmin && authRole !== 'admin') {
+  if (authRole !== 'admin' && !user) {
     return null;
   }
 
