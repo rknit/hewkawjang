@@ -208,7 +208,7 @@ export const withdrawsTable = pgTable('withdraw', {
   restaurantId: integer('restaurant_id')
     .notNull()
     .references(() => restaurantTable.id),
-  amount: doublePrecision('amount').notNull(),
+  balance: doublePrecision('balance').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
