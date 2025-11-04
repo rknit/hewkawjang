@@ -33,7 +33,7 @@ export default function NavBarUser() {
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16 space-x-5 pr-6">
       {/* Logo on the left edge */}
-      <TouchableOpacity onPress={() => router.push('/')}>
+      <TouchableOpacity onPress={() => router.push('/(user)')}>
         <Image
           source={require('../assets/images/logo.png')}
           style={{ width: 64, height: 64, marginLeft: 15, marginBottom: 1 }}

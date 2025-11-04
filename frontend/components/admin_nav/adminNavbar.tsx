@@ -19,7 +19,7 @@ export default function AdminNavbar() {
   return (
     <View className="flex-row items-center bg-[#E4E2E4] border-b border-[#252422] h-16 space-x-5 pr-6">
       {/* Logo on the left edge */}
-      <TouchableOpacity onPress={() => router.push('/')}>
+      <TouchableOpacity onPress={() => router.push('/(admin)')}>
         <Image
           source={require('@/assets/images/logo-admin.png')}
           style={{ width: 64, height: 64, marginLeft: 15, marginBottom: 1 }}
