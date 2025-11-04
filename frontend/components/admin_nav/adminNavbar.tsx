@@ -3,6 +3,7 @@ import Feather from '@expo/vector-icons/Feather';
 import UnderlinedPressableText from '../underlined-pressable-text';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import AdminDropdown from './adminDropdown';
 
 export default function AdminNavbar() {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -44,8 +45,7 @@ export default function AdminNavbar() {
         </TouchableOpacity>
       </View>
 
-      {/* TODO: AdminDropdown */}
-      {/* <UserDropdown visible={isDropdownVisible} onClose={toggleDropdown} /> */}
+      <AdminDropdown visible={isDropdownVisible} onClose={toggleDropdown} />
     </View>
   );
 }
