@@ -81,29 +81,27 @@ export default class ReservationService {
 
   static async cancelReservation(data: {
     reservationId: number;
+    userId: number;
     cancelBy: 'user' | 'restaurant_owner';
   }): Promise<void> {
-    let reservationId = data.reservationId;
-
-    let reservation = await db
+    const [reservation] = await db
       .select()
       .from(reservationTable)
-      .where(eq(reservationTable.restaurantId, reservationId));
-
-    if (!reservation || reservation.length === 0) {
+      .where(eq(reservationTable.id, data.reservationId))
+      .limit(1);
+    if (!reservation) {
       throw new createHttpError.NotFound('Reservation not found');
     }
+
+    await this.validateReservationOwnership(
+      reservation,
+      data.userId,
+      data.cancelBy,
+    );
+
     if (
-      new Date(reservation[0].reserveAt).getTime() - Date.now() <=
-      24 * 60 * 60 * 1000
-    ) {
-      throw new createHttpError.BadRequest(
-        'Cannot cancel reservation within 24 hours',
-      );
-    }
-    if (
-      reservation[0].status !== 'unconfirmed' &&
-      reservation[0].status !== 'confirmed'
+      reservation.status !== 'unconfirmed' &&
+      reservation.status !== 'confirmed'
     ) {
       throw new createHttpError.BadRequest(
         'Reservation status must be unconfirmed or confirmed to cancel',
@@ -113,7 +111,7 @@ export default class ReservationService {
     let [updated] = await db
       .update(reservationTable)
       .set({ status: 'cancelled' })
-      .where(eq(reservationTable.id, reservationId))
+      .where(eq(reservationTable.id, reservation.id))
       .returning();
 
     await NotificationService.notifyReservationStatuses([
@@ -167,21 +165,56 @@ export default class ReservationService {
     return reservations;
   }
 
+  static async validateReservationOwnership(
+    reservation: Reservation,
+    userId: number,
+    verify_for: 'user' | 'restaurant_owner',
+  ): Promise<void> {
+    switch (verify_for) {
+      case 'user':
+        if (reservation.userId !== userId) {
+          throw new createHttpError.Forbidden(
+            'User is not authorized to cancel this reservation',
+          );
+        }
+        break;
+      case 'restaurant_owner':
+        const [restaurant] = await db
+          .select()
+          .from(restaurantTable)
+          .where(eq(restaurantTable.id, reservation.restaurantId))
+          .limit(1);
+
+        if (!restaurant || restaurant.ownerId !== userId) {
+          throw new createHttpError.Forbidden(
+            'Restaurant owner is not authorized to cancel this reservation',
+          );
+        }
+        break;
+      default:
+        throw new createHttpError.InternalServerError(
+          'verify_for must be either user or restaurant_owner',
+        );
+    }
+  }
+
   static async updateReservationStatus(
     reservationId: number,
+    userId: number,
     newStatus: Reservation['status'],
     updateBy: 'user' | 'restaurant_owner',
   ): Promise<Reservation> {
     // ensure reservation exists
-    const rows = await db
+    const [reservation] = await db
       .select()
       .from(reservationTable)
       .where(eq(reservationTable.id, reservationId))
       .limit(1);
-
-    if (!rows || rows.length === 0) {
+    if (!reservation) {
       throw new createHttpError.NotFound('Reservation not found');
     }
+
+    await this.validateReservationOwnership(reservation, userId, updateBy);
 
     const [updated] = await db
       .update(reservationTable)

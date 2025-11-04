@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
 import { deleteCurrentUser } from '@/apis/user.api';
 import { useAuth } from '@/context/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadProfileImage, updateUserProfile } from '@/apis/user.api';
 
 export interface UserFormData {
   displayName: string;
@@ -54,8 +56,7 @@ export const useProfile = () => {
   };
 
   // Save profile changes
-  const saveProfile = () => {
-    // Validation
+  const saveProfile = async () => {
     if (
       !userForm.phoneNo ||
       userForm.phoneNo.length !== 10 ||
@@ -68,18 +69,50 @@ export const useProfile = () => {
       alert('Error: Please enter a valid email address.');
       return;
     }
-    // Add more validations as needed
 
-    // If all validations pass
-    alert('Profile saved successfully!');
-    // TODO: Implement save profile API call
-    alert('TODO: Save Change');
+    try {
+      await updateUserProfile(userForm);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to update profile.');
+    }
   };
 
   // Change profile image
-  const changeProfileImage = () => {
-    // TODO: Implement change profile image
-    alert('TODO: Change Profile Image');
+  const changeProfileImage = async () => {
+    console.log('changing frontend profile');
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const image = result.assets[0];
+      const uri = image.uri; // 'blob' URL
+      const fileType = 'image/jpeg'; // or image/png depending on the image format
+      const fileName = 'profile.jpg'; // You can change this as needed
+
+      // Fetch the file content from the Blob URL
+      const response = await fetch(uri);
+      const fileBlob = await response.blob();
+
+      // Create a File object from the blob
+      const file = new File([fileBlob], fileName, { type: fileType });
+
+      console.log(file); // Check if it's a File object now
+
+      try {
+        const imageUrl = await uploadProfileImage(file);
+        alert('Profile image updated!');
+        console.log('Uploaded image URL:', imageUrl);
+      } catch (error) {
+        console.error(error);
+        alert('Failed to upload image');
+      }
+    }
   };
 
   // Delete account handlers

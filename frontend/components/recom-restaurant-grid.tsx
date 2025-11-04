@@ -1,6 +1,7 @@
 import { fetchRestaurants } from '@/apis/restaurant.api';
 import RecommendedRestaurantCard from '@/components/recom-restaurant-card';
 import { Restaurant } from '@/types/restaurant.type';
+import { calculatePriceRange } from '@/utils/price-range';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
@@ -134,19 +135,24 @@ export default function RecommendedRestaurantGrid() {
   return (
     <View className="p-4 w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
       {restaurants &&
-        restaurants.map((restaurant, index) => (
-          <RecommendedRestaurantCard
-            key={restaurant.id}
-            id={restaurant.id}
-            name={restaurant.name}
-            address={makeAddress(restaurant)}
-            tags={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].tags}
-            rating={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].rating}
-            prices={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].prices}
-            image={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].image}
-            isNew={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].isNew}
-          />
-        ))}
+        restaurants.map((restaurant, index) => {
+          const fallbackImage = 'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
+          const imageUri = restaurant.images?.[0] || fallbackImage;
+
+          return (
+            <RecommendedRestaurantCard
+              key={restaurant.id}
+              id={restaurant.id}
+              name={restaurant.name}
+              address={makeAddress(restaurant)}
+              tags={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].tags}
+              rating={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].rating}
+              prices={calculatePriceRange(restaurant.priceRange ?? 0)}
+              image={{ uri: imageUri }}
+              isNew={RESTAURANTS_DATA[index % RESTAURANTS_DATA.length].isNew}
+            />
+          );
+        })}
     </View>
   );
 }

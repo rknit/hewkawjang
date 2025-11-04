@@ -105,6 +105,7 @@ export const restaurantTable = pgTable('restaurant', {
     .default('active'), // activate/deactivate restaurant
   isVerified: boolean('is_verified').notNull().default(false),
   isDeleted: boolean('is_deleted').notNull().default(false),
+  images: text('images').array(), // array of image URLs
 });
 
 export const restaurantHoursTable = pgTable(

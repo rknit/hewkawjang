@@ -100,7 +100,7 @@ export default function RecommendedRestaurantCard({
                     key={idx}
                     className="w-5 h-5 bg-gray-100 rounded-full items-center justify-center border-black border-[1px]"
                   >
-                    <Text className="text-xs">$</Text>
+                    <Text className="text-xs">฿</Text>
                   </View>
                 ))}
               </View>
