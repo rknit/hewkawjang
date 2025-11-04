@@ -9,7 +9,7 @@ export default function Index() {
     return (
       <ActivityIndicator
         size="large"
-        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        className="flex-1 justify-center items-center"
         color="#C54D0E"
       />
     );

@@ -1,15 +1,15 @@
 import { View, TouchableOpacity, Image, Text } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import UnderlinedPressableText from './underlined-pressable-text';
-import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
 import { useState, useMemo } from 'react';
 import UserDropdown from './user-dropdown';
 import NotificationPane from './notificationPane';
 import { useNotifications } from '@/context/NotificationContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function NavBarUser() {
-  const { user } = useProfile();
+  const { user } = useAuth();
   const { notifications } = useNotifications();
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [isNotiPaneVisible, setNotiPaneVisible] = useState(false);
