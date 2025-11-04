@@ -1,3 +1,3 @@
 export default function Index() {
-  return <>Hi!</>;
+  return <>dashboard!</>;
 }
