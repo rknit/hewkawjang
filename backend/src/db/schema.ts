@@ -84,7 +84,11 @@ export const restaurantTable = pgTable('restaurant', {
   wallet: doublePrecision('wallet').notNull().default(0.0),
   // address
   address: text('address').notNull(),
-
+  houseNo: text('house_no'),
+  village: text('village'),
+  building: text('building'),
+  road: text('road'),
+  soi: text('soi'),
   subDistrict: text('sub_district'),
   district: text('district'),
   province: text('province'),
