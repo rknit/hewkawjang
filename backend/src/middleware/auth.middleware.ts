@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from '../utils/jwt';
-import { UserAuthPayload } from '../service/auth.service';
+import { UserAuthPayloadSchema } from '../validators/auth.validator';
+import type { UserAuthPayload } from '../validators/auth.validator';
 import UserService from '../service/user.service';
 
 // Extend Express Request interface to include userAuth properties
@@ -50,11 +51,12 @@ export function authHandler(req: Request, res: Response, next: NextFunction) {
       return next(createHttpError.Unauthorized());
     }
 
-    let payload = getPayloadFrom(decoded);
-    if (!payload) {
+    const result = UserAuthPayloadSchema.safeParse(decoded);
+    if (!result.success) {
       return next(createHttpError.Unauthorized());
     }
 
+    const payload = result.data;
     req.userAuthPayload = payload;
 
     try {
@@ -105,11 +107,12 @@ export function refreshAuthHandler(
       return next(createHttpError.Unauthorized());
     }
 
-    let payload = getPayloadFrom(decoded);
-    if (!payload) {
+    const result = UserAuthPayloadSchema.safeParse(decoded);
+    if (!result.success) {
       return next(createHttpError.Unauthorized());
     }
 
+    const payload = result.data;
     req.userAuthPayload = payload;
     req.userAuthRefreshToken = refreshToken;
 
@@ -124,11 +127,4 @@ export function refreshAuthHandler(
 
     next();
   });
-}
-
-function getPayloadFrom(data: any): UserAuthPayload | undefined {
-  if (data && data.userId) {
-    return { userId: data.userId, sub: data.sub, role: data.role };
-  }
-  return undefined;
 }

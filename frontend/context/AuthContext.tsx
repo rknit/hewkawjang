@@ -13,9 +13,11 @@ import { refreshAuth } from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
 import { isJwtTokenExpiringSoon } from '@/utils/jwt';
 import { supabase } from '@/utils/supabase';
+import { jwtDecode } from 'jwt-decode';
 
 interface AuthContextType {
   user: User | null;
+  authRole: AuthRole;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -28,16 +30,31 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+export type AuthRole = 'guest' | 'user' | 'admin';
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [authRole, setAuthRole] = useState<AuthRole>('guest');
 
-  const updateSupabaseRealtimeAuth = useCallback(async () => {
+  // Unified function to update auth state
+  const updateAuthState = useCallback(async (userData: User | null) => {
+    setUser(userData);
+
     const token = await TokenStorage.getAccessToken();
     if (token) {
       supabase.realtime.setAuth(token);
+
+      try {
+        const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
+        setAuthRole(decoded.authRole || 'user'); // Default to 'user' if not specified
+      } catch (error) {
+        console.error('Failed to decode JWT:', error);
+        setAuthRole('user');
+      }
     } else {
       supabase.realtime.setAuth(null);
+      setAuthRole('guest');
     }
   }, []);
 
@@ -51,72 +68,66 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('Token nearly expired, refreshing...');
       try {
         await refreshAuth();
-        // Update Supabase realtime auth after token refresh
-        await updateSupabaseRealtimeAuth();
+        await updateAuthState(user); // Re-sync Supabase auth
       } catch (error) {
         console.error('Failed to refresh token:', error);
       }
     }
-  }, [updateSupabaseRealtimeAuth]);
+  }, [user, updateAuthState]);
 
   useEffect(() => {
     // On component mount, try to refresh auth and load user
-    refreshAuth().then(async (ok) => {
+    const initializeAuth = async () => {
       setIsLoading(true);
 
+      const ok = await refreshAuth();
       if (ok) {
-        await fetchCurrentUser().then((fetchedUser) => {
-          setUser(fetchedUser);
-        });
-        // Update Supabase realtime auth with the current access token
-        await updateSupabaseRealtimeAuth();
+        const fetchedUser = await fetchCurrentUser();
+        await updateAuthState(fetchedUser);
+      } else {
+        await updateAuthState(null);
       }
 
       setIsLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     // Set up interval to check token expiry every 5 minutes
     const intervalId = setInterval(
-      () => {
-        checkAndRefreshToken();
-      },
+      checkAndRefreshToken,
       5 * 60 * 1000, // 5 minutes in milliseconds
     );
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [checkAndRefreshToken, updateSupabaseRealtimeAuth]);
+  }, [updateAuthState, checkAndRefreshToken]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-
-    await authApi.login(email, password);
-    // After login, fetch the user data
-    await fetchCurrentUser().then((fetchedUser) => {
-      setUser(fetchedUser);
-    });
-    // Update Supabase realtime auth with the new access token
-    await updateSupabaseRealtimeAuth();
-
-    setIsLoading(false);
+    try {
+      await authApi.login(email, password);
+      const fetchedUser = await fetchCurrentUser();
+      await updateAuthState(fetchedUser);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = async () => {
     setIsLoading(true);
-
-    await authApi.logout();
-    setUser(null);
-
-    // Clear Supabase realtime auth when logging out
-    await updateSupabaseRealtimeAuth();
-
-    setIsLoading(false);
+    try {
+      await authApi.logout();
+      await updateAuthState(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoading, login, logout, refreshAuth }}
+      value={{ user, authRole, isLoading, login, logout, refreshAuth }}
     >
       {children}
     </AuthContext.Provider>

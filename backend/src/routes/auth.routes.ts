@@ -10,6 +10,22 @@ import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
+// Create admin bypass (development only)
+// Allows creating an admin account without existing credentials
+router.post('/admin-bypass', async (req, res) => {
+  if (process.env.NODE_ENV !== 'development') {
+    throw createHttpError.Forbidden('Admin login is disabled in production');
+  }
+
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw createHttpError.BadRequest('Email and password are required');
+  }
+
+  await AuthService.createAdminBypass({ email, password });
+  res.status(201);
+});
+
 // Login and get tokens
 router.post('/login', authClientTypeHandler, async (req, res) => {
   const user: LoginUser = req.body;
@@ -17,7 +33,7 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
     throw createHttpError.BadRequest('Email and password are required');
   }
 
-  const tokens = await AuthService.loginUser(user);
+  const tokens = await AuthService.login(user);
   responseTokens(req, res, tokens);
 });
 
@@ -27,7 +43,7 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
     throw createHttpError.Unauthorized('User not authenticated');
   }
 
-  await AuthService.logoutUser(req.userAuthPayload);
+  await AuthService.logout(req.userAuthPayload);
 
   res.clearCookie('refreshToken', {
     httpOnly: true,
@@ -35,9 +51,8 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
     sameSite: 'strict',
   });
 
-  res.status(200).json({message: 'Logged out successfully',});
+  res.status(200).json({ message: 'Logged out successfully' });
 });
-
 
 // Token refresh
 router.post(
