@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import SideBar from '../../components/restaurant-sidebar';
+import SideBar from '@/components/restaurant-sidebar';
 import { View, Text } from 'react-native';
-import Dashboard from '../../components/dashboard_layout/dashboard';
-import Reservation from '../../components/dashboard_layout/reservation';
-import RestaurantPreview from '@/app/(tabs)/RestaurantPreview';
+import Dashboard from '@/components/dashboard_layout/dashboard';
+import Reservation from '@/components/dashboard_layout/reservation';
+import RestaurantPreview from '@/components/dashboard_layout/RestaurantPreview';
 import { useLocalSearchParams } from 'expo-router';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
