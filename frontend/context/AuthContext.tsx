@@ -30,7 +30,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export type AuthRole = 'guest' | 'user' | 'admin';
+type AuthRole = 'guest' | 'user' | 'admin';
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
@@ -38,21 +38,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authRole, setAuthRole] = useState<AuthRole>('guest');
 
   // Unified function to update auth state
-  const updateAuthState = useCallback(async (userData: User | null) => {
-    setUser(userData);
-
+  const updateAuthState = useCallback(async () => {
     const token = await TokenStorage.getAccessToken();
-    if (token) {
-      supabase.realtime.setAuth(token);
 
+    if (token) {
       try {
         const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
-        setAuthRole(decoded.authRole || 'user'); // Default to 'user' if not specified
+        const role = decoded.authRole || 'guest';
+        setAuthRole(role);
+        supabase.realtime.setAuth(token);
+
+        // Only fetch user data if authRole is 'user', not 'admin'
+        if (role === 'user') {
+          const fetchedUser = await fetchCurrentUser();
+          setUser(fetchedUser);
+        } else {
+          // Admin or guest should not have user data
+          setUser(null);
+        }
       } catch (error) {
-        console.error('Failed to decode JWT:', error);
-        setAuthRole('user');
+        console.error('Failed to fetch user or decode JWT:', error);
+        setUser(null);
+        setAuthRole('guest');
       }
     } else {
+      setUser(null);
       supabase.realtime.setAuth(null);
       setAuthRole('guest');
     }
@@ -68,12 +78,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log('Token nearly expired, refreshing...');
       try {
         await refreshAuth();
-        await updateAuthState(user); // Re-sync Supabase auth
+        await updateAuthState(); // Re-sync Supabase auth
       } catch (error) {
         console.error('Failed to refresh token:', error);
       }
     }
-  }, [user, updateAuthState]);
+  }, [updateAuthState]);
 
   useEffect(() => {
     // On component mount, try to refresh auth and load user
@@ -82,10 +92,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const ok = await refreshAuth();
       if (ok) {
-        const fetchedUser = await fetchCurrentUser();
-        await updateAuthState(fetchedUser);
+        await updateAuthState();
       } else {
-        await updateAuthState(null);
+        await updateAuthState();
       }
 
       setIsLoading(false);
@@ -102,14 +111,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       clearInterval(intervalId);
     };
-  }, [updateAuthState, checkAndRefreshToken]);
+    // DO NOT add dependencies or else useEffect hell occurs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
       await authApi.login(email, password);
-      const fetchedUser = await fetchCurrentUser();
-      await updateAuthState(fetchedUser);
+      await updateAuthState();
     } finally {
       setIsLoading(false);
     }
@@ -119,7 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       await authApi.logout();
-      await updateAuthState(null);
+      await updateAuthState();
     } finally {
       setIsLoading(false);
     }
