@@ -325,6 +325,7 @@ export const reportsTable = pgTable('report', {
     .notNull()
     .references(() => usersTable.id),
   adminId: integer('user_id').references(() => adminsTable.id),
+  reportType: reportTypeEnum('report_type').default('support'),
   targetRestaurantId: integer('restaurant_id').references(
     () => restaurantTable.id,
   ),
