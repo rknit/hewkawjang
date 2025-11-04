@@ -23,6 +23,7 @@ import { Restaurant } from '@/types/restaurant.type';
 import ReviewModal from '@/components/reviewForm';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import AlertModal from '@/components/AlertModal';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 type ReservationWithRestaurant = UserReservation & { restaurant: Restaurant };
 
@@ -311,153 +312,157 @@ export default function UserReservationsScreen() {
   };
 
   return (
-    <View style={styles.pageContainer}>
-      <View style={styles.innerContainer}>
-        {/* Header */}
-        <View style={styles.headerRow}>
-          <Text style={styles.headerText}>My Reservation</Text>
-          <View style={styles.filterContainer}>
-            {['upcoming', 'completed', 'canceled'].map((filter) => (
-              <TouchableOpacity
-                key={filter}
-                style={[
-                  styles.filterButton,
-                  activeFilters.includes(filter as FilterType) &&
-                    styles.activeFilterButton,
-                ]}
-                onPress={() => toggleFilter(filter as FilterType)}
-              >
-                <Text
+    <ProtectedRoute>
+      <View style={styles.pageContainer}>
+        <View style={styles.innerContainer}>
+          {/* Header */}
+          <View style={styles.headerRow}>
+            <Text style={styles.headerText}>My Reservation</Text>
+            <View style={styles.filterContainer}>
+              {['upcoming', 'completed', 'canceled'].map((filter) => (
+                <TouchableOpacity
+                  key={filter}
                   style={[
-                    styles.filterText,
+                    styles.filterButton,
                     activeFilters.includes(filter as FilterType) &&
-                      styles.activeFilterText,
+                      styles.activeFilterButton,
                   ]}
+                  onPress={() => toggleFilter(filter as FilterType)}
                 >
-                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.filterText,
+                      activeFilters.includes(filter as FilterType) &&
+                        styles.activeFilterText,
+                    ]}
+                  >
+                    {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
+
+          {/* Reservations List */}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            showsVerticalScrollIndicator={false}
+          >
+            {filteredReservations.length === 0 ? (
+              <Text style={styles.emptyText}>No reservations found</Text>
+            ) : (
+              filteredReservations.map((r) => {
+                const { date, time } = formatDateTime(r.reserveAt);
+                return (
+                  <View key={r.id} style={styles.card}>
+                    {/* Top Section */}
+                    <View style={styles.cardTop}>
+                      <View style={styles.dateTimeRow}>
+                        <FontAwesome5
+                          name="calendar-alt"
+                          size={14}
+                          color="#e05910"
+                        />
+                        <Text style={styles.dateTimeText}>
+                          {' '}
+                          {date}, {time}
+                        </Text>
+                      </View>
+                      <View style={styles.statusRow}>
+                        {r.status === 'completed' ? (
+                          <MaterialIcons
+                            name="check-circle"
+                            size={16}
+                            color={getStatusColor(r.status)}
+                          />
+                        ) : (
+                          <MaterialIcons
+                            name="info"
+                            size={16}
+                            color={getStatusColor(r.status)}
+                          />
+                        )}
+
+                        <Text
+                          style={[
+                            styles.statusText,
+                            { color: getStatusColor(r.status) },
+                          ]}
+                        >
+                          {' '}
+                          {getStatusText(r.status)}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Divider Line */}
+                    <View style={styles.cardDivider} />
+
+                    {/* Bottom Section */}
+                    <Text style={styles.restaurantName}>
+                      {r.restaurant.name}
+                    </Text>
+                    <Text style={styles.address}>
+                      📍 {r.restaurant.road}, {r.restaurant.subDistrict},{' '}
+                      {r.restaurant.district}
+                    </Text>
+
+                    <Text style={styles.guests}>
+                      👤 {r.numberOfAdult} Adults
+                      {r.numberOfChildren ? `, ${r.numberOfChildren} Kids` : ''}
+                    </Text>
+
+                    {/* Action Buttons */}
+                    {renderActionButtons(r)}
+                  </View>
+                );
+              })
+            )}
+          </ScrollView>
         </View>
 
-        {/* Reservations List */}
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          showsVerticalScrollIndicator={false}
-        >
-          {filteredReservations.length === 0 ? (
-            <Text style={styles.emptyText}>No reservations found</Text>
-          ) : (
-            filteredReservations.map((r) => {
-              const { date, time } = formatDateTime(r.reserveAt);
-              return (
-                <View key={r.id} style={styles.card}>
-                  {/* Top Section */}
-                  <View style={styles.cardTop}>
-                    <View style={styles.dateTimeRow}>
-                      <FontAwesome5
-                        name="calendar-alt"
-                        size={14}
-                        color="#e05910"
-                      />
-                      <Text style={styles.dateTimeText}>
-                        {' '}
-                        {date}, {time}
-                      </Text>
-                    </View>
-                    <View style={styles.statusRow}>
-                      {r.status === 'completed' ? (
-                        <MaterialIcons
-                          name="check-circle"
-                          size={16}
-                          color={getStatusColor(r.status)}
-                        />
-                      ) : (
-                        <MaterialIcons
-                          name="info"
-                          size={16}
-                          color={getStatusColor(r.status)}
-                        />
-                      )}
+        {/* Review Modal */}
+        {selectedReservation && (
+          <ReviewModal
+            visible={reviewModalVisible}
+            onClose={() => {
+              setReviewModalVisible(false);
+              setSelectedReservation(null);
+              loadReservations();
+            }}
+            restaurant={{
+              name: selectedReservation.restaurant.name,
+              location: `${selectedReservation.restaurant.district}`,
+              image: selectedReservation.restaurant.images?.[0] ?? '',
+            }}
+            reservationId={selectedReservation.id}
+          />
+        )}
 
-                      <Text
-                        style={[
-                          styles.statusText,
-                          { color: getStatusColor(r.status) },
-                        ]}
-                      >
-                        {' '}
-                        {getStatusText(r.status)}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Divider Line */}
-                  <View style={styles.cardDivider} />
-
-                  {/* Bottom Section */}
-                  <Text style={styles.restaurantName}>{r.restaurant.name}</Text>
-                  <Text style={styles.address}>
-                    📍 {r.restaurant.road}, {r.restaurant.subDistrict},{' '}
-                    {r.restaurant.district}
-                  </Text>
-
-                  <Text style={styles.guests}>
-                    👤 {r.numberOfAdult} Adults
-                    {r.numberOfChildren ? `, ${r.numberOfChildren} Kids` : ''}
-                  </Text>
-
-                  {/* Action Buttons */}
-                  {renderActionButtons(r)}
-                </View>
-              );
-            })
-          )}
-        </ScrollView>
-      </View>
-
-      {/* Review Modal */}
-      {selectedReservation && (
-        <ReviewModal
-          visible={reviewModalVisible}
-          onClose={() => {
-            setReviewModalVisible(false);
-            setSelectedReservation(null);
-            loadReservations();
-          }}
-          restaurant={{
-            name: selectedReservation.restaurant.name,
-            location: `${selectedReservation.restaurant.district}`,
-            image: selectedReservation.restaurant.images?.[0] ?? '',
-          }}
-          reservationId={selectedReservation.id}
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          visible={confirmModalVisible}
+          title={confirmModalConfig.title}
+          message={confirmModalConfig.message}
+          confirmText={confirmModalConfig.confirmText}
+          cancelText={confirmModalConfig.cancelText}
+          onConfirm={confirmModalConfig.onConfirm}
+          onCancel={() => setConfirmModalVisible(false)}
         />
-      )}
 
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        visible={confirmModalVisible}
-        title={confirmModalConfig.title}
-        message={confirmModalConfig.message}
-        confirmText={confirmModalConfig.confirmText}
-        cancelText={confirmModalConfig.cancelText}
-        onConfirm={confirmModalConfig.onConfirm}
-        onCancel={() => setConfirmModalVisible(false)}
-      />
-
-      {/* Alert Modal */}
-      <AlertModal
-        visible={alertModalVisible}
-        title={alertModalConfig.title}
-        message={alertModalConfig.message}
-        buttonText={alertModalConfig.buttonText}
-        onClose={() => setAlertModalVisible(false)}
-      />
-    </View>
+        {/* Alert Modal */}
+        <AlertModal
+          visible={alertModalVisible}
+          title={alertModalConfig.title}
+          message={alertModalConfig.message}
+          buttonText={alertModalConfig.buttonText}
+          onClose={() => setAlertModalVisible(false)}
+        />
+      </View>
+    </ProtectedRoute>
   );
 }
 const styles = StyleSheet.create({

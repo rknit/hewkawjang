@@ -5,6 +5,7 @@ import Dashboard from '../../components/dashboard_layout/dashboard';
 import Reservation from '../../components/dashboard_layout/reservation';
 import RestaurantPreview from '@/app/(tabs)/RestaurantPreview';
 import { useLocalSearchParams } from 'expo-router';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DashboardLayout() {
   const params = useLocalSearchParams<{ restaurantId: string }>();
@@ -28,27 +29,29 @@ export default function DashboardLayout() {
   };
 
   return (
-    <View className="flex flex-row bg-neutral-100 h-screen w-screen overflow-auto">
-      <SideBar
-        restaurantId={restaurantId}
-        content={content}
-        setContent={handleSetContent}
-      />
-      <View className="w-full flex-1">
-        {content === 'preview' && (
-          <RestaurantPreview
-            restaurantId={restaurantId}
-            onExit={handlePreviewExit}
-          />
-        )}
-        {content === 'reservation' && (
-          <Reservation restaurantId={restaurantId} />
-        )}
-        {content === 'dashboard' && <Dashboard restaurantId={restaurantId} />}
-        {content === 'settings' && (
-          <Text className="text-xl">丫 (๑°□°๑)丫</Text>
-        )}
+    <ProtectedRoute>
+      <View className="flex flex-row bg-neutral-100 h-screen w-screen overflow-auto">
+        <SideBar
+          restaurantId={restaurantId}
+          content={content}
+          setContent={handleSetContent}
+        />
+        <View className="w-full flex-1">
+          {content === 'preview' && (
+            <RestaurantPreview
+              restaurantId={restaurantId}
+              onExit={handlePreviewExit}
+            />
+          )}
+          {content === 'reservation' && (
+            <Reservation restaurantId={restaurantId} />
+          )}
+          {content === 'dashboard' && <Dashboard restaurantId={restaurantId} />}
+          {content === 'settings' && (
+            <Text className="text-xl">丫 (๑°□°๑)丫</Text>
+          )}
+        </View>
       </View>
-    </View>
+    </ProtectedRoute>
   );
 }

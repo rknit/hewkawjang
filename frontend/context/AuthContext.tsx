@@ -13,13 +13,13 @@ import { refreshAuth } from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
 import { isJwtTokenExpiringSoon } from '@/utils/jwt';
 import { supabase } from '@/utils/supabase';
-import { jwtDecode } from 'jwt-decode';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshAuth: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,18 +38,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       supabase.realtime.setAuth(token);
     } else {
       supabase.realtime.setAuth(null);
-    }
-  }, []);
-
-  const loadUser = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const userData = await fetchCurrentUser();
-      setUser(userData);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -73,10 +61,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // On component mount, try to refresh auth and load user
-    refreshAuth().then(async () => {
-      await loadUser();
-      // Update Supabase realtime auth with the current access token
-      await updateSupabaseRealtimeAuth();
+    refreshAuth().then(async (ok) => {
+      setIsLoading(true);
+
+      if (ok) {
+        await fetchCurrentUser().then((fetchedUser) => {
+          setUser(fetchedUser);
+        });
+        // Update Supabase realtime auth with the current access token
+        await updateSupabaseRealtimeAuth();
+      }
+
+      setIsLoading(false);
     });
 
     // Set up interval to check token expiry every 5 minutes
@@ -90,25 +86,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       clearInterval(intervalId);
     };
-  }, [loadUser, checkAndRefreshToken, updateSupabaseRealtimeAuth]);
+  }, [checkAndRefreshToken, updateSupabaseRealtimeAuth]);
 
   const login = async (email: string, password: string) => {
+    setIsLoading(true);
+
     await authApi.login(email, password);
     // After login, fetch the user data
-    await loadUser();
+    await fetchCurrentUser().then((fetchedUser) => {
+      setUser(fetchedUser);
+    });
     // Update Supabase realtime auth with the new access token
     await updateSupabaseRealtimeAuth();
+
+    setIsLoading(false);
   };
 
   const logout = async () => {
+    setIsLoading(true);
+
     await authApi.logout();
     setUser(null);
+
     // Clear Supabase realtime auth when logging out
     await updateSupabaseRealtimeAuth();
+
+    setIsLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, logout, refreshAuth }}
+    >
       {children}
     </AuthContext.Provider>
   );
