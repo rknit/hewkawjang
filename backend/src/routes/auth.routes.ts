@@ -10,22 +10,6 @@ import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
-// Create admin bypass (development only)
-// Allows creating an admin account without existing credentials
-router.post('/admin-bypass', async (req, res) => {
-  if (process.env.NODE_ENV !== 'development') {
-    throw createHttpError.Forbidden('Admin login is disabled in production');
-  }
-
-  const { email, password } = req.body;
-  if (!email || !password) {
-    throw createHttpError.BadRequest('Email and password are required');
-  }
-
-  await AuthService.createAdminBypass({ email, password });
-  res.status(201);
-});
-
 // Login and get tokens
 router.post('/login', authClientTypeHandler, async (req, res) => {
   const user: LoginUser = req.body;

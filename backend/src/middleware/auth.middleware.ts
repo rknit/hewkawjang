@@ -72,6 +72,17 @@ export function authHandler(req: Request, res: Response, next: NextFunction) {
   });
 }
 
+export function adminRoleHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  if (!req.userAuthPayload || req.userAuthPayload.authRole !== 'admin') {
+    return next(createHttpError.Unauthorized());
+  }
+  next();
+}
+
 export function refreshAuthHandler(
   req: Request,
   res: Response,

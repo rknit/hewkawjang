@@ -4,13 +4,14 @@ import UnderlinedPressableText from '../underlined-pressable-text';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import AdminDropdown from './adminDropdown';
+import { useAdmin } from '@/hooks/useAdmin';
 
 export default function AdminNavbar() {
   const [isDropdownVisible, setDropdownVisible] = useState(false);
+  const { admin } = useAdmin();
 
   // Get display name with fallback
-  // TODO: admin display name
-  const displayName = 'Admin McAdminface';
+  const displayName = admin?.firstName || 'Admin User';
 
   const toggleDropdown = () => {
     setDropdownVisible(!isDropdownVisible);

@@ -1,17 +1,16 @@
-import { eq, InferSelectModel } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { adminsTable, usersTable } from '../db/schema';
-import { comparePassword, hashPassword } from '../utils/hash';
+import { comparePassword } from '../utils/hash';
 import { genJwtTokens, JwtTokens } from '../utils/jwt';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import type { UserAuthPayload } from '../validators/auth.validator';
+import { Admin } from '../validators/admin.validator';
 
 export type LoginUser = {
   email: string;
   password: string;
 };
-
-type Admin = InferSelectModel<typeof adminsTable>;
 
 export default class AuthService {
   static async login(data: LoginUser): Promise<JwtTokens> {
@@ -185,26 +184,5 @@ export default class AuthService {
       .where(eq(adminsTable.id, admin.id));
 
     return tokens;
-  }
-
-  // NOTE: This method is only for development purposes
-  static async createAdminBypass(data: LoginUser): Promise<void> {
-    if (process.env.NODE_ENV !== 'development') {
-      throw createHttpError.Forbidden(
-        'Admin bypass creation is only allowed in development mode',
-      );
-    }
-
-    const hashedPassword = await hashPassword(data.password);
-    await db
-      .insert(adminsTable)
-      .values({
-        email: data.email,
-        password: hashedPassword,
-        firstName: 'Admin',
-        lastName: 'McAdminFace',
-        phoneNo: '000-000-0000',
-      })
-      .onConflictDoNothing();
   }
 }

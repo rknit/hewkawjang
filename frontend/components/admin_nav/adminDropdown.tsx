@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Feather } from '@expo/vector-icons';
+import { useAdmin } from '@/hooks/useAdmin';
 
 export default function AdminDropdown({
   visible,
@@ -10,9 +11,10 @@ export default function AdminDropdown({
   onClose: () => void;
 }) {
   const { logout } = useAuth();
+  const { admin } = useAdmin();
 
-  const fullname = 'Admin McAdminface'; // TODO: get from auth context
-  const email = 'admin@admin.com';
+  const fullname = `${admin?.firstName || 'Admin'} ${admin?.lastName || 'User'}`;
+  const email = admin?.email || 'Loading...';
 
   return (
     <Modal

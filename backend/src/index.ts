@@ -10,11 +10,10 @@ import reservationRoute from './routes/reservation.routes';
 import notificationRoute from './routes/notification.routes';
 import errorHandler from './middleware/error.middleware';
 import paymentRoute from './routes/payment.routes';
-import { authHandler } from './middleware/auth.middleware';
+import adminRoute from './routes/admin.routes';
 import imgRoute from './routes/image.routes';
 import cookieParser from 'cookie-parser';
 import { startScheduledJobs } from './jobs';
-import paymentService from './service/payment.service';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -32,6 +31,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
+app.use('/admins', adminRoute);
 app.use('/auth', authRoute);
 app.use('/users', userRoute);
 app.use('/restaurants', restaurantRoute);
