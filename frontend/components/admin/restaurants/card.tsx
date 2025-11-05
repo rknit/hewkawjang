@@ -1,7 +1,7 @@
 import { Restaurant } from '@/types/restaurant.type';
 import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
 
-interface RestaurantsReportCardProps {
+interface AdminRestaurantCardProps {
   restaurant: Restaurant;
   onPressCard: () => void;
 
@@ -14,7 +14,7 @@ interface RestaurantsReportCardProps {
   statusLabel: string;
 }
 
-export default function RestaurantsReportCard({
+export default function AdminRestaurantCard({
   restaurant,
   onPressCard,
   mainActionLabel,
@@ -22,7 +22,7 @@ export default function RestaurantsReportCard({
   subActionLabel,
   onPressSubAction,
   statusLabel,
-}: RestaurantsReportCardProps) {
+}: AdminRestaurantCardProps) {
   const fallbackImgUrl =
     'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
   const tags = [restaurant.cuisineType, restaurant.district];

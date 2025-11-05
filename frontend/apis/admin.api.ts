@@ -21,3 +21,11 @@ export async function fetchPendingReportsForCurrentAdmin(): Promise<Report[]> {
     return [];
   }
 }
+
+export async function banRestaurant(restaurantId: number): Promise<void> {
+  try {
+    await ApiService.delete(`/admins/restaurants/${restaurantId}`);
+  } catch (error) {
+    normalizeError(error);
+  }
+}

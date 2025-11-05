@@ -23,6 +23,21 @@ router.get(
   },
 );
 
+router.delete(
+  '/restaurants/:restaurantId',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const restaurantId = parseInt(req.params.restaurantId, 10);
+    if (isNaN(restaurantId)) {
+      throw createHttpError.BadRequest('Invalid restaurant ID');
+    }
+
+    await AdminService.banRestaurant(restaurantId);
+    res.status(204).send();
+  },
+);
+
 // Create admin bypass (development only)
 // Allows creating an admin account without existing credentials
 router.post('/admin-bypass', async (req, res) => {

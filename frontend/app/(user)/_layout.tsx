@@ -16,6 +16,7 @@ export default function UserLayout() {
         default: DefaultNotification,
         reservation_status: DefaultNotification,
         chat: DefaultNotification,
+        system: DefaultNotification,
       }}
     >
       <NotificationProvider>

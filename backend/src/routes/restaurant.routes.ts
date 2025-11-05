@@ -22,10 +22,10 @@ router.get('/', async (req, res) => {
   });
   const { ids } = querySchema.parse(req.query);
 
-  const users = await RestaurantService.getRestaurants({
+  const restaurants = await RestaurantService.getRestaurants({
     ids,
   });
-  res.json(users);
+  res.json(restaurants);
 });
 
 router.get('/owner/:ownerId', async (req, res) => {

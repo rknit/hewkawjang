@@ -185,6 +185,7 @@ export const reviewTable = pgTable('review', {
 export const notificationTypesEnum = pgEnum('notification_type', [
   'reservation_status',
   'chat',
+  'system',
 ]);
 
 export const notificationTable = pgTable('notification', {

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { db } from '../db';
 import { reportsTable } from '../db/schema';
 import { Report, ReportUpdate } from '../validators/report.validator';
@@ -15,7 +15,8 @@ export default class ReportService {
           eq(reportsTable.adminId, adminId),
           eq(reportsTable.isSolved, false),
         ),
-      );
+      )
+      .orderBy(asc(reportsTable.createdAt));
 
     return reports;
   }

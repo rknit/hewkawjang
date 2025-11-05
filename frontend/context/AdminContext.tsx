@@ -69,11 +69,17 @@ export function AdminProvider({ children }: AdminProviderProps) {
 
         if (updatedReport) {
           // Update local state optimistically
-          setReports((prev) =>
-            prev.map((report) =>
-              report.id === id ? { ...report, isSolved } : report,
-            ),
-          );
+          if (isSolved) {
+            // Remove solved reports immediately
+            setReports((prev) => prev.filter((report) => report.id !== id));
+          } else {
+            // Update unsolved reports
+            setReports((prev) =>
+              prev.map((report) =>
+                report.id === id ? { ...report, isSolved } : report,
+              ),
+            );
+          }
         }
       } catch (error) {
         console.error('Error updating report status:', error);
@@ -112,7 +118,10 @@ export function AdminProvider({ children }: AdminProviderProps) {
           filter: `admin_id=eq.${admin.id}`,
         },
         (payload) => {
-          console.log('New report:', payload);
+          if (__DEV__) {
+            console.log('New report:', payload);
+          }
+
           // Map database fields (snake_case) to Report type (camelCase)
           const newReport: Report = {
             id: payload.new.id,
@@ -142,7 +151,10 @@ export function AdminProvider({ children }: AdminProviderProps) {
           filter: `admin_id=eq.${admin.id}`,
         },
         (payload) => {
-          console.log('Report updated:', payload);
+          if (__DEV__) {
+            console.log('Report updated:', payload);
+          }
+
           // Map database fields (snake_case) to Report type (camelCase)
           const updatedReport: Report = {
             id: payload.new.id,
