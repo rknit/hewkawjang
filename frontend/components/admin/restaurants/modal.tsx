@@ -43,12 +43,15 @@ export default function RestaurantModal({
       backdropOpacity={0.7}
       style={{
         margin: 0,
-        paddingVertical: 20,
+        paddingTop: 20,
         justifyContent: 'flex-end',
       }}
     >
-      <View className="w-2/3 h-full border border-[#E0E0E0] bg-white rounded-lg self-center">
-        <ScrollView showsVerticalScrollIndicator={true}>
+      <View className="w-2/3 h-full border-2 border-b-0 border-[#E0E0E0] bg-white rounded-t-lg self-center">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ borderRadius: '0.5rem' }}
+        >
           <RestaurantScreenVertical restaurantId={restaurantId} />
         </ScrollView>
       </View>

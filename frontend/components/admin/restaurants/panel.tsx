@@ -6,6 +6,8 @@ import { fetchRestaurants } from '@/apis/restaurant.api';
 
 interface RestaurantsAdminPanelProps {
   title: string;
+  restaurantIds: number[];
+
   onPressCard: (restaurantId: number) => void;
 
   mainActionLabel: string;
@@ -19,6 +21,7 @@ interface RestaurantsAdminPanelProps {
 
 export default function RestaurantsAdminPanel({
   title,
+  restaurantIds,
   onPressCard,
   mainActionLabel,
   onPressMainAction,
@@ -29,10 +32,10 @@ export default function RestaurantsAdminPanel({
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
   useEffect(() => {
-    fetchRestaurants().then((data) => {
+    fetchRestaurants(restaurantIds).then((data) => {
       setRestaurants(data);
     });
-  }, []);
+  }, [restaurantIds]);
 
   return (
     <View className="flex-1 h-full p-4 border border-[#E0E0E0] rounded-lg mr-4 shadow-sm gap-y-4">

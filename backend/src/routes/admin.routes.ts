@@ -2,6 +2,7 @@ import express from 'express';
 import createHttpError from 'http-errors';
 import AdminService from '../service/admin.service';
 import { adminRoleHandler, authHandler } from '../middleware/auth.middleware';
+import ReportService from '../service/report.service';
 
 const router = express.Router();
 
@@ -9,6 +10,18 @@ router.get('/me', authHandler, adminRoleHandler, async (req, res) => {
   const admin = await AdminService.getAdminById(req.userAuthPayload?.userId!);
   res.status(200).json(admin);
 });
+
+router.get(
+  '/me/reports/pending',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const reports = await ReportService.getPendingReportsAssignedToAdmin(
+      req.userAuthPayload?.userId!,
+    );
+    res.status(200).json(reports);
+  },
+);
 
 // Create admin bypass (development only)
 // Allows creating an admin account without existing credentials

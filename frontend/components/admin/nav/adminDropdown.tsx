@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Feather } from '@expo/vector-icons';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useAdmin } from '@/context/AdminContext';
 
 export default function AdminDropdown({
   visible,

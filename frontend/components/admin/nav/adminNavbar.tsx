@@ -4,7 +4,7 @@ import UnderlinedPressableText from '@/components/underlined-pressable-text';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import AdminDropdown from './adminDropdown';
-import { useAdmin } from '@/hooks/useAdmin';
+import { useAdmin } from '@/context/AdminContext';
 
 export default function AdminNavbar() {
   const [isDropdownVisible, setDropdownVisible] = useState(false);

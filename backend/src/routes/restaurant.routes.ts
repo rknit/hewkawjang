@@ -6,11 +6,25 @@ import {
   createRestaurantSchema,
   updateRestaurantInfoSchema,
 } from '../validators/restaurant.validator';
+import z from 'zod';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const users = await RestaurantService.getRestaurants(req.body);
+  const querySchema = z.object({
+    ids: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (!val || val.trim() === '') return undefined;
+        return val.split(',').map((id) => Number(id.trim()));
+      }),
+  });
+  const { ids } = querySchema.parse(req.query);
+
+  const users = await RestaurantService.getRestaurants({
+    ids,
+  });
   res.json(users);
 });
 
