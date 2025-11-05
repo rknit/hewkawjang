@@ -6,8 +6,6 @@ import React, {
   ReactNode,
   useCallback,
 } from 'react';
-import { User } from '@/types/user.type';
-import { fetchCurrentUser } from '@/apis/user.api';
 import * as authApi from '@/apis/auth.api';
 import { refreshAuth } from '@/services/api.service';
 import TokenStorage from '@/services/token-storage.service';
@@ -17,7 +15,6 @@ import { jwtDecode } from 'jwt-decode';
 import { router } from 'expo-router';
 
 interface AuthContextType {
-  user: User | null;
   authRole: AuthRole;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -34,7 +31,6 @@ interface AuthProviderProps {
 type AuthRole = 'guest' | 'user' | 'admin';
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authRole, setAuthRole] = useState<AuthRole>('guest');
 
@@ -48,22 +44,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const role = decoded.authRole || 'guest';
         setAuthRole(role);
         supabase.realtime.setAuth(token);
-
-        // Only fetch user data if authRole is 'user', not 'admin'
-        if (role === 'user') {
-          const fetchedUser = await fetchCurrentUser();
-          setUser(fetchedUser);
-        } else {
-          // Admin or guest should not have user data
-          setUser(null);
-        }
       } catch (error) {
-        console.error('Failed to fetch user or decode JWT:', error);
-        setUser(null);
+        console.error('Failed to decode JWT:', error);
         setAuthRole('guest');
       }
     } else {
-      setUser(null);
       supabase.realtime.setAuth(null);
       setAuthRole('guest');
     }
@@ -147,7 +132,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, authRole, isLoading, login, logout, refreshAuth }}
+      value={{ authRole, isLoading, login, logout, refreshAuth }}
     >
       {children}
     </AuthContext.Provider>

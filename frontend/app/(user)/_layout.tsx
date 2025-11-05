@@ -2,12 +2,12 @@ import { Stack } from 'expo-router';
 import NavBarGuest from '@/components/navbar-guest';
 import NavBarUser from '@/components/navbar-user';
 import { ToastProvider } from '@/context/ToastContext';
-import { useAuth } from '@/context/AuthContext';
 import DefaultNotification from '@/components/notifications/defaultNotification';
 import { NotificationProvider } from '@/context/NotificationContext';
+import { useUser } from '@/hooks/useUser';
 
 export default function UserLayout() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useUser();
 
   return (
     <ToastProvider

@@ -12,17 +12,19 @@ export default function ProtectedRoute({
   children,
   adminOnly,
 }: ProtectedRouteProps) {
-  const { user, authRole, isLoading } = useAuth();
+  const { authRole, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isLoading && authRole === 'guest') {
+    if (isLoading) return;
+
+    if (authRole === 'guest') {
       router.replace('/');
     }
 
-    if (!isLoading && adminOnly && authRole !== 'admin') {
+    if (adminOnly && authRole !== 'admin') {
       router.replace('/(user)');
     }
-  }, [user, authRole, isLoading, adminOnly]);
+  }, [authRole, isLoading, adminOnly]);
 
   if (isLoading) {
     return (
@@ -30,10 +32,6 @@ export default function ProtectedRoute({
         <ActivityIndicator size="large" color="#C54D0E" />
       </View>
     );
-  }
-
-  if (authRole !== 'admin' && !user) {
-    return null;
   }
 
   return <>{children}</>;

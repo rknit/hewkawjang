@@ -6,10 +6,10 @@ import { useState, useMemo } from 'react';
 import UserDropdown from './user-dropdown';
 import NotificationPane from './notificationPane';
 import { useNotifications } from '@/context/NotificationContext';
-import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/hooks/useUser';
 
 export default function NavBarUser() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const { notifications } = useNotifications();
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [isNotiPaneVisible, setNotiPaneVisible] = useState(false);

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import ReservationForm from '@/components/ReservationForm';
-import { useAuth } from '@/context/AuthContext';
 import LoginModal from './login-modal';
 import SignUpModal from './signup-modal';
+import { useUser } from '@/hooks/useUser';
 
 type Props = {
   restaurantId?: number;
 };
 
 export default function ReserveButton({ restaurantId }: Props) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [signUpModalVisible, setSignUpModalVisible] = useState(false);

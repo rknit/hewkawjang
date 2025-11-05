@@ -6,6 +6,7 @@ import {
   updateUserProfile,
   deleteCurrentUser,
 } from '@/apis/user.api';
+import { useUser } from './useUser';
 
 export interface UserFormData {
   displayName: string;
@@ -21,7 +22,8 @@ export interface DeleteModalState {
 }
 
 export const useProfile = () => {
-  const { user, isLoading: authLoading, logout, refreshAuth } = useAuth();
+  const { isLoading: authLoading, logout, refreshAuth } = useAuth();
+  const { user } = useUser();
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
     showDeleteModal: false,
     isDeleteChecked: false,

@@ -5,7 +5,7 @@ import {
 } from '@/apis/restaurant.api';
 import MyRestaurantCard from '@/components/my_restaurant/myRestaurantCard';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useAuth } from '@/context/AuthContext';
+import { useUser } from '@/hooks/useUser';
 import { Restaurant } from '@/types/restaurant.type';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ export type MyRestaurantEntry = {
 };
 
 export default function MyRestaurant() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [entries, setEntries] = useState<MyRestaurantEntry[]>([]);
   const [openRestaurants, setOpenRestaurants] = useState(0);
 
