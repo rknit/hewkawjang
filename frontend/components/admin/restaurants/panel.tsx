@@ -6,6 +6,7 @@ import { fetchRestaurants } from '@/apis/restaurant.api';
 
 interface RestaurantsAdminPanelProps {
   title: string;
+  onPressCard: (restaurantId: number) => void;
 
   mainActionLabel: string;
   onPressMainAction: () => void;
@@ -18,6 +19,7 @@ interface RestaurantsAdminPanelProps {
 
 export default function RestaurantsAdminPanel({
   title,
+  onPressCard,
   mainActionLabel,
   onPressMainAction,
   subActionLabel,
@@ -43,6 +45,7 @@ export default function RestaurantsAdminPanel({
           <RestaurantsReportCard
             key={restaurant.id}
             restaurant={restaurant}
+            onPressCard={() => onPressCard(restaurant.id)}
             mainActionLabel={mainActionLabel}
             onPressMainAction={onPressMainAction}
             subActionLabel={subActionLabel}

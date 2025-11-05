@@ -8,26 +8,19 @@ import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
 import { Comment } from '@/types/review.type';
+import { makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 
-const pictures: string[] = [
-  'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
-  'https://images.unsplash.com/photo-1581291519195-ef11498d1cf2?auto=format&fit=crop&w=400&q=80', // portrait
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80', // forest
-  'https://images.unsplash.com/photo-1593642532871-8b12e02d091c?auto=format&fit=crop&w=400&q=80', // desk
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80', // mountain
-  'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
-  'https://images.unsplash.com/photo-1581291519195-ef11498d1cf2?auto=format&fit=crop&w=400&q=80', // portrait
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80', // forest
-  'https://images.unsplash.com/photo-1593642532871-8b12e02d091c?auto=format&fit=crop&w=400&q=80', // desk
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80', // mountain
-];
 export default function RestaurantScreen() {
   const params = useLocalSearchParams<{ restaurantId?: string }>();
-  // FIXME: handle invalid id
-  const restaurantId = Number(params.restaurantId || 1);
+
+  const restaurantId = Number(params.restaurantId);
+  if (!restaurantId || isNaN(restaurantId)) {
+    // FIXME: Handle invalid restaurant ID more gracefully
+    throw new Error('Invalid restaurant ID');
+  }
 
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [reviews, setReviews] = useState<Comment[]>([]);
@@ -58,21 +51,6 @@ export default function RestaurantScreen() {
     });
   }, [restaurantId]);
 
-  const makeAddress = (restaurant: Restaurant): string => {
-    const parts = [
-      restaurant.houseNo,
-      restaurant.village,
-      restaurant.building,
-      restaurant.road,
-      restaurant.soi,
-      restaurant.subDistrict,
-      restaurant.district,
-      restaurant.province,
-      restaurant.postalCode,
-    ].filter((part) => part && part.trim() !== '');
-    return parts.join(', ');
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
       <View className="flex-1 flex-row w-full justify-center">
@@ -83,7 +61,7 @@ export default function RestaurantScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View className="space-y-6">
-              <ImageGallery images={pictures} />
+              <ImageGallery images={restaurant?.images || []} />
 
               <ReviewSection
                 restaurantId={restaurantId}
@@ -94,7 +72,7 @@ export default function RestaurantScreen() {
               />
 
               <RestaurantAbout
-                address={restaurant ? makeAddress(restaurant) : ''}
+                address={restaurant ? makeRestaurantAddress(restaurant) : ''}
                 description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
                 cuisine="Buffet"
                 paymentOptions={['MasterCard', 'HewKawJangWallet']}

@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
 
 interface RestaurantsReportCardProps {
   restaurant: Restaurant;
+  onPressCard: () => void;
 
   mainActionLabel: string;
   onPressMainAction: () => void;
@@ -15,6 +16,7 @@ interface RestaurantsReportCardProps {
 
 export default function RestaurantsReportCard({
   restaurant,
+  onPressCard,
   mainActionLabel,
   onPressMainAction,
   subActionLabel,
@@ -23,13 +25,7 @@ export default function RestaurantsReportCard({
 }: RestaurantsReportCardProps) {
   const fallbackImgUrl =
     'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
-
   const tags = [restaurant.cuisineType, restaurant.district];
-
-  const handlePressCard = () => {
-    // Placeholder for card press action
-    alert(`Pressed on ${restaurant.name}`);
-  };
 
   return (
     <Pressable
@@ -41,7 +37,7 @@ export default function RestaurantsReportCard({
         shadowRadius: 4.65,
         elevation: 8,
       }}
-      onPress={handlePressCard}
+      onPress={onPressCard}
     >
       {/* Left info */}
       <View className="flex-row gap-4 h-full">
