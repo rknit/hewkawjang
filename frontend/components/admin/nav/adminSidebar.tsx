@@ -6,6 +6,8 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AdminSidebarItem from './adminSidebarItem';
+import { Report } from '@/types/report.type';
+import { useAdmin } from '@/context/AdminContext';
 
 interface AdminSidebarProps {
   children: React.ReactNode;
@@ -15,6 +17,7 @@ interface SidebarItem {
   name: string;
   icon: React.ReactNode;
   route: Href;
+  getPendingCount?: (reports: Report[]) => number;
 }
 
 const sidebarLayout: SidebarItem[] = [
@@ -33,6 +36,8 @@ const sidebarLayout: SidebarItem[] = [
       />
     ),
     route: '/chats',
+    getPendingCount: (reports) =>
+      reports.filter((r) => r.reportType === 'chat').length,
   },
   {
     name: 'Reviews',
@@ -44,20 +49,30 @@ const sidebarLayout: SidebarItem[] = [
       />
     ),
     route: '/reviews',
+    getPendingCount: (reports) =>
+      reports.filter((r) => r.reportType === 'review').length,
   },
   {
     name: 'Restaurants',
     icon: <MaterialIcons name="storefront" size={24} color="black" />,
     route: '/restaurants',
+    // might have to redo later when there is restaurant verifications
+    // we could also just do `pendingCount={item.getPendingCount?.(reports) + restaurantVerifications.length}`
+    // quick and dirty for now
+    getPendingCount: (reports) =>
+      reports.filter((r) => r.reportType === 'restaurant').length,
   },
   {
     name: 'Support',
     icon: <MaterialIcons name="support-agent" size={24} color="black" />,
     route: '/support',
+    getPendingCount: (reports) =>
+      reports.filter((r) => r.reportType === 'support').length,
   },
 ];
 
 export default function AdminSidebar({ children }: AdminSidebarProps) {
+  const { reports } = useAdmin();
   const pathname = usePathname();
 
   const handleItemPress = (route: Href) => {
@@ -68,7 +83,7 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
   return (
     <View className="flex flex-row flex-1">
       {/* Sidebar */}
-      <View className="bg-[#EAEAEB] border-r border-[#5F5F5F] w-40 gap-y-2 py-4">
+      <View className="bg-[#EAEAEB] border-r border-[#5F5F5F] w-48 gap-y-2 py-4">
         {sidebarLayout.map((item, index) => (
           <AdminSidebarItem
             key={index}
@@ -76,6 +91,7 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
             icon={item.icon}
             selected={pathname === item.route}
             onPress={() => handleItemPress(item.route)}
+            pendingCount={item.getPendingCount?.(reports)}
           />
         ))}
       </View>
