@@ -66,7 +66,7 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
   };
 
   return (
-    <View className="flex flex-row h-full w-full">
+    <View className="flex flex-row flex-1">
       {/* Sidebar */}
       <View className="bg-[#EAEAEB] border-r border-[#5F5F5F] w-40 gap-y-2 py-4">
         {sidebarLayout.map((item, index) => (

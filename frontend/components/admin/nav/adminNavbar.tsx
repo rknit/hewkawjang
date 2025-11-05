@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, Image, Text } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import UnderlinedPressableText from '../underlined-pressable-text';
+import UnderlinedPressableText from '@/components/underlined-pressable-text';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import AdminDropdown from './adminDropdown';

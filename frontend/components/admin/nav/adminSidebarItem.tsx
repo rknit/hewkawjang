@@ -15,7 +15,7 @@ export default function AdminSidebarItem({
 }: AdminSidebarItemProps) {
   return (
     <TouchableOpacity
-      className="w-full h-12 items-center flex-row gap-x-3"
+      className="w-full h-12 items-center flex-row gap-x-4"
       onPress={onPress}
     >
       {/* selected sidebar item thingy */}

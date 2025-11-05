@@ -1,5 +1,5 @@
-import AdminSidebar from '@/components/admin_nav/adminSidebar';
-import AdminNavbar from '@/components/admin_nav/adminNavbar';
+import AdminSidebar from '@/components/admin/nav/adminSidebar';
+import AdminNavbar from '@/components/admin/nav/adminNavbar';
 import { Stack } from 'expo-router';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
