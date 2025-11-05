@@ -72,7 +72,7 @@ const sidebarLayout: SidebarItem[] = [
 ];
 
 export default function AdminSidebar({ children }: AdminSidebarProps) {
-  const { reports } = useAdmin();
+  const { pendingReports } = useAdmin();
   const pathname = usePathname();
 
   const handleItemPress = (route: Href) => {
@@ -91,7 +91,7 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
             icon={item.icon}
             selected={pathname === item.route}
             onPress={() => handleItemPress(item.route)}
-            pendingCount={item.getPendingCount?.(reports)}
+            pendingCount={item.getPendingCount?.(pendingReports)}
           />
         ))}
       </View>

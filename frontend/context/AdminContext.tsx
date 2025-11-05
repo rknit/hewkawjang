@@ -15,7 +15,7 @@ import * as reportApi from '@/apis/report.api';
 
 interface AdminContextType {
   admin: Admin | null;
-  reports: Report[];
+  pendingReports: Report[];
   isLoading: boolean;
   updateReportStatus: (id: number, isSolved: boolean) => Promise<void>;
   refetch: () => Promise<void>;
@@ -30,14 +30,14 @@ interface AdminProviderProps {
 export function AdminProvider({ children }: AdminProviderProps) {
   const { authRole } = useAuth();
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [reports, setReports] = useState<Report[]>([]);
+  const [pendingReports, setPendingReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Fetch initial admin data and reports
   const fetchAdminData = useCallback(async () => {
     if (authRole !== 'admin') {
       setAdmin(null);
-      setReports([]);
+      setPendingReports([]);
       setIsLoading(false);
       return;
     }
@@ -49,11 +49,11 @@ export function AdminProvider({ children }: AdminProviderProps) {
         adminApi.fetchPendingReportsForCurrentAdmin(),
       ]);
       setAdmin(fetchedAdmin);
-      setReports(fetchedReports);
+      setPendingReports(fetchedReports);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       setAdmin(null);
-      setReports([]);
+      setPendingReports([]);
     } finally {
       setIsLoading(false);
     }
@@ -71,10 +71,12 @@ export function AdminProvider({ children }: AdminProviderProps) {
           // Update local state optimistically
           if (isSolved) {
             // Remove solved reports immediately
-            setReports((prev) => prev.filter((report) => report.id !== id));
+            setPendingReports((prev) =>
+              prev.filter((report) => report.id !== id),
+            );
           } else {
             // Update unsolved reports
-            setReports((prev) =>
+            setPendingReports((prev) =>
               prev.map((report) =>
                 report.id === id ? { ...report, isSolved } : report,
               ),
@@ -92,7 +94,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
   useEffect(() => {
     if (authRole !== 'admin') {
       setAdmin(null);
-      setReports([]);
+      setPendingReports([]);
       setIsLoading(false);
       return;
     }
@@ -138,7 +140,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
 
           // just to be safe, only add if not solved
           if (!newReport.isSolved) {
-            setReports((prev) => [newReport, ...prev]);
+            setPendingReports((prev) => [newReport, ...prev]);
           }
         },
       )
@@ -171,12 +173,12 @@ export function AdminProvider({ children }: AdminProviderProps) {
 
           if (updatedReport.isSolved) {
             // If the report is solved, remove it from the list
-            setReports((prev) =>
+            setPendingReports((prev) =>
               prev.filter((report) => report.id !== updatedReport.id),
             );
           } else {
             // If the report is marked as unsolved, ensure it's in the list
-            setReports((prev) => {
+            setPendingReports((prev) => {
               const exists = prev.find((r) => r.id === updatedReport.id);
               if (exists) {
                 return prev.map((report) =>
@@ -201,7 +203,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
     <AdminContext.Provider
       value={{
         admin,
-        reports,
+        pendingReports,
         isLoading,
         updateReportStatus: updateReportStatusHandler,
         refetch: fetchAdminData,

@@ -15,7 +15,7 @@ interface AdminRestaurantReportPanelProps {
 export default function AdminRestaurantReportPanel({
   onPressCard,
 }: AdminRestaurantReportPanelProps) {
-  const { reports, updateReportStatus } = useAdmin();
+  const { pendingReports, updateReportStatus } = useAdmin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [restaurants, setRestaurants] = useState<Map<number, Restaurant>>(
@@ -26,7 +26,9 @@ export default function AdminRestaurantReportPanel({
     const fetchData = async () => {
       setIsLoading(true);
 
-      const filtered = reports.filter((r) => r.reportType === 'restaurant');
+      const filtered = pendingReports.filter(
+        (r) => r.reportType === 'restaurant',
+      );
       setFilteredReports(filtered);
 
       // Only fetch if there are reports
@@ -43,7 +45,7 @@ export default function AdminRestaurantReportPanel({
     };
 
     fetchData();
-  }, [reports]);
+  }, [pendingReports]);
 
   const handleBan = async (index: number) => {
     const report = filteredReports[index];
