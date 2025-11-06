@@ -7,3 +7,5 @@ export const AdminSchema = z.object({
   email: z.string(),
 });
 export type Admin = z.infer<typeof AdminSchema>;
+
+
