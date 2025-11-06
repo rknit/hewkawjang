@@ -4,9 +4,10 @@
 
 - node.js
 - npm
-- [expo orbit](https://expo.dev/orbit) (for mobile development)
 
 ## How to setup Frontend
+
+Run install command if you haven't already
 
 ```bash
 # make sure you're in the 'frontend' directory

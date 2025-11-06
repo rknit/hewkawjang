@@ -4,9 +4,11 @@
   "scripts": {
     "start": "npx nodemon src/index.ts",
     "build": "rimraf dist && tsc",
-    "dev": "npm run sync:db && cross-env NODE_ENV=development npm run start",
+    "dev": "npm run db:push && cross-env NODE_ENV=development npm run start",
     "prod": "npm run build && cross-env NODE_ENV=production node dist/index.js",
-    "sync:db": "drizzle-kit push",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate",
     "test": "cross-env NODE_ENV=test jest",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:cov": "cross-env NODE_ENV=test jest --coverage"

@@ -7,6 +7,8 @@
 
 ## How to Setup
 
+Run install command if you haven't already
+
 ```bash
 # make sure you're in the 'backend' directory
 cd backend
@@ -15,6 +17,14 @@ npm i
 
 Copy `.env.dev.template` and paste it as `.env` for dev environment
 then fill all empty fields in `.env`
+
+Run the following commands if you use your own supabase instance
+
+```bash
+# make sure you're in the 'backend' directory
+npm run db:push
+npm run db:migrate
+```
 
 To start the backend, run
 
@@ -51,19 +61,18 @@ backend/
 npm run test
 ```
 
-### Database Sync
+### Supabase Realtime
 
-When updating `schema.ts`, run this command to sync Supabase DB
+You may need to run migration to enable realtime in your private supabase instance.
+Run this command if features in app don't update in real time.
 
 ```bash
-npm run sync:db
+npm run db:migrate
 ```
 
+### Drizzle/Supabase hangs
+
 If the command hangs, try changing `SUPABASE_DB_URL` port in `.env` file to `5432`, and re-run the command.
-
-### Vercel
-
-Don't do anything related to Vercel in backend for now.
 
 ### Auth APIs
 
