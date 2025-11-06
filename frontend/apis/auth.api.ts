@@ -1,5 +1,5 @@
 import ApiService from '@/services/api.service';
-import { Tokens, TokensSchema } from '@/types/user.type';
+import { Tokens, TokensSchema } from '@/types/auth.type';
 import { normalizeError } from '@/utils/api-error';
 import axios from 'axios';
 import { Platform } from 'react-native';

@@ -35,9 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authRole, setAuthRole] = useState<AuthRole>('guest');
 
   // Unified function to update auth state
-  const updateAuthState = useCallback(async () => {
-    const token = await TokenStorage.getAccessToken();
-
+  const updateAuthState = useCallback(async (token: string | null) => {
     if (token) {
       try {
         const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
@@ -66,7 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       try {
         await refreshAuth();
-        await updateAuthState(); // Re-sync Supabase auth
+        await updateAuthState(token); // Re-sync Supabase auth
       } catch (error) {
         console.error('Failed to refresh token:', error);
       }
@@ -74,16 +72,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [updateAuthState]);
 
   useEffect(() => {
-    // On component mount, try to refresh auth and load user
+    // On component mount, try to refresh auth
     const initializeAuth = async () => {
       setIsLoading(true);
 
-      const ok = await refreshAuth();
-      if (ok) {
-        await updateAuthState();
-      } else {
-        await updateAuthState();
-      }
+      const tokens = await refreshAuth();
+      await updateAuthState(tokens?.accessToken ?? null);
 
       setIsLoading(false);
     };
@@ -117,7 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         TokenStorage.setRefreshToken(refreshToken);
       }
 
-      await updateAuthState();
+      await updateAuthState(accessToken);
 
       // Read role directly from token instead of state to avoid race condition
       if (accessToken) {
@@ -138,9 +132,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setAuthRole('guest');
       supabase.realtime.setAuth(null);
 
-      // Wait a tick for state updates to propagate to child components
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
       // Then make the logout API call
       await authApi.logout();
 
@@ -157,7 +148,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ authRole, isLoading, login, logout, refreshAuth }}
+      value={{
+        authRole,
+        isLoading,
+        login,
+        logout,
+        refreshAuth: () => refreshAuth().then((tokens) => tokens !== null),
+      }}
     >
       {children}
     </AuthContext.Provider>
