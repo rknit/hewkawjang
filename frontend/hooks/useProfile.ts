@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { router } from 'expo-router';
-import { deleteCurrentUser } from '@/apis/user.api';
 import { useAuth } from '@/context/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadProfileImage, updateUserProfile } from '@/apis/user.api';
+import {
+  uploadProfileImage,
+  updateUserProfile,
+  deleteCurrentUser,
+} from '@/apis/user.api';
+import { useUser } from './useUser';
 
 export interface UserFormData {
   displayName: string;
@@ -19,7 +22,8 @@ export interface DeleteModalState {
 }
 
 export const useProfile = () => {
-  const { user, isLoading: authLoading, logout } = useAuth();
+  const { isLoading: authLoading, logout, refreshAuth } = useAuth();
+  const { user } = useUser();
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
     showDeleteModal: false,
     isDeleteChecked: false,
@@ -72,10 +76,10 @@ export const useProfile = () => {
 
     try {
       await updateUserProfile(userForm);
-      alert('Profile updated successfully!');
+      await refreshAuth();
+      alert('Profile updated successfully.');
     } catch (error) {
       console.error(error);
-      alert('Failed to update profile.');
     }
   };
 
@@ -106,11 +110,9 @@ export const useProfile = () => {
 
       try {
         const imageUrl = await uploadProfileImage(file);
-        alert('Profile image updated!');
         console.log('Uploaded image URL:', imageUrl);
       } catch (error) {
         console.error(error);
-        alert('Failed to upload image');
       }
     }
   };
@@ -131,7 +133,6 @@ export const useProfile = () => {
       const success = await deleteCurrentUser();
       if (success) {
         await logout();
-        router.replace('/');
       }
     } catch (error) {
       console.error('Failed to delete account:', error);

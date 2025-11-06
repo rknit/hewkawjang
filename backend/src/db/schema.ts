@@ -185,6 +185,7 @@ export const reviewTable = pgTable('review', {
 export const notificationTypesEnum = pgEnum('notification_type', [
   'reservation_status',
   'chat',
+  'system',
 ]);
 
 export const notificationTable = pgTable('notification', {
@@ -324,7 +325,7 @@ export const reportsTable = pgTable('report', {
   userId: integer('user_id')
     .notNull()
     .references(() => usersTable.id),
-  adminId: integer('user_id').references(() => adminsTable.id),
+  adminId: integer('admin_id').references(() => adminsTable.id),
   reportType: reportTypeEnum('report_type').default('support'),
   targetRestaurantId: integer('restaurant_id').references(
     () => restaurantTable.id,

@@ -1,33 +1,24 @@
-import CategoryRow from '@/components/categoryRow';
-import HomePageTemplate from '@/components/homepageTemplate';
-import RecommendedRestaurantGrid from '@/components/recom-restaurant-grid';
-import DashboardLayout from './(tabs)/dashboardLayout';
-import { ScrollView, Text, View, Image } from 'react-native';
-import SearchPanel from '@/components/search-panel';
+import { Redirect } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
+import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
-  return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="flex-1 gap-4 w-full">
-        <View className="pt-14 w-full justify-center items-center gap-4">
-          <Text className="right-40 text-4xl text-[#E05910]">HEW KAW JANG</Text>
-          <Text className="left-10 text-xl">
-            From Hunger to Happiness — One Reservation Away.
-          </Text>
-        </View>
-        <View className="w-full gap-8 justify-center items-center -top-32">
-          <View className="w-full justify-center items-center">
-            <Image
-              source={require('@/assets/images/hewman.png')}
-              className="-bottom-8 -left-1/4 w-full h-full max-w-md aspect-square"
-              resizeMode="contain"
-            />
-            <SearchPanel />
-          </View>
-          <CategoryRow />
-          <RecommendedRestaurantGrid />
-        </View>
-      </View>
-    </ScrollView>
-  );
+  const { authRole, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <ActivityIndicator
+        size="large"
+        className="flex-1 justify-center items-center"
+        color="#C54D0E"
+      />
+    );
+  }
+
+  if (authRole === 'admin') {
+    return <Redirect href="/(admin)" />;
+  }
+
+  // Redirect everyone (guests and users) to user section
+  return <Redirect href="/(user)" />;
 }

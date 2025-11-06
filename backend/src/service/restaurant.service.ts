@@ -27,8 +27,6 @@ import {
 import createHttpError from 'http-errors';
 import Fuse from 'fuse.js';
 
-
-
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
 export type RestaurantStatus = NewRestaurant['status'];

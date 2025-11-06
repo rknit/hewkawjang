@@ -20,7 +20,7 @@ export default class TokenStorage {
       case 'web':
         return null;
       case 'mobile':
-        return await SecureStore.getItemAsync('accessToken');
+        return await SecureStore.getItemAsync('refreshToken');
       default:
         throw new Error('Unknown client type');
     }
