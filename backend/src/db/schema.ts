@@ -106,7 +106,7 @@ export const restaurantTable = pgTable('restaurant', {
   isVerified: boolean('is_verified').notNull().default(false),
   isDeleted: boolean('is_deleted').notNull().default(false),
   images: text('images').array(), // array of image URLs
-  reservationFee: integer('reservation_fee').default(0),
+  reservationFee: integer('reservation_fee').notNull().default(0),
 });
 
 export const restaurantHoursTable = pgTable(

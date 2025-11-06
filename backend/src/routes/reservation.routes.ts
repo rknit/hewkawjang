@@ -67,6 +67,7 @@ router.post('/create', authHandler, async (req, res) => {
     });
   }
 
+  try {
   const reservation = await ReservationService.createReservation({
     userId,
     restaurantId,
@@ -74,8 +75,12 @@ router.post('/create', authHandler, async (req, res) => {
     numberOfAdult,
     numberOfChildren,
   });
-
-  return res.status(201).json(reservation);
+    return res.status(201).json(reservation);
+  } catch (error:any) {
+    console.error('Reservation creation failed:', error);
+    const message = error.message || 'Failed to create reservation';
+    return res.status(500).json({ error: message });
+  }
 });
 
 router.get('/:id/inspect', authHandler, async (req, res) => {

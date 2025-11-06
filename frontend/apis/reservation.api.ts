@@ -1,6 +1,7 @@
 import ApiService from '@/services/api.service';
 import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import { normalizeError } from '@/utils/api-error';
+import { th } from 'zod/v4/locales';
 
 export async function fetchUnconfirmedReservations(
   restaurantId: number,
@@ -28,8 +29,9 @@ export async function createReservation(payload: {
     const res = await ApiService.post('/reservations/create', payload);
     return ReservationSchema.parse(res.data);
   } catch (error) {
+    console.log('createReservation error:', error);
     normalizeError(error);
-    return null;
+    throw error;
   }
 }
 
