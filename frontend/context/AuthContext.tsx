@@ -61,7 +61,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check if token expires in less than 2 minutes (120 seconds)
     const nearlyExpired = isJwtTokenExpiringSoon(token, 120);
     if (nearlyExpired) {
-      console.log('Token nearly expired, refreshing...');
+      if (__DEV__) {
+        console.log('Token nearly expired, refreshing...');
+      }
       try {
         await refreshAuth();
         await updateAuthState(); // Re-sync Supabase auth
@@ -104,13 +106,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await authApi.login(email, password);
+      const tokens = await authApi.login(email, password);
+      if (!tokens) {
+        throw new Error('Login failed, no tokens received');
+      }
+
+      const { accessToken, refreshToken } = tokens;
+      TokenStorage.setAccessToken(accessToken);
+      if (refreshToken) {
+        TokenStorage.setRefreshToken(refreshToken);
+      }
+
       await updateAuthState();
 
       // Read role directly from token instead of state to avoid race condition
-      const token = await TokenStorage.getAccessToken();
-      if (token) {
-        const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
+      if (accessToken) {
+        const decoded = jwtDecode<{ authRole?: AuthRole }>(accessToken);
         if (decoded.authRole === 'admin') {
           router.replace('/(admin)');
         }
@@ -123,8 +134,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     setIsLoading(true);
     try {
+      // First, clear auth state to trigger cleanup in dependent contexts (e.g., NotificationContext)
+      setAuthRole('guest');
+      supabase.realtime.setAuth(null);
+
+      // Wait a tick for state updates to propagate to child components
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Then make the logout API call
       await authApi.logout();
-      await updateAuthState();
+
+      // Remove tokens from storage
+      await TokenStorage.removeAccessToken();
+      await TokenStorage.removeRefreshToken();
+
+      // Redirect to home page
+      router.replace('/');
     } finally {
       setIsLoading(false);
     }

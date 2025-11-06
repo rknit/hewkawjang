@@ -56,6 +56,16 @@ export async function refreshAuth(): Promise<boolean> {
     return false;
   }
 
+  // For web, check if refresh token cookie exists before making API call
+  if (clientType === 'web') {
+    const hasRefreshTokenCookie = document.cookie
+      .split(';')
+      .some((cookie) => cookie.trim().startsWith('refreshToken='));
+    if (!hasRefreshTokenCookie) {
+      return false;
+    }
+  }
+
   try {
     const resp = await refreshApi.post('/auth/refresh', undefined, {
       headers: {
