@@ -14,6 +14,7 @@ import adminRoute from './routes/admin.routes';
 import reportRoute from './routes/report.routes';
 import imgRoute from './routes/image.routes';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { startScheduledJobs } from './jobs';
 
 const app = express();
@@ -28,6 +29,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use(helmet());
 
 app.use(cookieParser());
 app.use(express.json());
