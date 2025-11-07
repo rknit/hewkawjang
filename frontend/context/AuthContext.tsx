@@ -63,8 +63,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log('Token nearly expired, refreshing...');
       }
       try {
-        await refreshAuth();
-        await updateAuthState(token); // Re-sync Supabase auth
+        const tokens = await refreshAuth();
+        await updateAuthState(tokens?.accessToken ?? null); // Use new token from refresh
       } catch (error) {
         console.error('Failed to refresh token:', error);
       }
