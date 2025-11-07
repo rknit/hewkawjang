@@ -1,11 +1,12 @@
 import * as z from 'zod';
 import { CUISINE_TYPES } from '@/constants/cuisine-types';
+import { id } from 'zod/v4/locales';
 
 export const UpdateRestaurantInfoSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().optional(),
   phoneNo: z.string().optional(),
-  location: z.string().optional(), 
+  location: z.string().optional(),
   province: z.string().optional(),
   district: z.string().optional(),
   subDistrict: z.string().optional(),
@@ -35,6 +36,15 @@ export const RestaurantSchema = z.object({
   isDeleted: z.boolean(),
   images: z.array(z.string()).nullish(),
 });
+
+export const DaysOffSchema = z.object({
+  id: z.number(),
+  restaurantId: z.number(),
+  date: z.date(),
+  createAt: z.string(),
+});
+
+export type DaysOff = z.infer<typeof DaysOffSchema>;
 
 export type RestaurantWithRating = z.infer<typeof RestaurantSchema> & {
   avgRating: number;

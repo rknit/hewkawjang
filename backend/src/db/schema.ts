@@ -11,8 +11,10 @@ import {
   uniqueIndex,
   doublePrecision,
   check,
+  unique,
+  index,
+  date,
 } from 'drizzle-orm/pg-core';
-import { number } from 'zod';
 
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -126,6 +128,25 @@ export const restaurantHoursTable = pgTable(
       t.restaurantId,
       t.dayOfWeek,
     ),
+  }),
+);
+
+export const restaurantDaysOff = pgTable(
+  'restaurant_days_off',
+  {
+    id: serial('id').primaryKey(),
+    restaurantId: integer('restaurant_id')
+      .notNull()
+      .references(() => restaurantTable.id, { onDelete: 'cascade' }),
+    date: date('date').notNull(), // specific date like '2025-11-15'
+    // optional: holiday, renovation, etc.
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    // Prevent duplicate dates for same restaurant
+    uniqueRestaurantDate: unique().on(table.restaurantId, table.date),
+    // Index for faster queries
+    restaurantDateIdx: index().on(table.restaurantId, table.date),
   }),
 );
 
