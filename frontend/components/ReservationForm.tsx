@@ -142,9 +142,14 @@ export default function ReservationPane({
       await createReservation(payload);
       setShowConfirmation(false);
       setShowSuccessAlert(true);
-    } catch (error) {
+    } catch (error:any) {
       console.error('Failed to create reservation:', error);
-      Alert.alert('Error', 'Failed to create reservation. Please try again.');
+      const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      'Failed to create reservation.';
+      alert(message);
     }
   }
 
@@ -624,6 +629,16 @@ export default function ReservationPane({
                       : 'N/A'}
                   </Text>
                 </View>
+
+                <View className="mb-3">
+                  <Text className="text-xl font-semibold mb-1 text-gray-600">
+                    Reservation Fee
+                  </Text>
+                  <Text className="text-xl text-gray-500">
+                    {restaurant ? `${restaurant.reservationFee.toFixed(2)} bath` : 'N/A'}
+                  </Text>
+                </View>
+
               </View>
             )}
           </ScrollView>
