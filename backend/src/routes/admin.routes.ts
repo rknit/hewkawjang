@@ -1,0 +1,57 @@
+import express from 'express';
+import createHttpError from 'http-errors';
+import AdminService from '../service/admin.service';
+import { adminRoleHandler, authHandler } from '../middleware/auth.middleware';
+import ReportService from '../service/report.service';
+
+const router = express.Router();
+
+router.get('/me', authHandler, adminRoleHandler, async (req, res) => {
+  const admin = await AdminService.getAdminById(req.userAuthPayload?.userId!);
+  res.status(200).json(admin);
+});
+
+router.get(
+  '/me/reports/pending',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const reports = await ReportService.getPendingReportsAssignedToAdmin(
+      req.userAuthPayload?.userId!,
+    );
+    res.status(200).json(reports);
+  },
+);
+
+router.delete(
+  '/restaurants/:restaurantId',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const restaurantId = parseInt(req.params.restaurantId, 10);
+    if (isNaN(restaurantId)) {
+      throw createHttpError.BadRequest('Invalid restaurant ID');
+    }
+
+    await AdminService.banRestaurant(restaurantId);
+    res.status(204).send();
+  },
+);
+
+// Create admin bypass (development only)
+// Allows creating an admin account without existing credentials
+router.post('/admin-bypass', async (req, res) => {
+  if (process.env.NODE_ENV !== 'development') {
+    throw createHttpError.Forbidden('Admin login is disabled in production');
+  }
+
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw createHttpError.BadRequest('Email and password are required');
+  }
+
+  await AdminService.createAdminBypass({ email, password });
+  res.status(201);
+});
+
+export default router;
