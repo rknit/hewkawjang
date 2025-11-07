@@ -10,6 +10,7 @@ export const UpdateRestaurantInfoSchema = z.object({
   district: z.string().optional(),
   subDistrict: z.string().optional(),
   postalCode: z.string().optional(),
+  reservationFee: z.number().min(0).optional(),
 });
 export type UpdateRestaurantInfo = z.infer<typeof UpdateRestaurantInfoSchema>;
 
@@ -34,6 +35,7 @@ export const RestaurantSchema = z.object({
   activation: z.enum(['active', 'inactive']),
   isDeleted: z.boolean(),
   images: z.array(z.string()).nullish(),
+  reservationFee: z.number().min(0),
 });
 
 export type RestaurantWithRating = z.infer<typeof RestaurantSchema> & {
