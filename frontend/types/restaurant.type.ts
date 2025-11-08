@@ -5,7 +5,7 @@ export const UpdateRestaurantInfoSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().optional(),
   phoneNo: z.string().optional(),
-  location: z.string().optional(), 
+  location: z.string().optional(),
   province: z.string().optional(),
   district: z.string().optional(),
   subDistrict: z.string().optional(),
@@ -42,5 +42,12 @@ export type RestaurantWithRating = z.infer<typeof RestaurantSchema> & {
   avgRating: number;
   reviewCount: number;
 };
+
+export const RestaurantWithAvgRatingSchema = RestaurantSchema.extend({
+  avgRating: z.number(),
+});
+export type RestaurantWithAvgRating = z.infer<
+  typeof RestaurantWithAvgRatingSchema
+>;
 
 export type Restaurant = z.infer<typeof RestaurantSchema>;

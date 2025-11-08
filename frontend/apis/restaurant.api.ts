@@ -3,6 +3,8 @@ import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
   Restaurant,
   RestaurantSchema,
+  RestaurantWithAvgRating,
+  RestaurantWithAvgRatingSchema,
   RestaurantWithRating,
   UpdateRestaurantInfo,
 } from '@/types/restaurant.type';
@@ -37,6 +39,31 @@ export async function fetchRestaurants(
     );
   } catch (error) {
     console.error('Failed to fetch restaurants:', error);
+    return [];
+  }
+}
+
+export async function fetchTopRatedRestaurants({
+  limit,
+  offset,
+}: {
+  limit?: number;
+  offset?: number;
+} = {}): Promise<RestaurantWithAvgRating[]> {
+  try {
+    const params: any = {};
+    if (limit !== undefined) params.limit = limit;
+    if (offset !== undefined) params.offset = offset;
+
+    const res = await ApiService.get('/restaurants/top-rated', {
+      params,
+    });
+
+    return res.data.map((restaurant: any) =>
+      RestaurantWithAvgRatingSchema.parse(restaurant),
+    );
+  } catch (error) {
+    normalizeError(error);
     return [];
   }
 }
@@ -279,7 +306,7 @@ export async function fetchReviewsByRestaurantId(
 
     return {
       reviews: comments,
-      avgRating,
+      avgRating: Math.round((avgRating + Number.EPSILON) * 10) / 10,
       breakdown,
     };
   } catch (error) {

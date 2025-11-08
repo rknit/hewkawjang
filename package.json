@@ -7,10 +7,12 @@
 		"install:backend": "cross-env-shell \"cd backend && npm install\"",
 		"frontend": "cross-env-shell \"cd frontend && npm start\"",
 		"backend": "cross-env-shell \"cd backend && npm run dev\"",
+		"dev": "concurrently -n FE,BE -c blue,green \"npm run frontend\" \"npm run backend\"",
 		"test:backend": "cross-env-shell \"cd backend && npm run test\"",
 		"test": "npm run test:backend"
 	},
 	"devDependencies": {
+		"concurrently": "^9.2.1",
 		"cross-env": "^7.0.3",
 		"npm-run-all": "^4.1.5"
 	}

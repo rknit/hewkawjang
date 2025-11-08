@@ -4,21 +4,12 @@ import { reportsTable } from '../db/schema';
 import { Report, ReportUpdate } from '../validators/report.validator';
 
 export default class ReportService {
-  static async getPendingReportsAssignedToAdmin(
-    adminId: number,
-  ): Promise<Report[]> {
-    const reports = db
+  static async getPendingReports(): Promise<Report[]> {
+    return await db
       .select()
       .from(reportsTable)
-      .where(
-        and(
-          eq(reportsTable.adminId, adminId),
-          eq(reportsTable.isSolved, false),
-        ),
-      )
+      .where(eq(reportsTable.isSolved, false))
       .orderBy(asc(reportsTable.createdAt));
-
-    return reports;
   }
 
   static async updateReport(
@@ -32,5 +23,19 @@ export default class ReportService {
       .returning();
 
     return updatedReport;
+  }
+
+  static async reportRestaurant({
+    reporterUserId,
+    targetRestaurantId,
+  }: {
+    reporterUserId: number;
+    targetRestaurantId: number;
+  }): Promise<void> {
+    await db.insert(reportsTable).values({
+      userId: reporterUserId,
+      targetRestaurantId: targetRestaurantId,
+      reportType: 'restaurant',
+    });
   }
 }

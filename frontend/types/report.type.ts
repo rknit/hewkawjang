@@ -11,7 +11,7 @@ export const ReportTypeEnum = z.enum([
 export const ReportSchema = z.object({
   id: z.number(),
   userId: z.number(),
-  adminId: z.number(),
+  adminId: z.number().nullable(),
   reportType: ReportTypeEnum,
   targetRestaurantId: z.number().nullable(),
   targetReviewId: z.number().nullable(),

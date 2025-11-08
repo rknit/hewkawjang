@@ -3,7 +3,6 @@ import {
   fetchReviewsByRestaurantId,
 } from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
-import ReserveButton from '@/components/reserve-button';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
@@ -11,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text } from 'react-native';
 import { Comment } from '@/types/review.type';
 import { makeRestaurantAddress } from '@/utils/restaurant';
+import RestaurantReserveSummary from '@/components/restaurantReserveSummary';
 
 interface RestaurantScreenVerticalProps {
   restaurantId: number;
@@ -55,13 +55,13 @@ export default function RestaurantScreenVertical({
 
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
-      <View className="flex-1 flex-col w-full p-5">
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-gray-900 mb-4">
-            {restaurant?.name || 'Loading...'}
-          </Text>
-          <ReserveButton restaurantId={restaurant?.id} disabled />
-        </View>
+      <View className="flex-1 flex-col w-full p-5 gap-y-8">
+        <RestaurantReserveSummary
+          restaurant={restaurant}
+          avgRating={avgRating}
+          isLoggedIn={false}
+          disableReserveButton
+        />
 
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="space-y-6">

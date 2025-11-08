@@ -1,14 +1,13 @@
 import ApiService from '@/services/api.service';
-import TokenStorage from '@/services/token-storage.service';
-import { Tokens, TokensSchema } from '@/types/user.type';
+import { Tokens, TokensSchema } from '@/types/auth.type';
 import { normalizeError } from '@/utils/api-error';
 import axios from 'axios';
 import { Platform } from 'react-native';
-import { router } from 'expo-router';
 
-export async function login(email: string, password: string): Promise<void> {
-  let tokens: Tokens;
-
+export async function login(
+  email: string,
+  password: string,
+): Promise<Tokens | null> {
   try {
     // use axios here since we're not logged in yet
     const BASE_URL =
@@ -26,16 +25,10 @@ export async function login(email: string, password: string): Promise<void> {
         withCredentials: true,
       },
     );
-    tokens = TokensSchema.parse(res.data);
+    return TokensSchema.parse(res.data);
   } catch (error) {
     normalizeError(error);
-    return;
-  }
-
-  const { accessToken, refreshToken } = tokens;
-  TokenStorage.setAccessToken(accessToken);
-  if (refreshToken) {
-    TokenStorage.setRefreshToken(refreshToken);
+    return null;
   }
 }
 
@@ -54,12 +47,6 @@ export async function logout(): Promise<void> {
   } catch (error) {
     normalizeError(error);
   }
-
-  TokenStorage.removeAccessToken();
-  TokenStorage.removeRefreshToken();
-
-  // Redirect to the index page
-  router.replace('/');
 }
 
 export async function register(email: string): Promise<void> {

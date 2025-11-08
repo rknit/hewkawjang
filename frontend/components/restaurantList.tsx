@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import RecommendedRestaurantCard from './recom-restaurant-card';
-import type { Restaurant, RestaurantWithRating }  from '@/types/restaurant.type';
+import type { Restaurant, RestaurantWithRating } from '@/types/restaurant.type';
 
 interface RestaurantListProps {
   restaurants: RestaurantWithRating[];
@@ -14,7 +14,6 @@ export default function RestaurantList({
   loading = false,
   error = null,
 }: RestaurantListProps) {
-
   const makeAddress = (restaurant: Restaurant): string => {
     const parts = [
       restaurant.houseNo,
@@ -53,14 +52,15 @@ export default function RestaurantList({
       tags: tags,
       rating: Math.round((restaurant.avgRating || 0) * 100) / 100, // round to 2 decimal
       prices: getPriceLevel(restaurant.priceRange || 0),
-      image: { uri: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop' },
-      isNew: restaurant.reviewCount == 0,
+      imageUrl:
+        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
+      isNew: restaurant.reviewCount === 0,
     };
   };
 
   const renderRestaurantCard = (restaurant: RestaurantWithRating) => {
     const cardProps = transformRestaurantData(restaurant);
-    
+
     return (
       <View key={restaurant.id} className="mb-4">
         <RecommendedRestaurantCard {...cardProps} />
@@ -89,7 +89,9 @@ export default function RestaurantList({
   if (restaurants.length === 0) {
     return (
       <View className="flex-1 justify-center items-center py-12">
-        <Text className="text-lg font-semibold text-gray-700 mb-2">No restaurants found</Text>
+        <Text className="text-lg font-semibold text-gray-700 mb-2">
+          No restaurants found
+        </Text>
         <Text className="text-gray-500 text-center px-4">
           Try adjusting your search filters or search terms
         </Text>
@@ -97,9 +99,5 @@ export default function RestaurantList({
     );
   }
 
-  return (
-    <View className="px-4">
-      {restaurants.map(renderRestaurantCard)}
-    </View>
-  );
+  return <View className="px-4">{restaurants.map(renderRestaurantCard)}</View>;
 }

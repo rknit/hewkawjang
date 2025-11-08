@@ -3,7 +3,6 @@ import {
   fetchReviewsByRestaurantId,
 } from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
-import ReserveButton from '@/components/reserve-button';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
@@ -11,10 +10,20 @@ import { Comment } from '@/types/review.type';
 import { makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView, View } from 'react-native';
+import CenteredLoadingIndicator from '@/components/centeredLoading';
+import { ReportModal } from '@/components/report-modal';
+import { reportRestaurant } from '@/apis/report.api';
+import { useUser } from '@/hooks/useUser';
+import RestaurantReserveSummary from '@/components/restaurantReserveSummary';
 
 export default function RestaurantScreen() {
+  const fallbackImgUrl =
+    'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
+
   const params = useLocalSearchParams<{ restaurantId?: string }>();
+  const { user } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
 
   const restaurantId = Number(params.restaurantId);
   if (!restaurantId || isNaN(restaurantId)) {
@@ -39,17 +48,40 @@ export default function RestaurantScreen() {
     5: 0,
   });
 
-  useEffect(() => {
-    // Fetch restaurant data
-    fetchRestaurantById(restaurantId).then((data) => setRestaurant(data));
+  const [showReportModal, setShowReportModal] = useState(false);
 
-    // Fetch reviews data
-    fetchReviewsByRestaurantId(restaurantId).then((data) => {
-      setReviews(data.reviews);
-      setAvgRating(data.avgRating);
-      setBreakdown(data.breakdown);
-    });
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+
+      // Fetch restaurant data
+      const p1 = fetchRestaurantById(restaurantId).then((data) =>
+        setRestaurant(data),
+      );
+
+      // Fetch reviews data
+      const p2 = fetchReviewsByRestaurantId(restaurantId).then((data) => {
+        setReviews(data.reviews);
+        setAvgRating(data.avgRating);
+        setBreakdown(data.breakdown);
+      });
+
+      await Promise.all([p1, p2]);
+
+      setIsLoading(false);
+    };
+
+    loadData();
   }, [restaurantId]);
+
+  const handlePressReport = async () => {
+    await reportRestaurant(restaurantId);
+    setShowReportModal(false);
+  };
+
+  if (isLoading) {
+    return <CenteredLoadingIndicator />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
@@ -61,7 +93,7 @@ export default function RestaurantScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View className="space-y-6">
-              <ImageGallery images={restaurant?.images || []} />
+              <ImageGallery images={restaurant?.images ?? [fallbackImgUrl]} />
 
               <ReviewSection
                 restaurantId={restaurantId}
@@ -81,15 +113,22 @@ export default function RestaurantScreen() {
           </ScrollView>
         </View>
 
-        <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px]">
-          <View className="space-y-4">
-            <Text className="text-2xl font-bold text-gray-900">
-              {restaurant?.name || 'Loading...'}
-            </Text>
-            <ReserveButton restaurantId={restaurant?.id} />
-          </View>
+        <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px] gap-y-8">
+          <RestaurantReserveSummary
+            restaurant={restaurant}
+            avgRating={avgRating}
+            isLoggedIn={!!user}
+            onPressReport={() => setShowReportModal(true)}
+          />
         </View>
       </View>
+
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportWhat="restaurant"
+        onPressReport={handlePressReport}
+      />
     </SafeAreaView>
   );
 }
