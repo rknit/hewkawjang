@@ -8,6 +8,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AdminSidebarItem from './adminSidebarItem';
 import { Report } from '@/types/report.type';
 import { useAdmin } from '@/context/AdminContext';
+import { Restaurant } from '@/types/restaurant.type';
 
 interface AdminSidebarProps {
   children: React.ReactNode;
@@ -17,7 +18,7 @@ interface SidebarItem {
   name: string;
   icon: React.ReactNode;
   route: Href;
-  getPendingCount?: (reports: Report[]) => number;
+  getPendingCount?: (reports: Report[], restaurants?: Restaurant[]) => number;
 }
 
 const sidebarLayout: SidebarItem[] = [
@@ -56,11 +57,8 @@ const sidebarLayout: SidebarItem[] = [
     name: 'Restaurants',
     icon: <MaterialIcons name="storefront" size={24} color="black" />,
     route: '/restaurants',
-    // might have to redo later when there is restaurant verifications
-    // we could also just do `pendingCount={item.getPendingCount?.(reports) + restaurantVerifications.length}`
-    // quick and dirty for now
-    getPendingCount: (reports) =>
-      reports.filter((r) => r.reportType === 'restaurant').length,
+    getPendingCount: (reports, restaurants) =>
+      reports.filter((r) => r.reportType === 'restaurant').length + (restaurants?.length ?? 0),
   },
   {
     name: 'Support',
@@ -72,7 +70,7 @@ const sidebarLayout: SidebarItem[] = [
 ];
 
 export default function AdminSidebar({ children }: AdminSidebarProps) {
-  const { pendingReports } = useAdmin();
+  const { pendingReports, pendingRestaurants } = useAdmin();
   const pathname = usePathname();
 
   const handleItemPress = (route: Href) => {
@@ -91,7 +89,7 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
             icon={item.icon}
             selected={pathname === item.route}
             onPress={() => handleItemPress(item.route)}
-            pendingCount={item.getPendingCount?.(pendingReports)}
+            pendingCount={item.name === "Restaurants" ? item.getPendingCount?.(pendingReports, pendingRestaurants) : item.getPendingCount?.(pendingReports)}
           />
         ))}
       </View>

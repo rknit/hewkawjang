@@ -77,8 +77,8 @@ export default function RestaurantScreenVertical({
 
             <RestaurantAbout
               address={restaurant ? makeRestaurantAddress(restaurant) : ''}
-              description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen's Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that's both luxurious and welcoming."
-              cuisine="Buffet"
+              description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen's Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that's both luxurious and welcoming." // Maybe change later
+              cuisine={restaurant?.cuisineType || ""}
               paymentOptions={['MasterCard', 'HewKawJangWallet']}
             />
           </View>

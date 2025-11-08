@@ -115,6 +115,22 @@ export async function updateRestaurantStatus(
   }
 }
 
+export async function updateRestaurantVerification(
+  restaurantId: number,
+  action: boolean,
+): Promise<void> {
+  try {
+    await ApiService.post(
+      `/admins/restaurants/${restaurantId}/verify`,
+      {
+        action,
+      },
+    );
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
 // Owner-facing: fetch reservations for a restaurant (owner must be authenticated)
 export async function fetchReservationsForOwner(
   id: number,
