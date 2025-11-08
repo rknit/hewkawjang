@@ -46,7 +46,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
       setIsLoading(true);
       const [fetchedAdmin, fetchedReports] = await Promise.all([
         adminApi.fetchCurrentAdmin(),
-        adminApi.fetchPendingReportsForCurrentAdmin(),
+        adminApi.fetchPendingReports(),
       ]);
       setAdmin(fetchedAdmin);
       setPendingReports(fetchedReports);
@@ -62,7 +62,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
   // Update report status
   const updateReportStatusHandler = useCallback(
     async (id: number, isSolved: boolean) => {
-      if (!admin?.id) return;
+      if (authRole !== 'admin') return;
 
       try {
         const updatedReport = await reportApi.updateReportStatus(id, isSolved);
@@ -87,7 +87,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
         console.error('Error updating report status:', error);
       }
     },
-    [admin?.id],
+    [authRole],
   );
 
   // Setup Supabase Realtime subscription
@@ -102,22 +102,15 @@ export function AdminProvider({ children }: AdminProviderProps) {
     // Fetch initial data
     fetchAdminData();
 
-    // We need to wait for admin to be loaded before subscribing
-    // Since we need the admin.id for the filter
-    if (!admin?.id) {
-      return;
-    }
-
     // Subscribe to realtime changes for reports assigned to this admin
     const realtimeChannel = supabase
-      .channel(`reports:admin_${admin.id}`)
+      .channel('reports:admin')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'report',
-          filter: `admin_id=eq.${admin.id}`,
         },
         (payload) => {
           if (__DEV__) {
@@ -150,7 +143,6 @@ export function AdminProvider({ children }: AdminProviderProps) {
           event: 'UPDATE',
           schema: 'public',
           table: 'report',
-          filter: `admin_id=eq.${admin.id}`,
         },
         (payload) => {
           if (__DEV__) {
@@ -197,7 +189,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
     return () => {
       supabase.removeChannel(realtimeChannel);
     };
-  }, [authRole, admin?.id, fetchAdminData]);
+  }, [authRole, fetchAdminData]);
 
   return (
     <AdminContext.Provider

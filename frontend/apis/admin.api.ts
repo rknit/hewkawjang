@@ -12,9 +12,9 @@ export async function fetchCurrentAdmin(): Promise<Admin | null> {
   }
 }
 
-export async function fetchPendingReportsForCurrentAdmin(): Promise<Report[]> {
+export async function fetchPendingReports(): Promise<Report[]> {
   try {
-    const res = await ApiService.get('/admins/me/reports/pending');
+    const res = await ApiService.get('/admins/reports/pending');
     return res.data.map((report: any) => ReportSchema.parse(report));
   } catch (error) {
     normalizeError(error);
@@ -33,7 +33,7 @@ export async function banRestaurant(restaurantId: number): Promise<void> {
 export async function fetchReportedReviews(
   isSolved: boolean = false,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<Report[]> {
   try {
     const queryParams = new URLSearchParams({
@@ -42,7 +42,9 @@ export async function fetchReportedReviews(
       limit: limit.toString(),
     });
 
-    const res = await ApiService.get(`/admins/reports/review?${queryParams.toString()}`);
+    const res = await ApiService.get(
+      `/admins/reports/review?${queryParams.toString()}`,
+    );
 
     // Ensure we're accessing the 'data' property from the Axios response
     const responseData = res.data; // Axios wraps the actual response in 'data'
@@ -71,7 +73,7 @@ export async function fetchReportedReviews(
         reviewAuthorName: review.reviewAuthorName,
         reviewImages: review.reviewImages || [], // Default to an empty array if no images
         userImage: review.userImage || [],
-        reviewRestaurant: review.reviewRestaurant
+        reviewRestaurant: review.reviewRestaurant,
       }));
 
       return reportedReviews;
@@ -85,10 +87,15 @@ export async function fetchReportedReviews(
   }
 }
 
-export async function handleReport(reportId: number, action: boolean): Promise<void> {
+export async function handleReport(
+  reportId: number,
+  action: boolean,
+): Promise<void> {
   try {
     // Send the action (true for ban, false for reject) along with the report ID
-    await ApiService.post(`/admins/reports/review/${reportId}/handle`, { action });
+    await ApiService.post(`/admins/reports/review/${reportId}/handle`, {
+      action,
+    });
   } catch (error) {
     normalizeError(error);
   }
