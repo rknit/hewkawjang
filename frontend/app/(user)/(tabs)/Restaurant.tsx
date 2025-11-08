@@ -12,10 +12,12 @@ import { makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import CenteredLoadingIndicator from '@/components/centeredLoading';
 import Feather from '@expo/vector-icons/Feather';
 
 export default function RestaurantScreen() {
   const params = useLocalSearchParams<{ restaurantId?: string }>();
+  const [isLoading, setIsLoading] = useState(true);
 
   const restaurantId = Number(params.restaurantId);
   if (!restaurantId || isNaN(restaurantId)) {
@@ -41,16 +43,32 @@ export default function RestaurantScreen() {
   });
 
   useEffect(() => {
-    // Fetch restaurant data
-    fetchRestaurantById(restaurantId).then((data) => setRestaurant(data));
+    const loadData = async () => {
+      setIsLoading(true);
 
-    // Fetch reviews data
-    fetchReviewsByRestaurantId(restaurantId).then((data) => {
-      setReviews(data.reviews);
-      setAvgRating(data.avgRating);
-      setBreakdown(data.breakdown);
-    });
+      // Fetch restaurant data
+      const p1 = fetchRestaurantById(restaurantId).then((data) =>
+        setRestaurant(data),
+      );
+
+      // Fetch reviews data
+      const p2 = fetchReviewsByRestaurantId(restaurantId).then((data) => {
+        setReviews(data.reviews);
+        setAvgRating(data.avgRating);
+        setBreakdown(data.breakdown);
+      });
+
+      await Promise.all([p1, p2]);
+
+      setIsLoading(false);
+    };
+
+    loadData();
   }, [restaurantId]);
+
+  if (isLoading) {
+    return <CenteredLoadingIndicator />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
