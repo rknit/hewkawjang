@@ -184,6 +184,20 @@ export default class RestaurantService {
 
     return rows[0];
   }
+  
+  static async getPendingVerificationRestaurants(): Promise<Restaurant[]> {
+    const pendingRestaurants = await db
+      .select()
+      .from(restaurantTable)
+      .where(
+        and(
+          eq(restaurantTable.isVerified, false),
+          eq(restaurantTable.isDeleted, false),
+        ),
+      );
+
+    return pendingRestaurants;
+  }
 
   static async createRestaurant(data: CreateRestaurantInput) {
     const [restaurant] = await db
