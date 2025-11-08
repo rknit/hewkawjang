@@ -28,7 +28,7 @@ export default function SearchResults() {
         // console.log('Search params:', searchParams);
 
         const results = await searchRestaurants(searchParams);
-
+        
         setRestaurants(results.restaurants);
         setError(null);
       } catch (err) {

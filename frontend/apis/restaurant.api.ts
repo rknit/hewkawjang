@@ -214,8 +214,6 @@ export async function searchRestaurants(params: {
       limit: params.limit,
     };
 
-    // console.log('Search request:', requestBody);
-
     const res = await ApiService.post('/restaurants/search', requestBody);
 
     // Parse and validate the response data
@@ -227,6 +225,7 @@ export async function searchRestaurants(params: {
           name: restaurant.name,
           phoneNo: restaurant.phoneNo,
           // address
+          wallet: restaurant.wallet,
           houseNo: restaurant.houseNo,
           village: restaurant.village,
           building: restaurant.building,
@@ -241,8 +240,10 @@ export async function searchRestaurants(params: {
           priceRange: restaurant.priceRange,
           status: restaurant.status,
           activation: restaurant.activation,
+          isVerified: restaurant.isVerified,
           isDeleted: restaurant.isDeleted,
           images: restaurant.images,
+          reservationFee: restaurant.reservationFee
         }),
         // Add the rating fields
         avgRating: restaurant.avgRating || 0,

@@ -253,7 +253,7 @@ router.post('/search', async (req, res, next) => {
     const searchParams = {
       query: query?.trim(),
       province: province?.trim(),
-      priceRange: priceRange || { min: 0, max: 10000 },
+      priceRange: priceRange || { min: 0, max: 99999 },
       cuisineTypes: Array.isArray(cuisineTypes) ? cuisineTypes : [],
       minRating: minRating || 0,
       sortBy: sortBy || { field: 'rating', order: 'desc' },

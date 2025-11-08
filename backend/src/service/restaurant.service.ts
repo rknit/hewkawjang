@@ -336,6 +336,7 @@ export default class RestaurantService {
     const conditions = [
       eq(restaurantTable.activation, 'active'),
       eq(restaurantTable.isDeleted, false),
+      eq(restaurantTable.isVerified, true),
     ];
 
     if (province) {
