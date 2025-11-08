@@ -12,6 +12,7 @@ import { makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
 
 export default function RestaurantScreen() {
   const params = useLocalSearchParams<{ restaurantId?: string }>();
@@ -83,9 +84,17 @@ export default function RestaurantScreen() {
 
         <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px]">
           <View className="space-y-4">
-            <Text className="text-2xl font-bold text-gray-900">
-              {restaurant?.name || 'Loading...'}
-            </Text>
+            {/* Restaurant Summary */}
+            <View className="flex-col gap-y-2">
+              <Text className="text-2xl font-bold text-gray-900">
+                {restaurant?.name || 'Loading...'}
+              </Text>
+
+              <Text className="text-sm text-black">
+                {restaurant ? makeRestaurantAddress(restaurant) : 'Loading...'}
+              </Text>
+            </View>
+
             <ReserveButton restaurantId={restaurant?.id} />
           </View>
         </View>

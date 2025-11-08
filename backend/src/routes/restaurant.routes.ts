@@ -7,6 +7,7 @@ import {
   updateRestaurantInfoSchema,
 } from '../validators/restaurant.validator';
 import z from 'zod';
+import createHttpError from 'http-errors';
 
 const router = express.Router();
 
@@ -24,6 +25,23 @@ router.get('/', async (req, res) => {
 
   const restaurants = await RestaurantService.getRestaurants({
     ids,
+  });
+  res.json(restaurants);
+});
+
+router.get('/top-rated', async (req, res) => {
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const offset = req.query.offset ? Number(req.query.offset) : undefined;
+  if (limit !== undefined && (isNaN(limit) || limit <= 0)) {
+    return createHttpError.BadRequest('limit must be a positive number');
+  }
+  if (offset !== undefined && (isNaN(offset) || offset < 0)) {
+    return createHttpError.BadRequest('offset must be a non-negative number');
+  }
+
+  const restaurants = await RestaurantService.getTopRatedRestaurants({
+    limit,
+    offset,
   });
   res.json(restaurants);
 });
