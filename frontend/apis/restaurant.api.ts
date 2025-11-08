@@ -58,7 +58,6 @@ export async function fetchTopRatedRestaurants({
     const res = await ApiService.get('/restaurants/top-rated', {
       params,
     });
-    console.log('Top rated restaurants response:', res.data);
 
     return res.data.map((restaurant: any) =>
       RestaurantWithAvgRatingSchema.parse(restaurant),

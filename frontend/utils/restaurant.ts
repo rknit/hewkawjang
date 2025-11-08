@@ -14,3 +14,9 @@ export function makeRestaurantAddress(restaurant: Restaurant): string {
   ].filter((part) => part && part.trim() !== '');
   return parts.join(', ');
 }
+
+export function getRestaurantTags(restaurant: Restaurant): string[] {
+  return restaurant.district
+    ? [restaurant.cuisineType, restaurant.district]
+    : [restaurant.cuisineType];
+}

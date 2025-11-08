@@ -8,15 +8,30 @@ import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
 import { Comment } from '@/types/review.type';
-import { makeRestaurantAddress } from '@/utils/restaurant';
+import { getRestaurantTags, makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import CenteredLoadingIndicator from '@/components/centeredLoading';
+import { Star } from 'lucide-react';
+import { calculatePriceRange } from '@/utils/price-range';
 import Feather from '@expo/vector-icons/Feather';
+import { ReportModal } from '@/components/report-modal';
+import { reportRestaurant } from '@/apis/report.api';
+import { useUser } from '@/hooks/useUser';
 
 export default function RestaurantScreen() {
+  const fallbackImgUrl =
+    'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
+
   const params = useLocalSearchParams<{ restaurantId?: string }>();
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
 
   const restaurantId = Number(params.restaurantId);
@@ -42,6 +57,8 @@ export default function RestaurantScreen() {
     5: 0,
   });
 
+  const [showReportModal, setShowReportModal] = useState(false);
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -66,6 +83,11 @@ export default function RestaurantScreen() {
     loadData();
   }, [restaurantId]);
 
+  const handlePressReport = async () => {
+    await reportRestaurant(restaurantId);
+    setShowReportModal(false);
+  };
+
   if (isLoading) {
     return <CenteredLoadingIndicator />;
   }
@@ -80,7 +102,7 @@ export default function RestaurantScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View className="space-y-6">
-              <ImageGallery images={restaurant?.images || []} />
+              <ImageGallery images={restaurant?.images ?? [fallbackImgUrl]} />
 
               <ReviewSection
                 restaurantId={restaurantId}
@@ -100,23 +122,77 @@ export default function RestaurantScreen() {
           </ScrollView>
         </View>
 
-        <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px]">
-          <View className="space-y-4">
-            {/* Restaurant Summary */}
-            <View className="flex-col gap-y-2">
-              <Text className="text-2xl font-bold text-gray-900">
-                {restaurant?.name || 'Loading...'}
-              </Text>
+        <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px] gap-y-8">
+          {/* Restaurant Summary */}
+          <View className="flex-col gap-y-2">
+            <Text className="text-2xl font-bold text-gray-900">
+              {restaurant?.name || 'Loading...'}
+            </Text>
 
-              <Text className="text-sm text-black">
+            <View className="flex-row max-w-[32rem]">
+              {/* address */}
+              <Text className="text-sm text-gray-600">
                 {restaurant ? makeRestaurantAddress(restaurant) : 'Loading...'}
               </Text>
+
+              {/* report button, only available when logged in */}
+              {user && (
+                <TouchableOpacity
+                  className="mt-0.5"
+                  onPress={() => setShowReportModal(true)}
+                >
+                  <Feather name="flag" size={16} color="#9C9C9C" />
+                </TouchableOpacity>
+              )}
             </View>
 
-            <ReserveButton restaurantId={restaurant?.id} />
+            <View className="flex-row gap-x-6">
+              {/* tags */}
+              <View className="flex-row gap-x-4">
+                {restaurant &&
+                  getRestaurantTags(restaurant).map((tag) => {
+                    return (
+                      <Text key={tag} className="text-xs text-gray-600">
+                        {tag}
+                      </Text>
+                    );
+                  })}
+              </View>
+
+              {/* avg rating */}
+              <View className="flex-row items-center">
+                <Star size={16} color="gold" fill="gold" />
+                <Text className="ml-1 text-gray-800 font-medium">
+                  {Number.isInteger(avgRating) ? `${avgRating}.0` : avgRating}
+                </Text>
+              </View>
+
+              {/* Price Icons */}
+              <View className="flex-row space-x-1">
+                {Array.from({
+                  length: calculatePriceRange(restaurant?.priceRange ?? 0),
+                }).map((_, idx) => (
+                  <View
+                    key={idx}
+                    className="w-5 h-5 bg-gray-100 rounded-full items-center justify-center border-black border-[1px]"
+                  >
+                    <Text className="text-xs">฿</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
           </View>
+
+          <ReserveButton restaurantId={restaurant?.id} />
         </View>
       </View>
+
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        reportWhat="restaurant"
+        onPressReport={handlePressReport}
+      />
     </SafeAreaView>
   );
 }

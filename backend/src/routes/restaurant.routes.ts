@@ -8,6 +8,7 @@ import {
 } from '../validators/restaurant.validator';
 import z from 'zod';
 import createHttpError from 'http-errors';
+import ReportService from '../service/report.service';
 
 const router = express.Router();
 
@@ -379,6 +380,22 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+router.post('/:id/report', authHandler, async (req, res) => {
+  const restaurantId = Number(req.params.id);
+  if (isNaN(restaurantId)) {
+    return createHttpError.BadRequest('Invalid restaurant ID');
+  }
+
+  const reporterId = req.userAuthPayload?.userId!;
+
+  await ReportService.reportRestaurant({
+    reporterUserId: reporterId,
+    targetRestaurantId: restaurantId,
+  });
+
+  res.sendStatus(201);
 });
 
 export default router;

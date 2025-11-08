@@ -33,4 +33,18 @@ export default class ReportService {
 
     return updatedReport;
   }
+
+  static async reportRestaurant({
+    reporterUserId,
+    targetRestaurantId,
+  }: {
+    reporterUserId: number;
+    targetRestaurantId: number;
+  }): Promise<void> {
+    await db.insert(reportsTable).values({
+      userId: reporterUserId,
+      targetRestaurantId: targetRestaurantId,
+      reportType: 'restaurant',
+    });
+  }
 }
