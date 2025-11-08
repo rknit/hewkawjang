@@ -3,28 +3,19 @@ import {
   fetchReviewsByRestaurantId,
 } from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
-import ReserveButton from '@/components/reserve-button';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
 import { Restaurant } from '@/types/restaurant.type';
 import { Comment } from '@/types/review.type';
-import { getRestaurantTags, makeRestaurantAddress } from '@/utils/restaurant';
+import { makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { SafeAreaView, ScrollView, View } from 'react-native';
 import CenteredLoadingIndicator from '@/components/centeredLoading';
-import { Star } from 'lucide-react';
-import { calculatePriceRange } from '@/utils/price-range';
-import Feather from '@expo/vector-icons/Feather';
 import { ReportModal } from '@/components/report-modal';
 import { reportRestaurant } from '@/apis/report.api';
 import { useUser } from '@/hooks/useUser';
+import RestaurantReserveSummary from '@/components/restaurantReserveSummary';
 
 export default function RestaurantScreen() {
   const fallbackImgUrl =
@@ -123,67 +114,12 @@ export default function RestaurantScreen() {
         </View>
 
         <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px] gap-y-8">
-          {/* Restaurant Summary */}
-          <View className="flex-col gap-y-2">
-            <Text className="text-2xl font-bold text-gray-900">
-              {restaurant?.name || 'Loading...'}
-            </Text>
-
-            <View className="flex-row max-w-[32rem]">
-              {/* address */}
-              <Text className="text-sm text-gray-600">
-                {restaurant ? makeRestaurantAddress(restaurant) : 'Loading...'}
-              </Text>
-
-              {/* report button, only available when logged in */}
-              {user && (
-                <TouchableOpacity
-                  className="mt-0.5"
-                  onPress={() => setShowReportModal(true)}
-                >
-                  <Feather name="flag" size={16} color="#9C9C9C" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View className="flex-row gap-x-6">
-              {/* tags */}
-              <View className="flex-row gap-x-4">
-                {restaurant &&
-                  getRestaurantTags(restaurant).map((tag) => {
-                    return (
-                      <Text key={tag} className="text-xs text-gray-600">
-                        {tag}
-                      </Text>
-                    );
-                  })}
-              </View>
-
-              {/* avg rating */}
-              <View className="flex-row items-center">
-                <Star size={16} color="gold" fill="gold" />
-                <Text className="ml-1 text-gray-800 font-medium">
-                  {Number.isInteger(avgRating) ? `${avgRating}.0` : avgRating}
-                </Text>
-              </View>
-
-              {/* Price Icons */}
-              <View className="flex-row space-x-1">
-                {Array.from({
-                  length: calculatePriceRange(restaurant?.priceRange ?? 0),
-                }).map((_, idx) => (
-                  <View
-                    key={idx}
-                    className="w-5 h-5 bg-gray-100 rounded-full items-center justify-center border-black border-[1px]"
-                  >
-                    <Text className="text-xs">฿</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <ReserveButton restaurantId={restaurant?.id} />
+          <RestaurantReserveSummary
+            restaurant={restaurant}
+            avgRating={avgRating}
+            isLoggedIn={!!user}
+            onPressReport={() => setShowReportModal(true)}
+          />
         </View>
       </View>
 
