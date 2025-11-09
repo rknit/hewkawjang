@@ -1,6 +1,7 @@
 import ApiService from '@/services/api.service';
 import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
+  DaysOffSchema,
   Restaurant,
   RestaurantSchema,
   RestaurantWithAvgRating,
@@ -407,5 +408,34 @@ export async function fetchOwnerRestaurants(
   } catch (error) {
     console.error('Failed to fetch owner restaurants:', error);
     return [];
+  }
+}
+
+export async function fecthDaysOff(
+  restaurantId: number,
+  startDate?: Date,
+  endDate?: Date,
+): Promise<Restaurant[]> {
+  try {
+    const res = await ApiService.get(`/restaurants/${restaurantId}/daysOff`, {
+      params: { startDate, endDate },
+    });
+    return res.data.map((daysOff: any) => DaysOffSchema.parse(daysOff));
+  } catch (error) {
+    console.error('Failed to fetch ', error);
+    return [];
+  }
+}
+
+export async function addDaysOff(
+  restaurantId: number,
+  dates: Date[],
+): Promise<void> {
+  try {
+    await ApiService.post(`/restaurants/${restaurantId}/createDaysOff`, {
+      dates,
+    });
+  } catch (error) {
+    normalizeError(error);
   }
 }

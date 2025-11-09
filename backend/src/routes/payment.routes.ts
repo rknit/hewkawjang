@@ -5,9 +5,10 @@ import { db } from '../db';
 import { restaurantTable } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { env } from 'process';
+import { authHandler } from '../middleware/auth.middleware';
 const router = express.Router();
 
-router.post('/withdraw/:id', async (req, res) => {
+router.post('/withdraw/:id', authHandler, async (req, res) => {
   try {
     const restaurantId = Number(req.params.id);
     const { amount } = req.body; // Better name than "balance"
