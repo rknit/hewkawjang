@@ -10,14 +10,18 @@ import { supabase } from '@/utils/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Admin } from '@/types/admin.type';
 import { Report } from '@/types/report.type';
+import { Restaurant } from '@/types/restaurant.type'; 
 import * as adminApi from '@/apis/admin.api';
 import * as reportApi from '@/apis/report.api';
+import * as restaurantApi from '@/apis/restaurant.api';
 
 interface AdminContextType {
   admin: Admin | null;
   pendingReports: Report[];
+  pendingRestaurants: Restaurant[];
   isLoading: boolean;
   updateReportStatus: (id: number, isSolved: boolean) => Promise<void>;
+  updateRestaurantVerificationStatus: (id: number, isVerified: boolean) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -31,6 +35,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
   const { authRole } = useAuth();
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [pendingReports, setPendingReports] = useState<Report[]>([]);
+  const [pendingRestaurants, setPendingRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Fetch initial admin data and reports
@@ -38,22 +43,26 @@ export function AdminProvider({ children }: AdminProviderProps) {
     if (authRole !== 'admin') {
       setAdmin(null);
       setPendingReports([]);
+      setPendingRestaurants([]);
       setIsLoading(false);
       return;
     }
 
     try {
       setIsLoading(true);
-      const [fetchedAdmin, fetchedReports] = await Promise.all([
+      const [fetchedAdmin, fetchedReports, fetchedRestaurants] = await Promise.all([
         adminApi.fetchCurrentAdmin(),
         adminApi.fetchPendingReports(),
+        adminApi.fetchPendingRestaurants(),
       ]);
       setAdmin(fetchedAdmin);
       setPendingReports(fetchedReports);
+      setPendingRestaurants(fetchedRestaurants);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       setAdmin(null);
       setPendingReports([]);
+      setPendingRestaurants([]);
     } finally {
       setIsLoading(false);
     }
@@ -90,11 +99,31 @@ export function AdminProvider({ children }: AdminProviderProps) {
     [authRole],
   );
 
+  // Update restaurant verification status
+  const updateRestaurantVerificationStatusHandler = useCallback(
+    async (id: number, isVerified: boolean) => {
+      if (authRole !== 'admin') return;
+
+      try {
+        await restaurantApi.updateRestaurantVerification(id, isVerified);
+
+        // Either way it'll remove from pending list exception is if backend fails
+        setPendingRestaurants((prev) => {
+          return prev.filter((restaurant) => restaurant.id !== id);
+        });
+      } catch (error) {
+        console.error('Error updating restaurant verification status:', error);
+      }
+    },
+    [authRole],
+  );
+
   // Setup Supabase Realtime subscription
   useEffect(() => {
     if (authRole !== 'admin') {
       setAdmin(null);
       setPendingReports([]);
+      setPendingRestaurants([]);
       setIsLoading(false);
       return;
     }
@@ -183,6 +212,72 @@ export function AdminProvider({ children }: AdminProviderProps) {
           }
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "restaurant",
+        },
+        (payload) => {
+          if (__DEV__) {
+            console.log('New restaurant for verification:', payload);
+          }
+
+          // Map database fields (snake_case) to Restaurant type (camelCase)
+          const newRestaurant: Restaurant = {
+            id: payload.new.id,
+            ownerId: payload.new.owner_id,
+            name: payload.new.name,
+            phoneNo: payload.new.phone_no,
+            wallet: payload.new.wallet,
+            // address: payload.new.address, // Somehow, address field doesn't exist in Frontend type
+            houseNo: payload.new.house_no,
+            village: payload.new.village,
+            building: payload.new.building,
+            road: payload.new.road,
+            soi: payload.new.soi,
+            subDistrict: payload.new.sub_district,
+            district: payload.new.district,
+            province: payload.new.province,
+            postalCode: payload.new.postal_code,
+            cuisineType: payload.new.cuisine,
+            priceRange: payload.new.priceRange, // This field is camelCase in DB
+            status: payload.new.status,
+            activation: payload.new.activation,
+            isVerified: payload.new.is_verified,
+            isDeleted: payload.new.is_deleted,
+            images: payload.new.images,
+            reservationFee: payload.new.reservation_fee,
+          }
+ 
+          // Only add if not deleted (this shouldn't happen)
+          if (!newRestaurant.isDeleted && !newRestaurant.isVerified) {
+            setPendingRestaurants((prev) => [newRestaurant, ...prev]);
+          }
+        }
+      )
+      .on( // In case other admin update
+        'postgres_changes',
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "restaurant",
+          filter: "is_verified=eq.true,is_deleted=eq.true",
+        },
+        (payload) => {
+          if (__DEV__) {
+            console.log('Restaurant verification status updated:', payload);
+          }
+
+          const updatedRestaurantId: number = payload.new.id;
+
+          // Remove the restaurant from pending list
+          setPendingRestaurants((prev) =>
+            prev.filter((restaurant) => restaurant.id !== updatedRestaurantId),
+          );
+        }
+      )
       .subscribe();
 
     // Cleanup function
@@ -196,8 +291,10 @@ export function AdminProvider({ children }: AdminProviderProps) {
       value={{
         admin,
         pendingReports,
+        pendingRestaurants,
         isLoading,
         updateReportStatus: updateReportStatusHandler,
+        updateRestaurantVerificationStatus: updateRestaurantVerificationStatusHandler,
         refetch: fetchAdminData,
       }}
     >

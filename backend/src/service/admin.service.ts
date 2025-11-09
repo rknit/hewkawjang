@@ -214,4 +214,69 @@ export default class AdminService {
 
     // If the action is to reject, we do nothing to the user or the review
   }
+
+  /**
+   * Handle the pending restaurant verification by either approving or deleting the restaurant.
+   * @param {number} restaurantId - The ID of the restaurant.
+   * @param {boolean} action - True if the admin approves, false if they reject.
+   * @returns {Promise<void>} - Resolves when the action is completed.
+   */
+  static async updateRestaurantVerification(
+    restaurantId: number,
+    action: boolean,
+  ): Promise<void> {
+    // Fetch the restaurant
+    const [restaurant] = await db
+      .select()
+      .from(restaurantTable)
+      .where(eq(restaurantTable.id, restaurantId))
+      .limit(1);
+
+    if (!restaurant) {
+      throw createHttpError.NotFound('Restaurant not found');
+    }
+
+    // Check if restaurant is already verified or deleted
+    if (restaurant.isVerified) {
+      throw createHttpError.BadRequest('Restaurant is already verified');
+    }
+
+    if (restaurant.isDeleted) {
+      throw createHttpError.BadRequest('Restaurant is already deleted');
+    }
+
+    // If the admin approves the restaurant
+    if (action) {
+      // Set isVerified to true
+      await db
+        .update(restaurantTable)
+        .set({ isVerified: true })
+        .where(eq(restaurantTable.id, restaurantId));
+
+      // Send approval notification to restaurant owner
+      await NotificationService.createNotifications([
+        {
+          userId: restaurant.ownerId,
+          title: 'Restaurant Verification Approved',
+          message: `Your restaurant "${restaurant.name}" has been approved and is now live on HewKawJang!`,
+          imageUrl: restaurant.images?.[0] || null,
+          notificationType: 'system',
+        },
+      ]);
+    } else {
+      // Soft delete the restaurant
+      await RestaurantService.deleteRestaurant(restaurantId);
+
+      // Send rejection notification to restaurant owner
+      await NotificationService.createNotifications([
+        {
+          userId: restaurant.ownerId,
+          title: 'Restaurant Verification Rejected',
+          message: `Your restaurant "${restaurant.name}" verification has been rejected. Please contact support for more details.`,
+          imageUrl: restaurant.images?.[0] || null,
+          notificationType: 'system',
+        },
+      ]);
+    }
+  }
 }

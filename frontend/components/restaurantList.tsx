@@ -29,13 +29,16 @@ export default function RestaurantList({
     return parts.join(', ');
   };
 
+  const fallbackImgUrl = 'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
+  
   // Transform restaurant data to match recom card props
   const transformRestaurantData = (restaurant: RestaurantWithRating) => {
     const getPriceLevel = (price: number) => {
-      if (price <= 250) return 1;
-      if (price <= 750) return 2;
-      if (price <= 2000) return 3;
-      return 4;
+      if (price <= 150) return 1;
+      if (price <= 300) return 2;
+      if (price <= 600) return 3;
+      if (price <= 1500) return 4;
+      return 5;
     };
 
     const tags = [restaurant.cuisineType];
@@ -53,7 +56,7 @@ export default function RestaurantList({
       rating: Math.round((restaurant.avgRating || 0) * 100) / 100, // round to 2 decimal
       prices: getPriceLevel(restaurant.priceRange || 0),
       imageUrl:
-        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
+        restaurant.images?.[0] || fallbackImgUrl,
       isNew: restaurant.reviewCount === 0,
     };
   };

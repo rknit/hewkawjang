@@ -141,6 +141,12 @@ export default class RestaurantService {
           eq(reservationTable.status, 'completed'),
         ),
       )
+      .where(
+        and(
+          eq(restaurantTable.isDeleted, false),
+          eq(restaurantTable.isVerified, true),
+        )
+      )
       .groupBy(restaurantTable.id)
       .orderBy(desc(avgRating));
 
@@ -183,6 +189,20 @@ export default class RestaurantService {
       .limit(1);
 
     return rows[0];
+  }
+  
+  static async getPendingVerificationRestaurants(): Promise<Restaurant[]> {
+    const pendingRestaurants = await db
+      .select()
+      .from(restaurantTable)
+      .where(
+        and(
+          eq(restaurantTable.isVerified, false),
+          eq(restaurantTable.isDeleted, false),
+        ),
+      );
+
+    return pendingRestaurants;
   }
 
   static async createRestaurant(data: CreateRestaurantInput) {
@@ -322,6 +342,7 @@ export default class RestaurantService {
     const conditions = [
       eq(restaurantTable.activation, 'active'),
       eq(restaurantTable.isDeleted, false),
+      eq(restaurantTable.isVerified, true),
     ];
 
     if (province) {

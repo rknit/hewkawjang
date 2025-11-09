@@ -1,6 +1,7 @@
 import ApiService from '@/services/api.service';
 import { Admin, AdminSchema } from '@/types/admin.type';
 import { Report, ReportSchema } from '@/types/report.type';
+import { Restaurant, RestaurantSchema } from '@/types/restaurant.type';
 import { normalizeError } from '@/utils/api-error';
 
 export async function fetchCurrentAdmin(): Promise<Admin | null> {
@@ -16,6 +17,16 @@ export async function fetchPendingReports(): Promise<Report[]> {
   try {
     const res = await ApiService.get('/admins/reports/pending');
     return res.data.map((report: any) => ReportSchema.parse(report));
+  } catch (error) {
+    normalizeError(error);
+    return [];
+  }
+}
+
+export async function fetchPendingRestaurants(): Promise<Restaurant[]> {
+  try {
+    const res = await ApiService.get('/admins/restaurants/pending-verification');
+    return res.data.map((restaurant: any) => RestaurantSchema.parse(restaurant));
   } catch (error) {
     normalizeError(error);
     return [];

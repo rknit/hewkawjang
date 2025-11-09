@@ -33,6 +33,7 @@ export const RestaurantSchema = z.object({
   priceRange: z.number().nullable(),
   status: z.enum(['open', 'closed']),
   activation: z.enum(['active', 'inactive']),
+  isVerified: z.boolean(),
   isDeleted: z.boolean(),
   images: z.array(z.string()).nullish(),
   reservationFee: z.number().min(0),

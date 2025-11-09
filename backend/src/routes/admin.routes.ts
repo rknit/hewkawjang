@@ -1,5 +1,6 @@
 import express from 'express';
 import createHttpError from 'http-errors';
+import RestaurantService from '../service/restaurant.service';
 import AdminService from '../service/admin.service';
 import { adminRoleHandler, authHandler } from '../middleware/auth.middleware';
 import ReportService from '../service/report.service';
@@ -18,6 +19,16 @@ router.get(
   async (req, res) => {
     const reports = await ReportService.getPendingReports();
     res.status(200).json(reports);
+  },
+);
+
+router.get(
+  '/restaurants/pending-verification',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const pendingRestaurants = await RestaurantService.getPendingVerificationRestaurants();
+    res.status(200).json(pendingRestaurants);
   },
 );
 
@@ -119,6 +130,40 @@ router.post(
     try {
       await AdminService.handleReportedReview(parseInt(reportId, 10), action);
       res.status(200).send('Report processed successfully');
+    } catch (error) {
+      console.error('Error in /reports/review/:reportId/handle route:', error);
+      throw createHttpError.InternalServerError(
+        'Failed to handle the reported review',
+      );
+    }
+  },
+);
+
+router.post(
+  '/restaurants/:restaurantId/verify',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const { restaurantId } = req.params;
+    const { action } = req.body; // action: true for approve, false for reject
+
+    if (action === undefined) {
+      throw createHttpError.BadRequest('Action (true/false) must be provided');
+    }
+
+    // Ensure the action is either true or false
+    if (typeof action !== 'boolean') {
+      throw createHttpError.BadRequest(
+        'Action must be a boolean value (true or false)',
+      );
+    }
+
+    try {
+      await AdminService.updateRestaurantVerification(
+        parseInt(restaurantId, 10),
+        action
+      );
+      res.status(200).send('Restaurant verification status updated successfully');
     } catch (error) {
       console.error('Error in /reports/review/:reportId/handle route:', error);
       throw createHttpError.InternalServerError(
