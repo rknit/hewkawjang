@@ -51,10 +51,11 @@ export default function ReviewsAdminPage() {
         reviewAuthor: review.reviewAuthorName || 'Unknown Author',
         reviewRating: review.reviewRating,
         reviewImages: review.reviewImages || [],
-        reviewAuthorImage: review.userImage || '',
+        reviewAuthorImage: review.userImage || [],
         restaurantName: review.reviewRestaurant || 'Unknown Restaurant',
       }));
       setReportedReviews(transformedReviews);
+      console.log('img', reviews);
     } catch (error) {
       setError('Failed to fetch reported reviews');
     } finally {
@@ -93,9 +94,16 @@ export default function ReviewsAdminPage() {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Image
-          source={{ uri: item.reviewAuthorImage || 'fallback-image-url' }}
+          source={{
+            uri:
+              Array.isArray(item.reviewAuthorImage) &&
+              item.reviewAuthorImage.length === 0
+                ? 'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/profile-images/default/default_profile.png' // Default image if empty array
+                : item.reviewAuthorImage, // Use the URI if it's a string
+          }}
           style={styles.profileImage}
         />
+
         <View style={styles.cardHeaderText}>
           <Text style={styles.reviewAuthor}>{item.reviewAuthor}</Text>
           {/* Star rating */}
@@ -201,6 +209,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     marginRight: 30,
     marginLeft: 30,
+    paddingBottom: 70,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -254,8 +263,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   reviewImage: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     marginRight: 8,
     borderRadius: 8,
   },
