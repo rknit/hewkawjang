@@ -304,6 +304,7 @@ export async function fetchReviewsByRestaurantId(
         rating: review.rating,
         comment: review.comment || 'No comment provided',
         date: getRelativeTime(new Date(review.createdAt)),
+        attachPhotos: review.attachPhotos || [],
       };
     });
 
@@ -373,6 +374,7 @@ export async function fetchFilteredReviews(
           rating: review.rating,
           comment: review.comment || 'No comment provided',
           date: getRelativeTime(new Date(review.createdAt)),
+          attachPhotos: review.attachPhotos || [],
         };
       },
     );

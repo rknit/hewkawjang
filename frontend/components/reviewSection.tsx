@@ -16,6 +16,8 @@ interface ReviewSectionProps {
     2: number;
     1: number;
   };
+  onPressReport?: (reviewId: string) => void;
+  isLoggedIn?: boolean;
 }
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({
@@ -24,6 +26,8 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
   average,
   totalReviews,
   breakdown,
+  onPressReport,
+  isLoggedIn,
 }) => {
   const [selectedRatings, setSelectedRatings] = useState<number[]>([
     1, 2, 3, 4, 5,
@@ -119,7 +123,11 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
           <Text className="text-gray-600 mt-2">Loading reviews...</Text>
         </View>
       ) : (
-        <CommentList comments={filteredComments} />
+        <CommentList
+          comments={filteredComments}
+          onPressReport={onPressReport}
+          isLoggedIn={isLoggedIn}
+        />
       )}
     </View>
   );

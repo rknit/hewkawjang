@@ -448,4 +448,20 @@ router.post('/:id/report', authHandler, async (req, res) => {
   res.sendStatus(201);
 });
 
+router.post('/reviews/:reviewId/report', authHandler, async (req, res) => {
+  const reviewId = Number(req.params.reviewId);
+  if (isNaN(reviewId)) {
+    return createHttpError.BadRequest('Invalid review ID');
+  }
+
+  const reporterId = req.userAuthPayload?.userId!;
+
+  await ReportService.reportReview({
+    reporterUserId: reporterId,
+    targetReviewId: reviewId,
+  });
+
+  res.sendStatus(201);
+});
+
 export default router;
