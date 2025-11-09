@@ -141,6 +141,12 @@ export default class RestaurantService {
           eq(reservationTable.status, 'completed'),
         ),
       )
+      .where(
+        and(
+          eq(restaurantTable.isDeleted, false),
+          eq(restaurantTable.isVerified, true),
+        )
+      )
       .groupBy(restaurantTable.id)
       .orderBy(desc(avgRating));
 
