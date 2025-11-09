@@ -349,11 +349,15 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
   }
 });
 
-router.post('/:id/createDaysOff', async (req, res, next) => {
+router.post('/:id/createDaysOff', authHandler, async (req, res, next) => {
+  const userId = (req as any).userAuthPayload?.userId;
   try {
     const restaurant_id = parseInt(req.params.id);
     const { dates } = req.body; // ["2025-11-15", "2025-12-25"]
-
+    const restaurant = await RestaurantService.getRestaurantById(restaurant_id);
+    if (restaurant?.ownerId !== userId) {
+      return res.status(403).json({ error: 'Forbidden: not owner' });
+    }
     // Validate
     if (!dates || !Array.isArray(dates) || dates.length === 0) {
       return res.status(400).json({
@@ -373,23 +377,27 @@ router.post('/:id/createDaysOff', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-
-  router.get('/:id/daysOff', async (req, res, next) => {
-    try {
-      const restaurant_id = parseInt(req.params.id);
-
-      const startDate = req.query.startDate as string;
-      const endDate = req.query.endDate as string;
-      const daysOff = await RestaurantService.getDayOffByRestaurantId(
-        restaurant_id,
-        startDate,
-        endDate,
-      );
-
-      res.json({ daysOff });
-    } catch (error) {
-      next(error);
-    }
-  });
 });
+router.get('/:id/daysOff', authHandler, async (req, res, next) => {
+  const userId = (req as any).userAuthPayload?.userId;
+  try {
+    const restaurant_id = parseInt(req.params.id);
+    const restaurant = await RestaurantService.getRestaurantById(restaurant_id);
+    if (restaurant?.ownerId !== userId) {
+      return res.status(403).json({ error: 'Forbidden: not owner' });
+    }
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+    const daysOff = await RestaurantService.getDayOffByRestaurantId(
+      restaurant_id,
+      startDate,
+      endDate,
+    );
+
+    res.json({ daysOff });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
