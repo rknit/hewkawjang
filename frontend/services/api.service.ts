@@ -49,10 +49,17 @@ export default ApiService;
 
 export async function refreshAuth(): Promise<boolean> {
   const token = await TokenStorage.getRefreshToken();
+
+  // On web, token will be null because refresh token is in HttpOnly cookie
+  // On mobile, we need the refresh token from secure storage
+  if (clientType === 'mobile' && !token) {
+    return false;
+  }
+
   try {
     const resp = await refreshApi.post('/auth/refresh', undefined, {
       headers: {
-        Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available
+        Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available (mobile)
       },
     });
 
@@ -61,10 +68,10 @@ export async function refreshAuth(): Promise<boolean> {
       const newRefreshToken = resp.data.refreshToken;
 
       // Store new tokens
-      await Promise.all([
-        TokenStorage.setAccessToken(newAccessToken),
-        TokenStorage.setRefreshToken(newRefreshToken),
-      ]);
+      await TokenStorage.setAccessToken(newAccessToken);
+      if (newRefreshToken) {
+        await TokenStorage.setRefreshToken(newRefreshToken);
+      }
 
       return true;
     }

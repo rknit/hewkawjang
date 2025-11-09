@@ -1,13 +1,12 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
-import { useProfile } from '@/hooks/useProfile';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import MyWallet from './my-wallet';
 import { fetchOwnerRestaurants } from '@/apis/restaurant.api';
 import { supabase } from '@/utils/supabase';
-import { number } from 'zod';
+import { useUser } from '@/hooks/useUser';
 
 export default function UserDropdown({
   visible,
@@ -16,7 +15,8 @@ export default function UserDropdown({
   visible: boolean;
   onClose: () => void;
 }) {
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
+  const { user } = useUser();
   const fullname = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
   const email = user?.email || 'Loading...';
   const [showWalletModal, setShowWalletModal] = useState(false);

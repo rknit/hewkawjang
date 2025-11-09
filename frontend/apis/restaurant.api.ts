@@ -16,9 +16,23 @@ import {
 import { normalizeError } from '@/utils/api-error';
 import { getRelativeTime } from '@/utils/date-time';
 
-export async function fetchRestaurants(): Promise<Restaurant[]> {
+export async function fetchRestaurants(
+  restaurantIds?: number[],
+): Promise<Restaurant[]> {
   try {
-    const res = await ApiService.get('/restaurants/');
+    // If explicitly passed an empty array, return empty results
+    if (restaurantIds !== undefined && restaurantIds.length === 0) {
+      return [];
+    }
+
+    const params: any = {};
+    if (restaurantIds !== undefined) {
+      params.ids = restaurantIds.join(',');
+    }
+
+    const res = await ApiService.get('/restaurants', {
+      params,
+    });
     return res.data.map((restaurant: any) =>
       RestaurantSchema.parse(restaurant),
     );

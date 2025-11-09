@@ -7,12 +7,12 @@ import React, {
   useCallback,
 } from 'react';
 import { supabase } from '@/utils/supabase';
-import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { Notification } from '@/types/notification.type';
 import { DefaultNotificationProps } from '@/components/notifications/defaultNotification';
 import * as notiApi from '@/apis/notification.api';
 import { parseLocalDate } from '@/utils/date-time';
+import { useUser } from '@/hooks/useUser';
 
 interface NotificationContextType {
   notifications: Notification[];
@@ -30,7 +30,7 @@ interface NotificationProviderProps {
 }
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
-  const { user } = useAuth();
+  const { user } = useUser();
   const toast = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
