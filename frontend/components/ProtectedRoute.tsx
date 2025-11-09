@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { View, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
+import CenteredLoadingIndicator from './centeredLoading';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -27,11 +27,7 @@ export default function ProtectedRoute({
   }, [authRole, isLoading, adminOnly]);
 
   if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#C54D0E" />
-      </View>
-    );
+    return <CenteredLoadingIndicator />;
   }
 
   return <>{children}</>;

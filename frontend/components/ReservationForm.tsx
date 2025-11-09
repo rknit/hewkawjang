@@ -142,9 +142,14 @@ export default function ReservationPane({
       await createReservation(payload);
       setShowConfirmation(false);
       setShowSuccessAlert(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create reservation:', error);
-      Alert.alert('Error', 'Failed to create reservation. Please try again.');
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        'Failed to create reservation.';
+      alert(message);
     }
   }
 
@@ -177,14 +182,14 @@ export default function ReservationPane({
         <TouchableOpacity
           activeOpacity={1}
           onPress={(e) => e.stopPropagation()}
-          className="w-[30%] h-[90%] rounded-2xl p-6"
+          className="w-2/5 h-[90%] rounded-2xl p-6"
           style={{
             backgroundColor: brand.bg,
             borderTopWidth: 2,
             borderColor: brand.modalBorder,
           }}
         >
-          <ScrollView className="flex-1">
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
             {/* Header with close button */}
             <View className="flex-row justify-between items-center mb-2 mt-2">
               <Text
@@ -621,6 +626,17 @@ export default function ReservationPane({
                         ]
                           .filter(Boolean)
                           .join(', ') || 'N/A'
+                      : 'N/A'}
+                  </Text>
+                </View>
+
+                <View className="mb-3">
+                  <Text className="text-xl font-semibold mb-1 text-gray-600">
+                    Reservation Fee
+                  </Text>
+                  <Text className="text-xl text-gray-500">
+                    {restaurant
+                      ? `${restaurant.reservationFee.toFixed(2)} bath`
                       : 'N/A'}
                   </Text>
                 </View>

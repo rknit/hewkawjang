@@ -35,9 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authRole, setAuthRole] = useState<AuthRole>('guest');
 
   // Unified function to update auth state
-  const updateAuthState = useCallback(async () => {
-    const token = await TokenStorage.getAccessToken();
-
+  const updateAuthState = useCallback(async (token: string | null) => {
     if (token) {
       try {
         const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
@@ -61,10 +59,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check if token expires in less than 2 minutes (120 seconds)
     const nearlyExpired = isJwtTokenExpiringSoon(token, 120);
     if (nearlyExpired) {
-      console.log('Token nearly expired, refreshing...');
+      if (__DEV__) {
+        console.log('Token nearly expired, refreshing...');
+      }
       try {
-        await refreshAuth();
-        await updateAuthState(); // Re-sync Supabase auth
+        const tokens = await refreshAuth();
+        await updateAuthState(tokens?.accessToken ?? null); // Use new token from refresh
       } catch (error) {
         console.error('Failed to refresh token:', error);
       }
@@ -72,16 +72,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [updateAuthState]);
 
   useEffect(() => {
-    // On component mount, try to refresh auth and load user
+    // On component mount, try to refresh auth
     const initializeAuth = async () => {
       setIsLoading(true);
 
-      const ok = await refreshAuth();
-      if (ok) {
-        await updateAuthState();
-      } else {
-        await updateAuthState();
-      }
+      const tokens = await refreshAuth();
+      await updateAuthState(tokens?.accessToken ?? null);
 
       setIsLoading(false);
     };
@@ -104,13 +100,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await authApi.login(email, password);
-      await updateAuthState();
+      const tokens = await authApi.login(email, password);
+      if (!tokens) {
+        throw new Error('Login failed, no tokens received');
+      }
+
+      const { accessToken, refreshToken } = tokens;
+      TokenStorage.setAccessToken(accessToken);
+      if (refreshToken) {
+        TokenStorage.setRefreshToken(refreshToken);
+      }
+
+      await updateAuthState(accessToken);
 
       // Read role directly from token instead of state to avoid race condition
-      const token = await TokenStorage.getAccessToken();
-      if (token) {
-        const decoded = jwtDecode<{ authRole?: AuthRole }>(token);
+      if (accessToken) {
+        const decoded = jwtDecode<{ authRole?: AuthRole }>(accessToken);
         if (decoded.authRole === 'admin') {
           router.replace('/(admin)');
         }
@@ -123,8 +128,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = async () => {
     setIsLoading(true);
     try {
+      // First, clear auth state to trigger cleanup in dependent contexts (e.g., NotificationContext)
+      setAuthRole('guest');
+      supabase.realtime.setAuth(null);
+
+      // Then make the logout API call
       await authApi.logout();
-      await updateAuthState();
+
+      // Remove tokens from storage
+      await TokenStorage.removeAccessToken();
+      await TokenStorage.removeRefreshToken();
+
+      // Redirect to home page
+      router.replace('/');
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +148,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ authRole, isLoading, login, logout, refreshAuth }}
+      value={{
+        authRole,
+        isLoading,
+        login,
+        logout,
+        refreshAuth: () => refreshAuth().then((tokens) => tokens !== null),
+      }}
     >
       {children}
     </AuthContext.Provider>

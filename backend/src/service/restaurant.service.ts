@@ -45,6 +45,10 @@ export interface SearchParams {
   limit: number;
 }
 
+export interface RestaurantWithAvgRating extends Restaurant {
+  avgRating: number;
+}
+
 export interface RestaurantWithRating extends Restaurant {
   avgRating: number;
   reviewCount: number;
@@ -102,6 +106,51 @@ export default class RestaurantService {
 
     if (props.limit !== undefined) {
       query = query.limit(props.limit);
+    }
+
+    return await query;
+  }
+
+  static async getTopRatedRestaurants({
+    limit,
+    offset,
+  }: {
+    limit?: number;
+    offset?: number;
+  }): Promise<RestaurantWithAvgRating[]> {
+    const avgRating = sql<number>`
+      ROUND(
+        COALESCE(AVG(${reviewTable.rating})::numeric, 0),
+        1
+      )::float
+    `.as('avgRating');
+
+    let query: any = db
+      .select({
+        ...getTableColumns(restaurantTable),
+        avgRating,
+      })
+      .from(restaurantTable)
+      .leftJoin(
+        reservationTable,
+        eq(restaurantTable.id, reservationTable.restaurantId),
+      )
+      .leftJoin(
+        reviewTable,
+        and(
+          eq(reservationTable.id, reviewTable.reservationId),
+          eq(reservationTable.status, 'completed'),
+        ),
+      )
+      .groupBy(restaurantTable.id)
+      .orderBy(desc(avgRating));
+
+    if (offset !== undefined) {
+      query = query.offset(offset);
+    }
+
+    if (limit !== undefined) {
+      query = query.limit(limit);
     }
 
     return await query;
