@@ -187,3 +187,33 @@ export const notificationTable = pgTable('notification', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   isRead: boolean('is_read').notNull().default(false),
 });
+
+export const chatTable = pgTable(
+  'chat',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').notNull(),
+    restaurantId: integer('restaurant_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    userRestaurantIdx: uniqueIndex('chat_user_restaurant_idx').on(
+      table.userId,
+      table.restaurantId,
+    ),
+  }),
+);
+
+export const messageTable = pgTable('message', {
+  id: serial('id').primaryKey(),
+  chatId: integer('chat_id')
+    .notNull()
+    .references(() => chatTable.id),
+  senderUserId: integer('sender_user_id').references(() => usersTable.id),
+  senderRestaurantId: integer('sender_restaurant_id').references(
+    () => restaurantTable.id,
+  ),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  isRead: boolean('is_read').notNull().default(false),
+});
