@@ -18,7 +18,6 @@ import {
 
 import { cancelReservation } from '@/apis/reservation.api';
 import { FontAwesome5, MaterialIcons, Entypo } from '@expo/vector-icons';
-import { fetchRestaurantById } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
 import ReviewModal from '@/components/reviewForm';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -63,25 +62,11 @@ export default function UserReservationsScreen() {
   const loadReservations = useCallback(async () => {
     setLoading(true);
     try {
-      const rawReservations = await fetchUserReservations();
+      const reservations = await fetchUserReservations();
 
-      // Fetch all restaurant details in parallel
-      const enrichedReservations: ReservationWithRestaurant[] =
-        await Promise.all(
-          rawReservations.map(async (res) => {
-            const restaurant = await fetchRestaurantById(res.restaurantId);
-            if (!restaurant)
-              throw new Error(`Restaurant ${res.restaurantId} not found`);
-
-            return {
-              ...res,
-              restaurant,
-            };
-          }),
-        );
-
-      setReservations(enrichedReservations);
-      applyFilter(activeFilters, enrichedReservations);
+      // The API already returns restaurant data, so we can use it directly
+      setReservations(reservations as ReservationWithRestaurant[]);
+      applyFilter(activeFilters, reservations as ReservationWithRestaurant[]);
     } catch (error) {
       setAlertModalConfig({
         title: 'Error',
