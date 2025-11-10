@@ -224,7 +224,10 @@ export default class UserService {
       throw createHttpError.Forbidden('You can only delete your own review');
     }
 
-    await db.delete(reviewTable).where(eq(reviewTable.id, reviewId));
+    await db
+      .update(reviewTable)
+      .set({ isDeleted: true })
+      .where(eq(reviewTable.id, reviewId));
     //console.log('review deleted successfully');
   }
 }
