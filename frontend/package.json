@@ -42,7 +42,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-icons": "^5.5.0",
-    "react-native": "0.79.5",
+    "react-native": "0.82.0",
     "react-native-calendars": "^1.1313.0",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-element-dropdown": "^2.12.4",
