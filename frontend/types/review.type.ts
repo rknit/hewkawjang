@@ -33,6 +33,7 @@ export type Comment = {
   rating: number;
   comment: string;
   date: string;
+  attachPhotos?: string[];
 };
 
 export type ReviewsWithBreakdown = {

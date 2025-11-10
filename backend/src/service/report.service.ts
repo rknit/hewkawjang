@@ -38,4 +38,35 @@ export default class ReportService {
       reportType: 'restaurant',
     });
   }
+
+  static async reportReview({
+    reporterUserId,
+    targetReviewId,
+  }: {
+    reporterUserId: number;
+    targetReviewId: number;
+  }): Promise<void> {
+    // Check if this review has already been reported
+    const existingReport = await db
+      .select()
+      .from(reportsTable)
+      .where(
+        and(
+          eq(reportsTable.targetReviewId, targetReviewId),
+          eq(reportsTable.reportType, 'review'),
+        ),
+      )
+      .limit(1);
+
+    // If report already exists, don't create duplicate
+    if (existingReport.length > 0) {
+      return;
+    }
+
+    await db.insert(reportsTable).values({
+      userId: reporterUserId,
+      targetReviewId: targetReviewId,
+      reportType: 'review',
+    });
+  }
 }

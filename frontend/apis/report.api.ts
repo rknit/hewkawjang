@@ -10,6 +10,14 @@ export async function reportRestaurant(restaurantId: number): Promise<void> {
   }
 }
 
+export async function reportReview(reviewId: number): Promise<void> {
+  try {
+    await ApiService.post(`/restaurants/reviews/${reviewId}/report`);
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
 export async function updateReportStatus(
   id: number,
   isSolved: boolean,

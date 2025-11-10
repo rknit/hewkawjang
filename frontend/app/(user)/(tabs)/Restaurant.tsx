@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, View } from 'react-native';
 import CenteredLoadingIndicator from '@/components/centeredLoading';
 import { ReportModal } from '@/components/report-modal';
-import { reportRestaurant } from '@/apis/report.api';
+import { reportRestaurant, reportReview } from '@/apis/report.api';
 import { useUser } from '@/hooks/useUser';
 import RestaurantReserveSummary from '@/components/restaurantReserveSummary';
 
@@ -49,6 +49,8 @@ export default function RestaurantScreen() {
   });
 
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showReportReviewModal, setShowReportReviewModal] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -79,6 +81,19 @@ export default function RestaurantScreen() {
     setShowReportModal(false);
   };
 
+  const handlePressReportReview = async () => {
+    if (selectedReviewId) {
+      await reportReview(Number(selectedReviewId));
+      setShowReportReviewModal(false);
+      setSelectedReviewId(null);
+    }
+  };
+
+  const handleReportReview = (reviewId: string) => {
+    setSelectedReviewId(reviewId);
+    setShowReportReviewModal(true);
+  };
+
   if (isLoading) {
     return <CenteredLoadingIndicator />;
   }
@@ -101,6 +116,8 @@ export default function RestaurantScreen() {
                 average={avgRating}
                 totalReviews={reviews.length}
                 breakdown={breakdown}
+                onPressReport={handleReportReview}
+                isLoggedIn={!!user}
               />
 
               <RestaurantAbout
@@ -128,6 +145,16 @@ export default function RestaurantScreen() {
         onClose={() => setShowReportModal(false)}
         reportWhat="restaurant"
         onPressReport={handlePressReport}
+      />
+
+      <ReportModal
+        visible={showReportReviewModal}
+        onClose={() => {
+          setShowReportReviewModal(false);
+          setSelectedReviewId(null);
+        }}
+        reportWhat="review"
+        onPressReport={handlePressReportReview}
       />
     </SafeAreaView>
   );
