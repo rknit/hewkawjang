@@ -140,6 +140,7 @@ export default class RestaurantService {
         and(
           eq(reservationTable.id, reviewTable.reservationId),
           eq(reservationTable.status, 'completed'),
+          eq(reviewTable.isDeleted, false),
         ),
       )
       .where(
@@ -386,6 +387,7 @@ export default class RestaurantService {
         and(
           eq(reservationTable.id, reviewTable.reservationId),
           eq(reservationTable.status, 'completed'), // Only count reviews from completed reservations
+          eq(reviewTable.isDeleted, false),
         ),
       )
       .where(and(...conditions))
@@ -499,6 +501,7 @@ export default class RestaurantService {
         and(
           eq(reservationTable.restaurantId, restaurantId),
           eq(reservationTable.status, 'completed'),
+          eq(reviewTable.isDeleted, false),
         ),
       )
       .orderBy(desc(reviewTable.createdAt))
@@ -540,6 +543,7 @@ export default class RestaurantService {
     const conditions = [
       eq(reservationTable.restaurantId, restaurantId),
       eq(reservationTable.status, 'completed'),
+      eq(reviewTable.isDeleted, false),
     ];
 
     if (minRating !== undefined) {
