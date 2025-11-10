@@ -51,4 +51,35 @@ export default class paymentService {
   static async deleteWithdraw(props: { id: number }) {
     await db.delete(withdrawsTable).where(eq(withdrawsTable.id, props.id));
   }
+
+  static async createCheckoutSession(props: {
+    amount: number;
+    userId: number;
+  }): Promise<Stripe.Checkout.Session> {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card', 'promptpay'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'thb',
+            product_data: {
+              name: 'Wallet Top-up',
+            },
+            unit_amount: Math.round(props.amount * 100), // convert to smallest currency unit (satang)
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${env.FRONTEND_URL}/payment/cancel`,
+      metadata: {
+        userId: props.userId.toString(),
+        amount: props.amount.toString(),
+        type: 'topup',
+      },
+    });
+
+    return session;
+  }
 }
