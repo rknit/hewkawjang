@@ -2,9 +2,10 @@ import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import MyWallet from './my-wallet';
 import { fetchOwnerRestaurants } from '@/apis/restaurant.api';
+import { getUserBalance } from '@/apis/payment.api';
 import { supabase } from '@/utils/supabase';
 import { useUser } from '@/hooks/useUser';
 
@@ -21,6 +22,18 @@ export default function UserDropdown({
   const email = user?.email || 'Loading...';
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [numberOfRestaurants, setNumberOfRestaurants] = useState(0);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+
+  // Fetch user's wallet balance
+  const fetchBalance = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const balance = await getUserBalance();
+      setWalletBalance(balance);
+    } catch (error) {
+      console.error('Failed to fetch wallet balance:', error);
+    }
+  }, [user?.id]);
 
   const loadData = async () => {
     if (!user?.id) return;
@@ -61,8 +74,10 @@ export default function UserDropdown({
     };
   }, [user?.id]);
 
-  // Placeholder balance - you might want to get this from user profile or API
-  const walletBalance = 1500.0;
+  // Fetch balance when component mounts and after wallet modal closes
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
 
   const onSelectProfile = () => {
     onClose();
@@ -85,6 +100,8 @@ export default function UserDropdown({
 
   const onCloseWallet = () => {
     setShowWalletModal(false);
+    // Refresh balance when wallet modal closes
+    fetchBalance();
   };
 
   return (
