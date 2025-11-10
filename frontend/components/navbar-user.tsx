@@ -7,6 +7,7 @@ import { useState, useMemo } from 'react';
 import UserDropdown from './user-dropdown';
 import NotificationPane from './notificationPane';
 import { useNotifications } from '@/context/NotificationContext';
+import { Link } from 'expo-router';
 
 export default function NavBarUser() {
   const { user } = useProfile();
@@ -82,9 +83,12 @@ export default function NavBarUser() {
       {/* Navigation links on the right */}
       <View>
         {/* FIXME: Add Link to Clickon*/}
-        <TouchableOpacity>
-          <Feather name="message-circle" size={24} color="black" />
-        </TouchableOpacity>
+        {/* Chat icon — navigate to /chat */}
+        <Link href={{ pathname: '/chat' }} asChild>
+          <TouchableOpacity>
+            <Feather name="message-circle" size={24} color="black" />
+          </TouchableOpacity>
+        </Link>
       </View>
 
       {/* Profile section with dropdown trigger */}
