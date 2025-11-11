@@ -4,8 +4,7 @@ import DefaultNotification from '@/components/notifications/defaultNotification'
 import { NotificationProvider } from '@/context/NotificationContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { useUser } from '@/hooks/useUser';
-import { Ionicons } from '@expo/vector-icons'; // optional for icons
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 
 export default function UserTabsLayout() {
   const { user, isLoading } = useUser();
@@ -22,37 +21,7 @@ export default function UserTabsLayout() {
     >
       <NotificationProvider>
         {!isLoading && user ? <NavBarUser /> : <NavBarGuest />}
-
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: '#FF6B00',
-          }}
-        >
-          <Tabs.Screen
-            name="index"
-            options={{
-              title: 'Home',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="home-outline" size={size} color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="chat"
-            options={{
-              title: 'Chat',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons
-                  name="chatbubbles-outline"
-                  size={size}
-                  color={color}
-                />
-              ),
-            }}
-          />
-          {/* add other tabs like profile etc. */}
-        </Tabs>
+        <Stack screenOptions={{ headerShown: false }} />
       </NotificationProvider>
     </ToastProvider>
   );
