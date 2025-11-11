@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-export const NotificationTypeEnum = z.enum(['reservation_status', 'chat']);
+export const NotificationTypeEnum = z.enum([
+  'reservation_status',
+  'chat',
+  'system',
+]);
 
 export const NotificationSchema = z.object({
   id: z.number(),

@@ -16,6 +16,7 @@ import {
 import { db } from '../db';
 import {
   reservationTable,
+  restaurantDaysOff,
   restaurantTable,
   reviewTable,
   usersTable,
@@ -26,8 +27,6 @@ import {
 } from '../validators/restaurant.validator';
 import createHttpError from 'http-errors';
 import Fuse from 'fuse.js';
-
-
 
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
@@ -44,6 +43,10 @@ export interface SearchParams {
   sortBy: { field: 'rating' | 'price' | 'name'; order: 'asc' | 'desc' };
   offset: number;
   limit: number;
+}
+
+export interface RestaurantWithAvgRating extends Restaurant {
+  avgRating: number;
 }
 
 export interface RestaurantWithRating extends Restaurant {
@@ -108,6 +111,57 @@ export default class RestaurantService {
     return await query;
   }
 
+  static async getTopRatedRestaurants({
+    limit,
+    offset,
+  }: {
+    limit?: number;
+    offset?: number;
+  }): Promise<RestaurantWithAvgRating[]> {
+    const avgRating = sql<number>`
+      ROUND(
+        COALESCE(AVG(${reviewTable.rating})::numeric, 0),
+        1
+      )::float
+    `.as('avgRating');
+
+    let query: any = db
+      .select({
+        ...getTableColumns(restaurantTable),
+        avgRating,
+      })
+      .from(restaurantTable)
+      .leftJoin(
+        reservationTable,
+        eq(restaurantTable.id, reservationTable.restaurantId),
+      )
+      .leftJoin(
+        reviewTable,
+        and(
+          eq(reservationTable.id, reviewTable.reservationId),
+          eq(reservationTable.status, 'completed'),
+        ),
+      )
+      .where(
+        and(
+          eq(restaurantTable.isDeleted, false),
+          eq(restaurantTable.isVerified, true),
+        )
+      )
+      .groupBy(restaurantTable.id)
+      .orderBy(desc(avgRating));
+
+    if (offset !== undefined) {
+      query = query.offset(offset);
+    }
+
+    if (limit !== undefined) {
+      query = query.limit(limit);
+    }
+
+    return await query;
+  }
+
   static async getRestaurantsByOwner(props: {
     ownerId: number;
     offset?: number;
@@ -136,6 +190,20 @@ export default class RestaurantService {
       .limit(1);
 
     return rows[0];
+  }
+  
+  static async getPendingVerificationRestaurants(): Promise<Restaurant[]> {
+    const pendingRestaurants = await db
+      .select()
+      .from(restaurantTable)
+      .where(
+        and(
+          eq(restaurantTable.isVerified, false),
+          eq(restaurantTable.isDeleted, false),
+        ),
+      );
+
+    return pendingRestaurants;
   }
 
   static async createRestaurant(data: CreateRestaurantInput) {
@@ -275,6 +343,7 @@ export default class RestaurantService {
     const conditions = [
       eq(restaurantTable.activation, 'active'),
       eq(restaurantTable.isDeleted, false),
+      eq(restaurantTable.isVerified, true),
     ];
 
     if (province) {
@@ -522,5 +591,57 @@ export default class RestaurantService {
       reviews: transformedReviews,
       hasMore: false,
     };
+  }
+
+  static async createDaysOff(restaurant_id: number, date: string) {
+    // รับ format: "2025-11-15"
+    const dayOff = await db.insert(restaurantDaysOff).values({
+      restaurantId: restaurant_id,
+      date: date, // Drizzle รับ string ได้เลย
+    });
+  }
+
+  static async deleteDaysOff(restaurant_id: number, date: string) {
+    await db
+      .delete(restaurantDaysOff)
+      .where(
+        and(
+          eq(restaurantDaysOff.restaurantId, restaurant_id),
+          eq(restaurantDaysOff.date, date),
+        ),
+      );
+  }
+
+  // หรือรองรับทั้งอดีตและอนาคต
+  static async getDayOffByRestaurantId(
+    restaurant_id: number,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    const conditions = [eq(restaurantDaysOff.restaurantId, restaurant_id)];
+
+    if (startDate) {
+      conditions.push(gte(restaurantDaysOff.date, startDate));
+    } else {
+      const today = new Date().toISOString().split('T')[0]; // "2025-11-06"
+      conditions.push(gte(restaurantDaysOff.date, today));
+    }
+
+    if (endDate) {
+      conditions.push(lte(restaurantDaysOff.date, endDate));
+    } else {
+      const sevenDaysLater = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0]; // "2025-11-13"
+      conditions.push(lte(restaurantDaysOff.date, sevenDaysLater));
+    }
+
+    const daysOff = await db
+      .select()
+      .from(restaurantDaysOff)
+      .where(and(...conditions))
+      .orderBy(restaurantDaysOff.date);
+
+    return daysOff;
   }
 }

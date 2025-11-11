@@ -1,8 +1,11 @@
 import ApiService from '@/services/api.service';
 import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
+  DaysOffSchema,
   Restaurant,
   RestaurantSchema,
+  RestaurantWithAvgRating,
+  RestaurantWithAvgRatingSchema,
   RestaurantWithRating,
   UpdateRestaurantInfo,
 } from '@/types/restaurant.type';
@@ -15,14 +18,53 @@ import {
 import { normalizeError } from '@/utils/api-error';
 import { getRelativeTime } from '@/utils/date-time';
 
-export async function fetchRestaurants(): Promise<Restaurant[]> {
+export async function fetchRestaurants(
+  restaurantIds?: number[],
+): Promise<Restaurant[]> {
   try {
-    const res = await ApiService.get('/restaurants/');
+    // If explicitly passed an empty array, return empty results
+    if (restaurantIds !== undefined && restaurantIds.length === 0) {
+      return [];
+    }
+
+    const params: any = {};
+    if (restaurantIds !== undefined) {
+      params.ids = restaurantIds.join(',');
+    }
+
+    const res = await ApiService.get('/restaurants', {
+      params,
+    });
     return res.data.map((restaurant: any) =>
       RestaurantSchema.parse(restaurant),
     );
   } catch (error) {
     console.error('Failed to fetch restaurants:', error);
+    return [];
+  }
+}
+
+export async function fetchTopRatedRestaurants({
+  limit,
+  offset,
+}: {
+  limit?: number;
+  offset?: number;
+} = {}): Promise<RestaurantWithAvgRating[]> {
+  try {
+    const params: any = {};
+    if (limit !== undefined) params.limit = limit;
+    if (offset !== undefined) params.offset = offset;
+
+    const res = await ApiService.get('/restaurants/top-rated', {
+      params,
+    });
+
+    return res.data.map((restaurant: any) =>
+      RestaurantWithAvgRatingSchema.parse(restaurant),
+    );
+  } catch (error) {
+    normalizeError(error);
     return [];
   }
 }
@@ -69,6 +111,22 @@ export async function updateRestaurantStatus(
       id: id,
       status: status,
     });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function updateRestaurantVerification(
+  restaurantId: number,
+  action: boolean,
+): Promise<void> {
+  try {
+    await ApiService.post(
+      `/admins/restaurants/${restaurantId}/verify`,
+      {
+        action,
+      },
+    );
   } catch (error) {
     normalizeError(error);
   }
@@ -157,8 +215,6 @@ export async function searchRestaurants(params: {
       limit: params.limit,
     };
 
-    // console.log('Search request:', requestBody);
-
     const res = await ApiService.post('/restaurants/search', requestBody);
 
     // Parse and validate the response data
@@ -170,6 +226,7 @@ export async function searchRestaurants(params: {
           name: restaurant.name,
           phoneNo: restaurant.phoneNo,
           // address
+          wallet: restaurant.wallet,
           houseNo: restaurant.houseNo,
           village: restaurant.village,
           building: restaurant.building,
@@ -184,8 +241,10 @@ export async function searchRestaurants(params: {
           priceRange: restaurant.priceRange,
           status: restaurant.status,
           activation: restaurant.activation,
+          isVerified: restaurant.isVerified,
           isDeleted: restaurant.isDeleted,
           images: restaurant.images,
+          reservationFee: restaurant.reservationFee
         }),
         // Add the rating fields
         avgRating: restaurant.avgRating || 0,
@@ -245,6 +304,7 @@ export async function fetchReviewsByRestaurantId(
         rating: review.rating,
         comment: review.comment || 'No comment provided',
         date: getRelativeTime(new Date(review.createdAt)),
+        attachPhotos: review.attachPhotos || [],
       };
     });
 
@@ -265,7 +325,7 @@ export async function fetchReviewsByRestaurantId(
 
     return {
       reviews: comments,
-      avgRating,
+      avgRating: Math.round((avgRating + Number.EPSILON) * 10) / 10,
       breakdown,
     };
   } catch (error) {
@@ -314,6 +374,7 @@ export async function fetchFilteredReviews(
           rating: review.rating,
           comment: review.comment || 'No comment provided',
           date: getRelativeTime(new Date(review.createdAt)),
+          attachPhotos: review.attachPhotos || [],
         };
       },
     );
@@ -349,5 +410,34 @@ export async function fetchOwnerRestaurants(
   } catch (error) {
     console.error('Failed to fetch owner restaurants:', error);
     return [];
+  }
+}
+
+export async function fecthDaysOff(
+  restaurantId: number,
+  startDate?: Date,
+  endDate?: Date,
+): Promise<Restaurant[]> {
+  try {
+    const res = await ApiService.get(`/restaurants/${restaurantId}/daysOff`, {
+      params: { startDate, endDate },
+    });
+    return res.data.map((daysOff: any) => DaysOffSchema.parse(daysOff));
+  } catch (error) {
+    console.error('Failed to fetch ', error);
+    return [];
+  }
+}
+
+export async function addDaysOff(
+  restaurantId: number,
+  dates: Date[],
+): Promise<void> {
+  try {
+    await ApiService.post(`/restaurants/${restaurantId}/createDaysOff`, {
+      dates,
+    });
+  } catch (error) {
+    normalizeError(error);
   }
 }

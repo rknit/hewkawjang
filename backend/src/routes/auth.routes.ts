@@ -17,7 +17,7 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
     throw createHttpError.BadRequest('Email and password are required');
   }
 
-  const tokens = await AuthService.loginUser(user);
+  const tokens = await AuthService.login(user);
   responseTokens(req, res, tokens);
 });
 
@@ -27,7 +27,7 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
     throw createHttpError.Unauthorized('User not authenticated');
   }
 
-  await AuthService.logoutUser(req.userAuthPayload);
+  await AuthService.logout(req.userAuthPayload);
 
   res.clearCookie('refreshToken', {
     httpOnly: true,
@@ -35,9 +35,8 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
     sameSite: 'strict',
   });
 
-  res.status(200).json({message: 'Logged out successfully',});
+  res.status(200).json({ message: 'Logged out successfully' });
 });
-
 
 // Token refresh
 router.post(

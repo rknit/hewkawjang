@@ -11,7 +11,7 @@ import {
 } from 'drizzle-orm';
 import createHttpError from 'http-errors';
 import { db } from '../db';
-import { reservationTable, restaurantTable } from '../db/schema';
+import { reservationTable, restaurantTable ,usersTable } from '../db/schema';
 import NotificationService from './notification.service';
 
 export type Reservation = InferSelectModel<typeof reservationTable>;
@@ -129,6 +129,36 @@ export default class ReservationService {
     numberOfAdult?: number;
     numberOfChildren?: number;
   }) {
+    // check if user balance is sufficient (reservation fee is stored in restaurant table)
+    const [restaurant] = await db
+      .select()
+      .from(restaurantTable)
+      .where(eq(restaurantTable.id, data.restaurantId))
+      .limit(1);
+
+    const [user]  = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, data.userId))
+      .limit(1);
+
+    if (!restaurant) {
+      throw new createHttpError.NotFound('Restaurant not found');
+    }
+    if (!user) {
+      throw new createHttpError.NotFound('User not found');
+    }
+    if (user.balance < restaurant.reservationFee) {
+      throw new createHttpError.BadRequest(
+        'Insufficient balance to make a reservation',
+      );
+    }
+
+    await db
+      .update(usersTable)
+      .set({ balance: user.balance - restaurant.reservationFee })
+      .where(eq(usersTable.id, user.id));
+      
     const [inserted] = await db
       .insert(reservationTable)
       .values({

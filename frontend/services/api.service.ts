@@ -2,6 +2,7 @@ import axios from 'axios';
 import TokenStorage from '@/services/token-storage.service';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
+import { Tokens } from '@/types/auth.type';
 
 const clientType = Platform.OS === 'web' ? 'web' : 'mobile';
 
@@ -47,12 +48,19 @@ ApiService.interceptors.response.use(undefined, async (error) => {
 
 export default ApiService;
 
-export async function refreshAuth(): Promise<boolean> {
+export async function refreshAuth(): Promise<Tokens | null> {
   const token = await TokenStorage.getRefreshToken();
+
+  // On web, token will be null because refresh token is in HttpOnly cookie
+  // On mobile, we need the refresh token from secure storage
+  if (clientType === 'mobile' && !token) {
+    return null;
+  }
+
   try {
     const resp = await refreshApi.post('/auth/refresh', undefined, {
       headers: {
-        Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available
+        Authorization: token ? `Bearer ${token}` : '', // Attach refresh token if available (mobile)
       },
     });
 
@@ -61,16 +69,16 @@ export async function refreshAuth(): Promise<boolean> {
       const newRefreshToken = resp.data.refreshToken;
 
       // Store new tokens
-      await Promise.all([
-        TokenStorage.setAccessToken(newAccessToken),
-        TokenStorage.setRefreshToken(newRefreshToken),
-      ]);
+      await TokenStorage.setAccessToken(newAccessToken);
+      if (newRefreshToken) {
+        await TokenStorage.setRefreshToken(newRefreshToken);
+      }
 
-      return true;
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }
   } catch (error) {
     if (__DEV__) {
-      console.log('Failed to refresh auth:', error);
+      console.warn('Failed to refresh auth:', error);
     }
   }
 
@@ -79,5 +87,5 @@ export async function refreshAuth(): Promise<boolean> {
     TokenStorage.removeAccessToken(),
     TokenStorage.removeRefreshToken(),
   ]);
-  return false;
+  return null;
 }

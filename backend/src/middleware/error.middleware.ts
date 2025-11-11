@@ -18,11 +18,14 @@ export default function errorHandler(
   };
 
   if (process.env.NODE_ENV === 'development') {
-    console.error({
-      timestamp: new Date().toISOString(),
-      req: reqDisp,
-      error,
-    }); // Log full error server-side in development
+    // Skip logging expected 401s on refresh endpoint (guests checking auth)
+    if (!(error.status === 401 && req.url === '/auth/refresh')) {
+      console.error({
+        timestamp: new Date().toISOString(),
+        req: reqDisp,
+        error,
+      }); // Log full error server-side in development
+    }
   }
 
   const isProduction = process.env.NODE_ENV === 'production';

@@ -9,9 +9,12 @@ import restaurantRoute from './routes/restaurant.routes';
 import reservationRoute from './routes/reservation.routes';
 import notificationRoute from './routes/notification.routes';
 import errorHandler from './middleware/error.middleware';
-import { authHandler } from './middleware/auth.middleware';
+import paymentRoute from './routes/payment.routes';
+import adminRoute from './routes/admin.routes';
+import reportRoute from './routes/report.routes';
 import imgRoute from './routes/image.routes';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { startScheduledJobs } from './jobs';
 import chatRoutes from './routes/chat.routes';
 
@@ -28,14 +31,19 @@ app.use(
   }),
 );
 
+app.use(helmet());
+
 app.use(cookieParser());
 app.use(express.json());
 
+app.use('/admins', adminRoute);
+app.use('/reports', reportRoute);
 app.use('/auth', authRoute);
 app.use('/users', userRoute);
 app.use('/restaurants', restaurantRoute);
 app.use('/reservations', reservationRoute);
 app.use('/notifications', notificationRoute);
+app.use('/payment', paymentRoute);
 app.use('/img', imgRoute);
 app.use('/chat', chatRoutes);
 

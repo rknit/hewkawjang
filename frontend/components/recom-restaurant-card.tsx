@@ -16,8 +16,7 @@ type RestaurantCardWithImageProps = {
   tags: string[];
   rating: number;
   prices: number;
-  image: any; // fallback to any since ImageSourcePropType is not imported
-  isNew?: boolean;
+  imageUrl: string;
   openingHours?: DayOpeningHour[];
 };
 
@@ -28,8 +27,7 @@ export default function RecommendedRestaurantCard({
   tags,
   rating,
   prices,
-  image,
-  isNew = false,
+  imageUrl,
   openingHours,
 }: RestaurantCardWithImageProps) {
   const [showOpeningHour, setShowOpeningHour] = React.useState(false);
@@ -43,12 +41,11 @@ export default function RecommendedRestaurantCard({
       <View className="bg-white rounded-lg overflow-hidden shadow-md flex-row w-full">
         {/* Image */}
         <View className="relative w-2/5 min-w-[120px] max-w-[180px]">
-          <Image source={image} className="w-full h-full" resizeMode="cover" />
-          {isNew && (
-            <View className="absolute top-1 right-1 bg-orange-500 px-1 py-0.5 rounded">
-              <Text className="text-white text-xs font-bold">NEW</Text>
-            </View>
-          )}
+          <Image
+            source={{ uri: imageUrl }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
         </View>
 
         {/* Content - Inlined RestaurantCard */}
@@ -90,7 +87,9 @@ export default function RecommendedRestaurantCard({
             <View className="flex-row items-center mt-2">
               <View className="flex-row items-center">
                 <Star size={16} color="gold" fill="gold" />
-                <Text className="ml-1 text-gray-800 font-medium">{rating}</Text>
+                <Text className="ml-1 text-gray-800 font-medium">
+                  {Number.isInteger(rating) ? `${rating}.0` : rating}
+                </Text>
               </View>
 
               {/* Price Icons */}

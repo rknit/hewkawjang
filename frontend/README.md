@@ -23,5 +23,5 @@ Start the project by running this command
 # When running the project
 # Type 'w' to open in web
 # Type 'i' to open in IOS sim (require expo orbit)
-npx expo start
+npm run start
 ```

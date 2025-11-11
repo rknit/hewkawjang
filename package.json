@@ -2,9 +2,18 @@
 	"name": "hewkawjang",
 	"version": "1.0.0",
 	"scripts": {
-		"frontend": "cd frontend && npm start",
-		"backend": "cd backend && npm run dev",
-		"test:backend": "cd backend && npm run test",
+		"install": "npm-run-all install:frontend install:backend",
+		"install:frontend": "cross-env-shell \"cd frontend && npm install\"",
+		"install:backend": "cross-env-shell \"cd backend && npm install\"",
+		"frontend": "cross-env-shell \"cd frontend && npm start\"",
+		"backend": "cross-env-shell \"cd backend && npm run dev\"",
+		"dev": "concurrently -n FE,BE -c blue,green \"npm run frontend\" \"npm run backend\"",
+		"test:backend": "cross-env-shell \"cd backend && npm run test\"",
 		"test": "npm run test:backend"
+	},
+	"devDependencies": {
+		"concurrently": "^9.2.1",
+		"cross-env": "^7.0.3",
+		"npm-run-all": "^4.1.5"
 	}
 }

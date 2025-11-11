@@ -43,12 +43,14 @@
     "drizzle-zod": "^0.8.3",
     "express": "^5.1.0",
     "fuse.js": "^7.1.0",
+    "helmet": "^8.1.0",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "postgres": "^3.4.7",
+    "stripe": "^19.2.0",
     "zod": "^4.1.8"
   }
 }

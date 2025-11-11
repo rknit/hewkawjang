@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Text } from 'react-native';
 import ReservationForm from '@/components/ReservationForm';
-import { useAuth } from '@/context/AuthContext';
 import LoginModal from './login-modal';
 import SignUpModal from './signup-modal';
+import { useUser } from '@/hooks/useUser';
 
 type Props = {
   restaurantId?: number;
+  disabled?: boolean;
 };
 
-export default function ReserveButton({ restaurantId }: Props) {
-  const { user } = useAuth();
+export default function ReserveButton({ restaurantId, disabled }: Props) {
+  const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [signUpModalVisible, setSignUpModalVisible] = useState(false);
 
   const handlePress = () => {
+    if (disabled) return;
+
     if (user) {
       setOpen(true);
     } else {
@@ -29,7 +32,7 @@ export default function ReserveButton({ restaurantId }: Props) {
     <>
       <TouchableOpacity
         onPress={handlePress}
-        className="bg-orange-500 px-6 py-3 rounded-md mt-4 w-2/5 items-center "
+        className="bg-orange-500 px-6 py-3 rounded-md mt-4 w-48 items-center "
         style={{ backgroundColor: '#E46D2C' }}
       >
         <Text className="font-bold text-white text-lg">{buttonText}</Text>

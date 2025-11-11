@@ -6,12 +6,45 @@ import {
   createRestaurantSchema,
   updateRestaurantInfoSchema,
 } from '../validators/restaurant.validator';
+import z from 'zod';
+import createHttpError from 'http-errors';
+import ReportService from '../service/report.service';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const users = await RestaurantService.getRestaurants(req.body);
-  res.json(users);
+  const querySchema = z.object({
+    ids: z
+      .string()
+      .optional()
+      .transform((val) => {
+        if (!val || val.trim() === '') return undefined;
+        return val.split(',').map((id) => Number(id.trim()));
+      }),
+  });
+  const { ids } = querySchema.parse(req.query);
+
+  const restaurants = await RestaurantService.getRestaurants({
+    ids,
+  });
+  res.json(restaurants);
+});
+
+router.get('/top-rated', async (req, res) => {
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const offset = req.query.offset ? Number(req.query.offset) : undefined;
+  if (limit !== undefined && (isNaN(limit) || limit <= 0)) {
+    return createHttpError.BadRequest('limit must be a positive number');
+  }
+  if (offset !== undefined && (isNaN(offset) || offset < 0)) {
+    return createHttpError.BadRequest('offset must be a non-negative number');
+  }
+
+  const restaurants = await RestaurantService.getTopRatedRestaurants({
+    limit,
+    offset,
+  });
+  res.json(restaurants);
 });
 
 router.get('/owner/:ownerId', async (req, res) => {
@@ -220,7 +253,7 @@ router.post('/search', async (req, res, next) => {
     const searchParams = {
       query: query?.trim(),
       province: province?.trim(),
-      priceRange: priceRange || { min: 0, max: 10000 },
+      priceRange: priceRange || { min: 0, max: 99999 },
       cuisineTypes: Array.isArray(cuisineTypes) ? cuisineTypes : [],
       minRating: minRating || 0,
       sortBy: sortBy || { field: 'rating', order: 'desc' },
@@ -347,6 +380,88 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+router.post('/:id/createDaysOff', authHandler, async (req, res, next) => {
+  const userId = (req as any).userAuthPayload?.userId;
+  try {
+    const restaurant_id = parseInt(req.params.id);
+    const { dates } = req.body; // ["2025-11-15", "2025-12-25"]
+    const restaurant = await RestaurantService.getRestaurantById(restaurant_id);
+    if (restaurant?.ownerId !== userId) {
+      return res.status(403).json({ error: 'Forbidden: not owner' });
+    }
+    // Validate
+    if (!dates || !Array.isArray(dates) || dates.length === 0) {
+      return res.status(400).json({
+        error: 'dates array is required',
+      });
+    }
+
+    // สร้างวันหยุด
+    for (const e of dates) {
+      await RestaurantService.createDaysOff(restaurant_id, e.toString());
+    }
+    res.status(201).json({
+      message: 'Days off created successfully',
+      restaurant_id,
+      dates,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+router.get('/:id/daysOff', authHandler, async (req, res, next) => {
+  const userId = (req as any).userAuthPayload?.userId;
+  try {
+    const restaurant_id = parseInt(req.params.id);
+    const restaurant = await RestaurantService.getRestaurantById(restaurant_id);
+    if (restaurant?.ownerId !== userId) {
+      return res.status(403).json({ error: 'Forbidden: not owner' });
+    }
+    const startDate = req.query.startDate as string;
+    const endDate = req.query.endDate as string;
+    const daysOff = await RestaurantService.getDayOffByRestaurantId(
+      restaurant_id,
+      startDate,
+      endDate,
+    );
+
+    res.json({ daysOff });
+  } catch (error) {
+    next(error);
+  }
+});
+router.post('/:id/report', authHandler, async (req, res) => {
+  const restaurantId = Number(req.params.id);
+  if (isNaN(restaurantId)) {
+    return createHttpError.BadRequest('Invalid restaurant ID');
+  }
+
+  const reporterId = req.userAuthPayload?.userId!;
+
+  await ReportService.reportRestaurant({
+    reporterUserId: reporterId,
+    targetRestaurantId: restaurantId,
+  });
+
+  res.sendStatus(201);
+});
+
+router.post('/reviews/:reviewId/report', authHandler, async (req, res) => {
+  const reviewId = Number(req.params.reviewId);
+  if (isNaN(reviewId)) {
+    return createHttpError.BadRequest('Invalid review ID');
+  }
+
+  const reporterId = req.userAuthPayload?.userId!;
+
+  await ReportService.reportReview({
+    reporterUserId: reporterId,
+    targetReviewId: reviewId,
+  });
+
+  res.sendStatus(201);
 });
 
 export default router;

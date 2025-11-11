@@ -51,11 +51,12 @@ export default function SearchFilterModal({
 
   const cuisineTypes = ['Buffet', 'Indian', 'Italian', 'Japanese', 'Chinese'];
   const priceRanges = [
-    { label: 'Any', min: 0, max: 10000 },
-    { label: '$', min: 0, max: 250 },
-    { label: '$$', min: 251, max: 750 },
-    { label: '$$$', min: 751, max: 2000 },
-    { label: '$$$$', min: 2001, max: 10000 },
+    { label: 'Any', min: 0, max: 99999 },
+    { label: '$', min: 50, max: 150 },
+    { label: '$$', min: 151, max: 300 },
+    { label: '$$$', min: 301, max: 600 },
+    { label: '$$$$', min: 601, max: 1500 },
+    { label: '$$$$$', min: 1501, max: 99999 }
   ];
 
   const toggleCuisineType = (type: string) => {

@@ -1,16 +1,15 @@
-import { View, TouchableOpacity, Image, Text } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
-import UnderlinedPressableText from './underlined-pressable-text';
-import { useProfile } from '@/hooks/useProfile';
-import { router } from 'expo-router';
-import { useState, useMemo } from 'react';
-import UserDropdown from './user-dropdown';
-import NotificationPane from './notificationPane';
 import { useNotifications } from '@/context/NotificationContext';
-import { Link } from 'expo-router';
+import { useUser } from '@/hooks/useUser';
+import Feather from '@expo/vector-icons/Feather';
+import { Link, router } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import NotificationPane from './notificationPane';
+import UnderlinedPressableText from './underlined-pressable-text';
+import UserDropdown from './user-dropdown';
 
 export default function NavBarUser() {
-  const { user } = useProfile();
+  const { user } = useUser();
   const { notifications } = useNotifications();
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [isNotiPaneVisible, setNotiPaneVisible] = useState(false);
@@ -34,7 +33,7 @@ export default function NavBarUser() {
   return (
     <View className="flex-row items-center bg-[#FEF9F3] border-b border-[#E05910] h-16 space-x-5 pr-6">
       {/* Logo on the left edge */}
-      <TouchableOpacity onPress={() => router.push('/')}>
+      <TouchableOpacity onPress={() => router.push('/(user)')}>
         <Image
           source={require('../assets/images/logo.png')}
           style={{ width: 64, height: 64, marginLeft: 15, marginBottom: 1 }}
