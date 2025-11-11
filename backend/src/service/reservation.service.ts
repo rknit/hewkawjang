@@ -11,9 +11,9 @@ import {
 } from 'drizzle-orm';
 import createHttpError from 'http-errors';
 import { db } from '../db';
-import { reservationTable, restaurantTable ,usersTable } from '../db/schema';
+import { reservationTable, restaurantTable, usersTable } from '../db/schema';
 import NotificationService from './notification.service';
-
+import chatService from './chat.service';
 export type Reservation = InferSelectModel<typeof reservationTable>;
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 
@@ -136,7 +136,7 @@ export default class ReservationService {
       .where(eq(restaurantTable.id, data.restaurantId))
       .limit(1);
 
-    const [user]  = await db
+    const [user] = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.id, data.userId))
@@ -158,7 +158,7 @@ export default class ReservationService {
       .update(usersTable)
       .set({ balance: user.balance - restaurant.reservationFee })
       .where(eq(usersTable.id, user.id));
-      
+
     const [inserted] = await db
       .insert(reservationTable)
       .values({
@@ -251,7 +251,12 @@ export default class ReservationService {
       .set({ status: newStatus })
       .where(eq(reservationTable.id, reservationId))
       .returning();
-
+    if (newStatus === 'confirmed') {
+      await chatService.findOrCreateChat(
+        reservation.userId,
+        reservation.restaurantId,
+      );
+    }
     await NotificationService.notifyReservationStatuses([
       {
         reservation: updated,

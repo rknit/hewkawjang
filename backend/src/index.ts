@@ -16,6 +16,7 @@ import imgRoute from './routes/image.routes';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { startScheduledJobs } from './jobs';
+import chatRoutes from './routes/chat.routes';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -44,6 +45,7 @@ app.use('/reservations', reservationRoute);
 app.use('/notifications', notificationRoute);
 app.use('/payment', paymentRoute);
 app.use('/img', imgRoute);
+app.use('/chat', chatRoutes);
 
 app.get('/', (_: Request, res: Response) => {
   res.status(200).send('Hello, World!');
