@@ -21,4 +21,22 @@ router.patch('/:id', authHandler, adminRoleHandler, async (req, res) => {
   res.status(200).json(updatedReport);
 });
 
+router.post('/message/:messageId', authHandler, async (req, res) => {
+  const messageId = Number(req.params.messageId);
+  if (isNaN(messageId)) {
+    return createHttpError.BadRequest('Invalid message ID');
+  }
+  const reporterUserId = req.userAuthPayload?.userId;
+  if (!reporterUserId) {
+    return createHttpError.Unauthorized();
+  }
+
+  await ReportService.reportMessage({
+    reporterUserId,
+    targetMessageId: messageId,
+  });
+
+  res.status(201).send('Message reported');
+});
+
 export default router;

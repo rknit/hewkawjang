@@ -258,7 +258,7 @@ export const adminsTable = pgTable('admin', {
 });
 
 export const reportTypeEnum = pgEnum('type', [
-  'chat',
+  'message',
   'user',
   'review',
   'restaurant',
@@ -358,7 +358,7 @@ export const reportsTable = pgTable('report', {
   ),
   targetReviewId: integer('review_id').references(() => reviewTable.id),
   targetUserId: integer('taget_user_id').references(() => usersTable.id),
-  targetChatId: integer('chat_id').references(() => chatsTable.id),
+  targetMessageId: integer('message_id').references(() => messagesTable.id),
   isSolved: boolean('is_solved').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });

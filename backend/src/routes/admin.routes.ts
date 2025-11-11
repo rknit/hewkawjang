@@ -27,7 +27,8 @@ router.get(
   authHandler,
   adminRoleHandler,
   async (req, res) => {
-    const pendingRestaurants = await RestaurantService.getPendingVerificationRestaurants();
+    const pendingRestaurants =
+      await RestaurantService.getPendingVerificationRestaurants();
     res.status(200).json(pendingRestaurants);
   },
 );
@@ -161,13 +162,85 @@ router.post(
     try {
       await AdminService.updateRestaurantVerification(
         parseInt(restaurantId, 10),
-        action
+        action,
       );
-      res.status(200).send('Restaurant verification status updated successfully');
+      res
+        .status(200)
+        .send('Restaurant verification status updated successfully');
     } catch (error) {
       console.error('Error in /reports/review/:reportId/handle route:', error);
       throw createHttpError.InternalServerError(
         'Failed to handle the reported review',
+      );
+    }
+  },
+);
+
+router.post(
+  '/reports/message/:reportId/handle',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const { reportId } = req.params;
+    const { action } = req.body; // action is a boolean: true for delete, false for reject
+
+    if (action === undefined) {
+      throw createHttpError.BadRequest('Action (true/false) must be provided');
+    }
+
+    if (typeof action !== 'boolean') {
+      throw createHttpError.BadRequest(
+        'Action must be a boolean value (true or false)',
+      );
+    }
+
+    try {
+      await AdminService.handleReportedMessage(parseInt(reportId, 10), action);
+      res.status(200).send('Message report processed successfully');
+    } catch (error) {
+      console.error('Error in /reports/message/:reportId/handle route:', error);
+      throw createHttpError.InternalServerError(
+        'Failed to handle the reported message',
+      );
+    }
+  },
+);
+
+router.get(
+  '/reports/message',
+  authHandler,
+  adminRoleHandler,
+  async (req, res) => {
+    const { isSolved = 'false', page = '1', limit = '10' } = req.query;
+
+    const isSolvedBool = isSolved === 'true';
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+
+    if (isNaN(pageNum) || pageNum < 1) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid page number. It must be a positive integer.' });
+    }
+
+    if (isNaN(limitNum) || limitNum < 1) {
+      return res.status(400).json({
+        error: 'Invalid limit number. It must be a positive integer.',
+      });
+    }
+
+    try {
+      // You need to implement getReportedMessages in your AdminService
+      const reportedMessages = await AdminService.getReportedMessages({
+        isSolved: isSolvedBool,
+        page: pageNum,
+        limit: limitNum,
+      });
+      res.status(200).json(reportedMessages);
+    } catch (error) {
+      console.error('Error in /reports/message route:', error);
+      throw createHttpError.InternalServerError(
+        'Failed to fetch reported messages',
       );
     }
   },
