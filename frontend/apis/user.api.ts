@@ -64,32 +64,33 @@ export async function deleteReview(reviewId: number): Promise<boolean> {
     return false;
   }
 }
-// Reservation schemas
+// Reservation schemas - using passthrough to allow extra fields from backend
 const RestaurantSchema = z.object({
   id: z.number(),
   name: z.string(),
   phoneNo: z.string(),
   cuisineType: z.string(),
-  priceRange: z.number().nullable(),
-  houseNo: z.string().nullable(),
-  village: z.string().nullable(),
-  building: z.string().nullable(),
-  road: z.string().nullable(),
-  soi: z.string().nullable(),
-  subDistrict: z.string().nullable(),
-  district: z.string().nullable(),
-  province: z.string().nullable(),
-  postalCode: z.string().nullable(),
-});
+  priceRange: z.number().nullable().optional(),
+  houseNo: z.string().nullable().optional(),
+  village: z.string().nullable().optional(),
+  building: z.string().nullable().optional(),
+  road: z.string().nullable().optional(),
+  soi: z.string().nullable().optional(),
+  subDistrict: z.string().nullable().optional(),
+  district: z.string().nullable().optional(),
+  province: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  images: z.array(z.string()).nullable().optional(),
+}).passthrough(); // Allow additional fields from backend
 
 const ReservationSchema = z.object({
   id: z.number(),
   userId: z.number(),
   restaurantId: z.number(),
   reserveAt: z.string(),
-  reservationfee: z.number().nullable(),
-  numberOfAdult: z.number().nullable(),
-  numberOfChildren: z.number().nullable(),
+  reservationFee: z.number().nullable().optional(),
+  numberOfAdult: z.number().nullable().optional(),
+  numberOfChildren: z.number().nullable().optional(),
   status: z.enum([
     'unconfirmed',
     'expired',
@@ -101,7 +102,7 @@ const ReservationSchema = z.object({
   ]),
   createdAt: z.string(),
   restaurant: RestaurantSchema,
-});
+}).passthrough(); // Allow additional fields from backend
 
 export type UserReservation = z.infer<typeof ReservationSchema>;
 export type ReservationStatus = UserReservation['status'];
