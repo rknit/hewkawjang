@@ -57,7 +57,7 @@ export default class paymentService {
     userId: number;
   }): Promise<Stripe.Checkout.Session> {
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'promptpay'],
+      payment_method_types: ['card'],
       line_items: [
         {
           price_data: {

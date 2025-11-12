@@ -84,3 +84,42 @@ export async function fetchReservationsByRestaurantInOneMonth(
     return null;
   }
 }
+
+// Confirm reservation (restaurant owner action)
+export async function confirmReservation(
+  reservationId: number,
+): Promise<boolean> {
+  try {
+    await ApiService.post(`/reservations/${reservationId}/confirm`);
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
+
+// Mark customer as arrived (restaurant owner action)
+export async function markCustomerArrived(
+  reservationId: number,
+): Promise<boolean> {
+  try {
+    await ApiService.post(`/reservations/${reservationId}/arrived`);
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
+
+// Mark customer as no-show (restaurant owner action)
+export async function markCustomerNoShow(
+  reservationId: number,
+): Promise<boolean> {
+  try {
+    await ApiService.post(`/reservations/${reservationId}/no-show`);
+    return true;
+  } catch (error) {
+    normalizeError(error);
+    return false;
+  }
+}
