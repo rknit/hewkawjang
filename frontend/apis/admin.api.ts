@@ -25,8 +25,12 @@ export async function fetchPendingReports(): Promise<Report[]> {
 
 export async function fetchPendingRestaurants(): Promise<Restaurant[]> {
   try {
-    const res = await ApiService.get('/admins/restaurants/pending-verification');
-    return res.data.map((restaurant: any) => RestaurantSchema.parse(restaurant));
+    const res = await ApiService.get(
+      '/admins/restaurants/pending-verification',
+    );
+    return res.data.map((restaurant: any) =>
+      RestaurantSchema.parse(restaurant),
+    );
   } catch (error) {
     normalizeError(error);
     return [];
@@ -71,7 +75,7 @@ export async function fetchReportedReviews(
         targetRestaurantId: review.targetRestaurantId,
         targetReviewId: review.targetReviewId,
         targetUserId: review.targetUserId,
-        targetChatId: review.targetChatId,
+        targetMessageId: review.targetMessageId,
         isSolved: review.isSolved,
         createdAt: review.createdAt,
 
@@ -107,6 +111,49 @@ export async function handleReport(
     await ApiService.post(`/admins/reports/review/${reportId}/handle`, {
       action,
     });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function fetchReportedMessages(
+  isSolved: boolean = false,
+  page: number = 1,
+  limit: number = 10,
+): Promise<any[]> {
+  try {
+    const queryParams = new URLSearchParams({
+      isSolved: isSolved.toString(),
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+
+    const res = await ApiService.get(
+      `/admins/reports/message?${queryParams.toString()}`,
+    );
+    return res.data;
+  } catch (error) {
+    normalizeError(error);
+    return [];
+  }
+}
+
+export async function handleMessageReport(
+  reportId: number,
+  action: boolean,
+): Promise<void> {
+  try {
+    await ApiService.post(`/admins/reports/message/${reportId}/handle`, {
+      action,
+    });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function reportMessage(messageId: number): Promise<void> {
+  try {
+    await ApiService.post(`/reports/message/${messageId}`);
   } catch (error) {
     normalizeError(error);
   }

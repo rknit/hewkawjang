@@ -6,6 +6,7 @@ export const ReportTypeEnum = z.enum([
   'review',
   'user',
   'chat',
+  'message',
 ]);
 
 export const ReportSchema = z.object({
@@ -16,7 +17,7 @@ export const ReportSchema = z.object({
   targetRestaurantId: z.number().nullable(),
   targetReviewId: z.number().nullable(),
   targetUserId: z.number().nullable(),
-  targetChatId: z.number().nullable(),
+  targetMessageId: z.number().nullable(),
   isSolved: z.boolean(),
   createdAt: z.string(), // ISO date string
 });
