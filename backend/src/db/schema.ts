@@ -182,6 +182,7 @@ export const reservationTable = pgTable('reservation', {
   numberOfChildren: integer('number_of_children').default(0),
   status: reservationStatusEnum('status').notNull().default('unconfirmed'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  confirmedAt: timestamp('confirmed_at'), // When restaurant owner confirms the reservation
 });
 
 export const emailVerificationTable = pgTable('emailVerification', {

@@ -20,7 +20,7 @@ export function getUserReservationNotificationMessages(
       break;
     case 'rejected':
       title = `Reservation Rejected at ${restaurantName}`;
-      message = `Unfortunately, your reservation at ${restaurantName} has been rejected. Please try booking at a different time.`;
+      message = `Unfortunately, your reservation at ${restaurantName} has been rejected. A full refund has been processed to your wallet.`;
       break;
     case 'cancelled':
       title = `Reservation Cancelled at ${restaurantName}`;
@@ -33,6 +33,10 @@ export function getUserReservationNotificationMessages(
     case 'completed':
       title = `Reservation Completed at ${restaurantName}`;
       message = `Thank you for dining with us at ${restaurantName}! We hope you had a great experience. Please consider leaving a review.`;
+      break;
+    case 'uncompleted':
+      title = `Reservation Marked as No-Show at ${restaurantName}`;
+      message = `Your reservation at ${restaurantName} was marked as a no-show. If you believe this is an error, please contact the restaurant.`;
       break;
     default:
       throw new createHttpError.InternalServerError(
@@ -63,6 +67,10 @@ export function getRestaurantOwnerReservationNotificationMessages(
     case 'completed':
       title = `Reservation Completed for ${userName} at ${restaurantName}`;
       message = `The reservation for ${userName} at ${restaurantName} has been completed.`;
+      break;
+    case 'uncompleted':
+      title = `No-Show Recorded for ${userName} at ${restaurantName}`;
+      message = `The reservation for ${userName} at ${restaurantName} was marked as a no-show.`;
       break;
     default:
       throw new createHttpError.InternalServerError(

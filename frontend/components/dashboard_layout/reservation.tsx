@@ -1,7 +1,12 @@
-import { updateReservationStatus } from '@/apis/reservation.api';
+import {
+  updateReservationStatus,
+  confirmReservation,
+  markCustomerArrived,
+  markCustomerNoShow,
+} from '@/apis/reservation.api';
 import { fetchReservationsByRestaurant } from '@/apis/restaurant.api';
 import { fetchUserById } from '@/apis/user.api';
-import { Check, X } from 'lucide-react';
+import { Check, X, UserCheck, UserX } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
@@ -22,6 +27,7 @@ type Reservation = {
   userId?: number;
   status: ReservationStatus;
   total: number; // in THB
+  reserveAt?: string; // ISO string for arrival check
 };
 
 // Data comes from public API via fetchReservationsByRestaurant
@@ -99,14 +105,18 @@ export default function Reservation({ restaurantId }: ReservationProps) {
           setReservations([]);
           setError('Failed to load reservations');
         } else {
-          const mapped = data.map((d: any) => ({
-            id: d.id,
-            date: d.reserveAt || d.createdAt || new Date().toISOString(),
-            customerName: `Guest #${d.userId}`,
-            userId: d.userId,
-            status: (d.status as ReservationStatus) || 'unconfirmed',
-            total: 0,
-          }));
+          const mapped = data.map((d: any) => {
+            console.log(d);
+            return {
+              id: d.id,
+              date: d.reserveAt || d.createdAt || new Date().toISOString(),
+              customerName: `Guest #${d.userId}`,
+              userId: d.userId,
+              status: (d.status as ReservationStatus) || 'unconfirmed',
+              total: d.reservationFee,
+              reserveAt: d.reserveAt, // Store for arrival time check
+            };
+          });
 
           setReservations(mapped);
           // set pagination flags
@@ -197,11 +207,7 @@ export default function Reservation({ restaurantId }: ReservationProps) {
       p.map((r) => (r.id === id ? { ...r, status: 'confirmed' } : r)),
     );
     (async () => {
-      const ok = await updateReservationStatus(
-        id,
-        'confirmed',
-        'restaurant_owner',
-      );
+      const ok = await confirmReservation(id);
       if (!ok) {
         setReservations(prev);
         Alert.alert('Failed', `Failed to approve reservation #${id}`);
@@ -226,9 +232,60 @@ export default function Reservation({ restaurantId }: ReservationProps) {
         setReservations(prev);
         Alert.alert('Failed', `Failed to reject reservation #${id}`);
       } else {
-        Alert.alert('Reservation rejected', `Reservation #${id} rejected`);
+        Alert.alert(
+          'Reservation Rejected',
+          `Reservation #${id} has been rejected. Full refund processed to customer's wallet.`,
+        );
       }
     })();
+  };
+
+  const handleArrived = (id: number) => {
+    const prev = reservations;
+    setReservations((p) =>
+      p.map((r) => (r.id === id ? { ...r, status: 'completed' } : r)),
+    );
+    (async () => {
+      const ok = await markCustomerArrived(id);
+      if (!ok) {
+        setReservations(prev);
+        Alert.alert('Failed', `Failed to mark customer as arrived #${id}`);
+      } else {
+        Alert.alert(
+          'Customer Arrived',
+          `Customer for reservation #${id} has been marked as arrived. 95% refund processed.`,
+        );
+      }
+    })();
+  };
+
+  const handleNoShow = (id: number) => {
+    const prev = reservations;
+    setReservations((p) =>
+      p.map((r) => (r.id === id ? { ...r, status: 'uncompleted' } : r)),
+    );
+    (async () => {
+      const ok = await markCustomerNoShow(id);
+      if (!ok) {
+        setReservations(prev);
+        Alert.alert('Failed', `Failed to mark customer as no-show #${id}`);
+      } else {
+        Alert.alert(
+          'No-Show Recorded',
+          `Customer for reservation #${id} marked as no-show. 95% payout processed to restaurant.`,
+        );
+      }
+    })();
+  };
+
+  // Check if arrival window has passed (15 minutes after reservation time)
+  const isArrivalWindowPassed = (reserveAt?: string): boolean => {
+    if (!reserveAt) return false;
+    const reserveTime = new Date(reserveAt);
+    const now = new Date();
+    const minutesSinceReservation =
+      (now.getTime() - reserveTime.getTime()) / (1000 * 60);
+    return minutesSinceReservation > 15;
   };
 
   return (
@@ -347,6 +404,10 @@ export default function Reservation({ restaurantId }: ReservationProps) {
             {filter === 'pending' ? (
               <Text className="w-1/12 p-3 font-bold text-center">Actions</Text>
             ) : null}
+
+            {filter === 'upcoming' ? (
+              <Text className="w-1/12 p-3 font-bold text-center">Actions</Text>
+            ) : null}
           </View>
 
           {/* rows */}
@@ -389,6 +450,54 @@ export default function Reservation({ restaurantId }: ReservationProps) {
                       >
                         <X size={16} color="#DC2626" />
                       </TouchableOpacity>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                {filter === 'upcoming' ? (
+                  <View className="w-1/12 p-2 flex-row justify-center gap-2">
+                    {r.status === 'confirmed' ? (
+                      <>
+                        {/* Arrive button - enabled within 15 minutes of reservation time */}
+                        <TouchableOpacity
+                          onPress={() => handleArrived(r.id)}
+                          disabled={isArrivalWindowPassed(r.reserveAt)}
+                          className={`px-3 py-2 rounded ${
+                            isArrivalWindowPassed(r.reserveAt)
+                              ? 'bg-gray-300'
+                              : 'bg-green-100'
+                          }`}
+                        >
+                          <UserCheck
+                            size={16}
+                            color={
+                              isArrivalWindowPassed(r.reserveAt)
+                                ? '#9CA3AF'
+                                : '#16A34A'
+                            }
+                          />
+                        </TouchableOpacity>
+
+                        {/* No-Show button - enabled after 15 minutes of reservation time */}
+                        <TouchableOpacity
+                          onPress={() => handleNoShow(r.id)}
+                          disabled={!isArrivalWindowPassed(r.reserveAt)}
+                          className={`px-3 py-2 rounded ${
+                            !isArrivalWindowPassed(r.reserveAt)
+                              ? 'bg-gray-300'
+                              : 'bg-red-100'
+                          }`}
+                        >
+                          <UserX
+                            size={16}
+                            color={
+                              !isArrivalWindowPassed(r.reserveAt)
+                                ? '#9CA3AF'
+                                : '#DC2626'
+                            }
+                          />
+                        </TouchableOpacity>
+                      </>
                     ) : null}
                   </View>
                 ) : null}

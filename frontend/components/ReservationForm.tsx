@@ -98,9 +98,10 @@ export default function ReservationPane({
           if (r) {
             setRestaurant(r);
           } else {
-            const restaurant = await fetchRestaurantById(1);
-            console.log(restaurant);
-            setRestaurant(restaurant);
+            throw new Error('No restaurant.');
+            // const restaurant = await fetchRestaurantById(1);
+            // console.log(restaurant);
+            // setRestaurant(restaurant);
           }
         } else {
           const restaurants = await fetchRestaurants();
@@ -137,6 +138,7 @@ export default function ReservationPane({
         reserveAt: reserveAt.toISOString(),
         numberOfAdult: adults,
         numberOfChildren: children,
+        reservationFee: restaurant.reservationFee,
       };
 
       await createReservation(payload);
