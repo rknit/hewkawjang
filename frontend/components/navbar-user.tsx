@@ -1,12 +1,12 @@
-import { View, TouchableOpacity, Image, Text } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
-import UnderlinedPressableText from './underlined-pressable-text';
-import { router } from 'expo-router';
-import { useState, useMemo } from 'react';
-import UserDropdown from './user-dropdown';
-import NotificationPane from './notificationPane';
 import { useNotifications } from '@/context/NotificationContext';
 import { useUser } from '@/hooks/useUser';
+import Feather from '@expo/vector-icons/Feather';
+import { Link, router } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
+import NotificationPane from './notificationPane';
+import UnderlinedPressableText from './underlined-pressable-text';
+import UserDropdown from './user-dropdown';
 
 export default function NavBarUser() {
   const { user } = useUser();
@@ -82,9 +82,12 @@ export default function NavBarUser() {
       {/* Navigation links on the right */}
       <View>
         {/* FIXME: Add Link to Clickon*/}
-        <TouchableOpacity>
-          <Feather name="message-circle" size={24} color="black" />
-        </TouchableOpacity>
+        {/* Chat icon — navigate to /chat */}
+        <Link href={{ pathname: '/chat' }} asChild>
+          <TouchableOpacity>
+            <Feather name="message-circle" size={24} color="black" />
+          </TouchableOpacity>
+        </Link>
       </View>
 
       {/* Profile section with dropdown trigger */}

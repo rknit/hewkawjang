@@ -15,6 +15,7 @@ import { reservationTable, restaurantTable, usersTable } from '../db/schema';
 import NotificationService from './notification.service';
 import RefundService from './refund.service';
 
+import chatService from './chat.service';
 export type Reservation = InferSelectModel<typeof reservationTable>;
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
 
@@ -277,7 +278,12 @@ export default class ReservationService {
       .set({ status: newStatus })
       .where(eq(reservationTable.id, reservationId))
       .returning();
-
+    if (newStatus === 'confirmed') {
+      await chatService.findOrCreateChat(
+        reservation.userId,
+        reservation.restaurantId,
+      );
+    }
     await NotificationService.notifyReservationStatuses([
       {
         reservation: updated,

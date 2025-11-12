@@ -1,19 +1,19 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
+  check,
+  date,
+  doublePrecision,
+  index,
+  integer,
+  pgEnum,
   pgTable,
   serial,
   text,
   time,
-  integer,
   timestamp,
-  pgEnum,
-  boolean,
-  uniqueIndex,
-  doublePrecision,
-  check,
   unique,
-  index,
-  date,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users', {
@@ -293,8 +293,12 @@ export const messagesTable = pgTable(
     id: serial('id').primaryKey(),
     chatId: integer('chat_id').references(() => chatsTable.id),
     chatAdminId: integer('chat_admin_id').references(() => chatAdminsTable.id),
+    senderId: integer('sender_id')
+      .notNull()
+      .references(() => usersTable.id),
     text: text('text'),
     imgURL: text('img_url'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
     // Ensure exactly one of chatId or chatAdminId is set
