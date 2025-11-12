@@ -51,12 +51,18 @@ router.post('/:id/cancel', authHandler, async (req, res, next) => {
 
 router.post('/create', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
-  const { restaurantId, reserveAt, numberOfAdult, numberOfChildren } = req.body;
+  const {
+    restaurantId,
+    reserveAt,
+    numberOfAdult,
+    numberOfChildren,
+    reservationFee,
+  } = req.body;
 
-  if (!userId || !restaurantId || !reserveAt) {
-    return res
-      .status(400)
-      .json({ error: 'userId, restaurantId and reserveAt are required' });
+  if (!userId || !restaurantId || !reserveAt || !reservationFee) {
+    return res.status(400).json({
+      error: 'userId, restaurantId, reservationFee and reserveAt are required',
+    });
   }
 
   // Must be at least 30 minutes ahead
@@ -68,15 +74,16 @@ router.post('/create', authHandler, async (req, res) => {
   }
 
   try {
-  const reservation = await ReservationService.createReservation({
-    userId,
-    restaurantId,
-    reserveAt: reserveTime,
-    numberOfAdult,
-    numberOfChildren,
-  });
+    const reservation = await ReservationService.createReservation({
+      userId,
+      restaurantId,
+      reserveAt: reserveTime,
+      numberOfAdult,
+      numberOfChildren,
+      reservationFee,
+    });
     return res.status(201).json(reservation);
-  } catch (error:any) {
+  } catch (error: any) {
     console.error('Reservation creation failed:', error);
     const message = error.message || 'Failed to create reservation';
     return res.status(500).json({ error: message });
@@ -148,6 +155,63 @@ router.patch('/:id/status', authHandler, async (req, res, next) => {
         | 'completed'
         | 'uncompleted',
       updateBy,
+    );
+    return res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Confirm reservation (restaurant owner action)
+router.post('/:id/confirm', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload!.userId;
+    const reservationId = Number(req.params.id);
+    if (isNaN(reservationId)) {
+      return res.status(400).json({ error: 'reservation id must be a number' });
+    }
+
+    const updated = await ReservationService.confirmReservation(
+      reservationId,
+      userId,
+    );
+    return res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Mark customer as arrived (restaurant owner action)
+router.post('/:id/arrived', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload!.userId;
+    const reservationId = Number(req.params.id);
+    if (isNaN(reservationId)) {
+      return res.status(400).json({ error: 'reservation id must be a number' });
+    }
+
+    const updated = await ReservationService.markCustomerArrived(
+      reservationId,
+      userId,
+    );
+    return res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Mark customer as no-show (restaurant owner action)
+router.post('/:id/no-show', authHandler, async (req, res, next) => {
+  try {
+    const userId = req.userAuthPayload!.userId;
+    const reservationId = Number(req.params.id);
+    if (isNaN(reservationId)) {
+      return res.status(400).json({ error: 'reservation id must be a number' });
+    }
+
+    const updated = await ReservationService.markCustomerNoShow(
+      reservationId,
+      userId,
     );
     return res.json(updated);
   } catch (err) {

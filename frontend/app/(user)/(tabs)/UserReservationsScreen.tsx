@@ -154,6 +154,36 @@ export default function UserReservationsScreen() {
     };
   };
 
+  // Calculate expected refund percentage based on cancellation timing
+  const getRefundInfo = (reservation: ReservationWithRestaurant): string => {
+    const now = new Date();
+    const createdAt = new Date(reservation.createdAt);
+    const minutesSinceBooking =
+      (now.getTime() - createdAt.getTime()) / (1000 * 60);
+
+    // Case 1: Within 10 minutes of booking OR not confirmed yet
+    if (minutesSinceBooking <= 10 || reservation.status === 'unconfirmed') {
+      return 'You will receive a 100% refund';
+    }
+
+    // For confirmed reservations, we need to check time since confirmation
+    // Since we don't have confirmedAt on the frontend, we'll show a general message
+    if (reservation.status === 'confirmed') {
+      // If less than 24 hours until reservation time
+      const reserveAt = new Date(reservation.reserveAt);
+      const hoursUntilReservation =
+        (reserveAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+      if (hoursUntilReservation < 24) {
+        return 'You will receive a 5% refund (canceled within 24 hours of confirmation)';
+      } else {
+        return 'No refund available (confirmed more than 24 hours ago)';
+      }
+    }
+
+    return 'Refund amount will be calculated based on cancellation time';
+  };
+
   const getStatusColor = (status: ReservationStatus) => {
     switch (status) {
       case 'confirmed':
@@ -210,9 +240,10 @@ export default function UserReservationsScreen() {
             ×
           </Text>,
           () => {
+            const refundInfo = getRefundInfo(r);
             setConfirmModalConfig({
               title: 'Cancel Reservation',
-              message: 'Are you sure you want to cancel this reservation?',
+              message: `Are you sure you want to cancel this reservation?\n\n${refundInfo}`,
               onConfirm: async () => {
                 setConfirmModalVisible(false);
                 try {
@@ -220,7 +251,8 @@ export default function UserReservationsScreen() {
                   if (success) {
                     setAlertModalConfig({
                       title: 'Canceled',
-                      message: 'Reservation has been canceled.',
+                      message:
+                        'Reservation has been canceled. Refund processed to your wallet.',
                       buttonText: 'OK',
                     });
                     setAlertModalVisible(true);

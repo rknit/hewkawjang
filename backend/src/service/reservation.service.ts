@@ -13,6 +13,8 @@ import createHttpError from 'http-errors';
 import { db } from '../db';
 import { reservationTable, restaurantTable, usersTable } from '../db/schema';
 import NotificationService from './notification.service';
+import RefundService from './refund.service';
+
 import chatService from './chat.service';
 export type Reservation = InferSelectModel<typeof reservationTable>;
 export type Restaurant = InferSelectModel<typeof restaurantTable>;
@@ -108,6 +110,11 @@ export default class ReservationService {
       );
     }
 
+    // Process refund if canceled by user
+    if (data.cancelBy === 'user') {
+      await RefundService.processRefund(data.reservationId, 'customer_cancel');
+    }
+
     let [updated] = await db
       .update(reservationTable)
       .set({ status: 'cancelled' })
@@ -128,6 +135,7 @@ export default class ReservationService {
     reserveAt: Date;
     numberOfAdult?: number;
     numberOfChildren?: number;
+    reservationFee: number;
   }) {
     // check if user balance is sufficient (reservation fee is stored in restaurant table)
     const [restaurant] = await db
@@ -167,6 +175,7 @@ export default class ReservationService {
         reserveAt: data.reserveAt,
         numberOfAdult: data.numberOfAdult ?? 0,
         numberOfChildren: data.numberOfChildren ?? 0,
+        reservationFee: data.reservationFee,
         status: 'unconfirmed',
       })
       .returning();
@@ -245,6 +254,24 @@ export default class ReservationService {
     }
 
     await this.validateReservationOwnership(reservation, userId, updateBy);
+
+    // Process refund if restaurant owner rejects the reservation
+    // Customer should get 100% refund when restaurant rejects
+    if (newStatus === 'rejected' && updateBy === 'restaurant_owner') {
+      // Refund the full amount to the customer
+      const [user] = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, reservation.userId))
+        .limit(1);
+
+      if (user && reservation.reservationFee) {
+        await db
+          .update(usersTable)
+          .set({ balance: user.balance + reservation.reservationFee })
+          .where(eq(usersTable.id, reservation.userId));
+      }
+    }
 
     const [updated] = await db
       .update(reservationTable)
@@ -327,11 +354,186 @@ export default class ReservationService {
       )
       .returning();
 
+    for (const reservation of result) {
+      await RefundService.processRefund(reservation.id, 'auto_expire');
+    }
+
     await NotificationService.notifyReservationStatuses(
       result.map((reservation) => {
         return { reservation, target: 'both' };
       }),
     );
     return result.length;
+  }
+
+  /**
+   * Confirm a reservation (restaurant owner action)
+   * Sets confirmedAt timestamp which is used for refund calculations
+   */
+  static async confirmReservation(
+    reservationId: number,
+    userId: number,
+  ): Promise<Reservation> {
+    const [reservation] = await db
+      .select()
+      .from(reservationTable)
+      .where(eq(reservationTable.id, reservationId))
+      .limit(1);
+
+    if (!reservation) {
+      throw new createHttpError.NotFound('Reservation not found');
+    }
+
+    await this.validateReservationOwnership(
+      reservation,
+      userId,
+      'restaurant_owner',
+    );
+
+    if (reservation.status !== 'unconfirmed') {
+      throw new createHttpError.BadRequest(
+        'Only unconfirmed reservations can be confirmed',
+      );
+    }
+
+    const [updated] = await db
+      .update(reservationTable)
+      .set({
+        status: 'confirmed',
+        confirmedAt: new Date(), // Track when restaurant confirmed
+      })
+      .where(eq(reservationTable.id, reservationId))
+      .returning();
+
+    await NotificationService.notifyReservationStatuses([
+      {
+        reservation: updated,
+        target: 'user',
+      },
+    ]);
+
+    return updated;
+  }
+
+  /**
+   * Mark customer as arrived (restaurant owner action)
+   * Processes refund: 95% to customer, 5% platform fee
+   */
+  static async markCustomerArrived(
+    reservationId: number,
+    userId: number,
+  ): Promise<Reservation> {
+    const [reservation] = await db
+      .select()
+      .from(reservationTable)
+      .where(eq(reservationTable.id, reservationId))
+      .limit(1);
+
+    if (!reservation) {
+      throw new createHttpError.NotFound('Reservation not found');
+    }
+
+    await this.validateReservationOwnership(
+      reservation,
+      userId,
+      'restaurant_owner',
+    );
+
+    if (reservation.status !== 'confirmed') {
+      throw new createHttpError.BadRequest(
+        'Only confirmed reservations can be marked as arrived',
+      );
+    }
+
+    // Check if customer is within the arrival window (15 minutes after reservation time)
+    const reserveAt = new Date(reservation.reserveAt);
+    const now = new Date();
+    const minutesSinceReservation =
+      (now.getTime() - reserveAt.getTime()) / (1000 * 60);
+
+    if (minutesSinceReservation > 15) {
+      throw new createHttpError.BadRequest(
+        'Customer arrival window has passed (15 minutes after reservation time)',
+      );
+    }
+
+    // Process refund for customer arrival (95% to customer, 5% platform fee)
+    await RefundService.processRefund(reservationId, 'arrived');
+
+    const [updated] = await db
+      .update(reservationTable)
+      .set({ status: 'completed' })
+      .where(eq(reservationTable.id, reservationId))
+      .returning();
+
+    await NotificationService.notifyReservationStatuses([
+      {
+        reservation: updated,
+        target: 'user',
+      },
+    ]);
+
+    return updated;
+  }
+
+  /**
+   * Mark customer as no-show (restaurant owner action)
+   * Processes payout: 95% to restaurant, 5% platform fee
+   */
+  static async markCustomerNoShow(
+    reservationId: number,
+    userId: number,
+  ): Promise<Reservation> {
+    const [reservation] = await db
+      .select()
+      .from(reservationTable)
+      .where(eq(reservationTable.id, reservationId))
+      .limit(1);
+
+    if (!reservation) {
+      throw new createHttpError.NotFound('Reservation not found');
+    }
+
+    await this.validateReservationOwnership(
+      reservation,
+      userId,
+      'restaurant_owner',
+    );
+
+    if (reservation.status !== 'confirmed') {
+      throw new createHttpError.BadRequest(
+        'Only confirmed reservations can be marked as no-show',
+      );
+    }
+
+    // Ensure we're past the arrival window (15 minutes after reservation time)
+    const reserveAt = new Date(reservation.reserveAt);
+    const now = new Date();
+    const minutesSinceReservation =
+      (now.getTime() - reserveAt.getTime()) / (1000 * 60);
+
+    if (minutesSinceReservation <= 15) {
+      throw new createHttpError.BadRequest(
+        'Cannot mark as no-show yet. Must wait 15 minutes after reservation time.',
+      );
+    }
+
+    // Process payout for no-show (95% to restaurant, 5% platform fee)
+    await RefundService.processRefund(reservationId, 'no_show');
+
+    const [updated] = await db
+      .update(reservationTable)
+      .set({ status: 'uncompleted' })
+      .where(eq(reservationTable.id, reservationId))
+      .returning();
+
+    await NotificationService.notifyReservationStatuses([
+      {
+        reservation: updated,
+        target: 'user',
+      },
+    ]);
+
+    return updated;
   }
 }
