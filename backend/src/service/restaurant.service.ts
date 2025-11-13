@@ -20,6 +20,7 @@ import {
   restaurantTable,
   reviewTable,
   usersTable,
+  restaurantHoursTable,
 } from '../db/schema';
 import {
   CreateRestaurantInput,
@@ -33,6 +34,7 @@ export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
 export type RestaurantStatus = NewRestaurant['status'];
 export type RestaurantActivation = NewRestaurant['activation'];
 export type Reservation = InferInsertModel<typeof reservationTable>;
+export type RestaurantHours = InferInsertModel<typeof restaurantHoursTable>;
 
 export interface SearchParams {
   query?: string;
@@ -647,5 +649,29 @@ export default class RestaurantService {
       .orderBy(restaurantDaysOff.date);
 
     return daysOff;
+  }
+
+  static async getRestaurantHours(restaurantId: number): Promise<RestaurantHours[]> {
+    const hours = await db
+      .select()
+      .from(restaurantHoursTable)
+      .where(eq(restaurantHoursTable.restaurantId, restaurantId))
+      .orderBy(asc(restaurantHoursTable.dayOfWeek));
+    return hours;
+  }
+
+  static async updateRestaurantHours(restaurantId: number, hoursData: RestaurantHours[]): Promise<void> {
+    // First, delete existing hours for the restaurant
+    await db
+      .delete(restaurantHoursTable)
+      .where(eq(restaurantHoursTable.restaurantId, restaurantId));
+    // Then, insert the new hours
+    const hoursToInsert = hoursData.map(hour => ({
+      ...hour,
+      restaurantId: restaurantId,
+    }));
+    await db
+      .insert(restaurantHoursTable)
+      .values(hoursToInsert);
   }
 }

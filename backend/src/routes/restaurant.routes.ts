@@ -464,4 +464,46 @@ router.post('/reviews/:reviewId/report', authHandler, async (req, res) => {
   res.sendStatus(201);
 });
 
+router.get('/:id/hours', async (req, res, next) => {
+  try {
+    const restaurantId = Number(req.params.id);
+    if (isNaN(restaurantId)) {
+      return res.status(400).json({ error: 'restaurant id must be a number' });
+    }
+    const hours = await RestaurantService.getRestaurantHours(restaurantId);
+    res.status(200).json(hours);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/:id/hours', authHandler, async (req, res, next) => {
+  try {
+    const restaurantId = Number(req.params.id);
+    if (isNaN(restaurantId)) {
+      return res.status(400).json({ error: 'restaurant id must be a number' });
+    }
+    const hoursData = req.body; // Expecting an array of hours data
+    const userId = (req as any).userAuthPayload?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    // check ownership
+    const restaurant = await RestaurantService.getRestaurantById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ error: 'Restaurant not found' });
+    }
+    if (restaurant.ownerId !== userId) {
+      return res.status(403).json({ error: 'Forbidden: not owner' });
+    }
+    const updatedHours = await RestaurantService.updateRestaurantHours(
+      restaurantId,
+      hoursData,
+    );
+    res.status(200).json(updatedHours);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
