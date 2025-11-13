@@ -8,6 +8,8 @@ import {
   RestaurantWithAvgRatingSchema,
   RestaurantWithRating,
   UpdateRestaurantInfo,
+  RestaurantHours,
+  RestaurantHoursSchema,
 } from '@/types/restaurant.type';
 import {
   Comment,
@@ -436,6 +438,33 @@ export async function addDaysOff(
   try {
     await ApiService.post(`/restaurants/${restaurantId}/createDaysOff`, {
       dates,
+    });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function getrestaurantHours(
+  restaurantId: number,
+): Promise<RestaurantHours[]> {
+  try {
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/hours`,
+    );
+    return res.data.map((hours: any) => RestaurantHoursSchema.parse(hours));
+  } catch (error) {
+    console.error('Failed to fetch restaurant hours:', error);
+    return [];
+  }
+}
+
+export async function updateRestaurantHours(
+  restaurantId: number,
+  hours: RestaurantHours[],
+): Promise<void> {
+  try {
+    await ApiService.put(`/restaurants/${restaurantId}/hours`, {
+      hours,
     });
   } catch (error) {
     normalizeError(error);

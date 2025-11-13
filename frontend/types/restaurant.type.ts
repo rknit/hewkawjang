@@ -71,3 +71,11 @@ export type RestaurantWithAvgRating = z.infer<
 >;
 
 export type Restaurant = z.infer<typeof RestaurantSchema>;
+
+export const RestaurantHoursSchema = z.object({
+  restaurantId: z.number(),
+  dayOfWeek: z.enum(['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']),
+  openTime: z.string(),
+  closeTime: z.string(),
+});
+export type RestaurantHours = z.infer<typeof RestaurantHoursSchema>;
