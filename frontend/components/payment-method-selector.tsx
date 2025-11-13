@@ -1,38 +1,37 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import { useState } from 'react';
 
 interface PaymentMethodSelectorProps {
-  selectedMethods: string[];
-  onMethodSelect: (methods: string[]) => void;
+  selectedMethod: string | null;
+  onMethodSelect: (method: string | null) => void;
   className?: string;
 }
 
 export default function PaymentMethodSelector({
-  selectedMethods,
+  selectedMethod,
   onMethodSelect,
   className = '',
 }: PaymentMethodSelectorProps) {
   const paymentMethods = [
     {
-      id: 'mastercard',
+      id: 'MasterCard',
       label: 'MasterCard',
       image: require('../assets/images/mastercard-logo.png'),
       description: 'Secure payment with MasterCard',
     },
     {
-      id: 'visa',
+      id: 'Visa',
       label: 'Visa',
       image: require('../assets/images/visa-logo.png'),
       description: 'Secure payment with Visa',
     },
     {
-      id: 'hewkawjang',
+      id: 'HewkawjangWallet',
       label: 'Hewkawjang Wallet',
       icon: '💰',
       description: 'Pay with your Hewkawjang wallet balance',
     },
     {
-      id: 'promptpay',
+      id: 'PromptPay',
       label: 'PromptPay',
       image: require('../assets/images/promptpay-logo.png'),
       description: 'Fast payment with PromptPay',
@@ -40,39 +39,38 @@ export default function PaymentMethodSelector({
   ];
 
   return (
-    <View className={`${className}`}>
+    <View className={className}>
       <View className="bg-[#FEF9F3] rounded-2xl border border-[#FAE8D1] shadow p-6">
         <Text className="text-xl font-bold text-gray-800 mb-4">
-          Accepted Payment Methods
+          Accepted Payment Method
         </Text>
         <Text className="text-base text-gray-600 mb-6">
-          Select which payment methods your restaurant accepts
+          Select which payment method your restaurant accepts
         </Text>
 
         <View className="space-y-3">
           {paymentMethods.map((method) => {
-            const isSelected = selectedMethods.includes(method.id);
+            const isSelected = selectedMethod === method.id;
 
-            const handleMethodToggle = () => {
+            const handleSelect = () => {
               if (isSelected) {
-                onMethodSelect(
-                  selectedMethods.filter((id) => id !== method.id),
-                );
+                onMethodSelect(null); // deselect if clicked again
               } else {
-                onMethodSelect([...selectedMethods, method.id]);
+                onMethodSelect(method.id);
               }
             };
 
             return (
               <TouchableOpacity
                 key={method.id}
-                className={`flex-row items-center p-4 rounded-lg border-2  ${
+                className={`flex-row items-center p-4 rounded-lg border-2 ${
                   isSelected
                     ? 'border-[#E05910] bg-[#FEF9F3]'
                     : 'border-[#FAE8D1] bg-white'
                 }`}
-                onPress={handleMethodToggle}
+                onPress={handleSelect}
               >
+                {/* Radio Circle */}
                 <View
                   className={`w-5 h-5 rounded-full border-2 mr-4 ${
                     isSelected
@@ -87,6 +85,7 @@ export default function PaymentMethodSelector({
                   )}
                 </View>
 
+                {/* Label & Image */}
                 <View className="flex-1 flex-row items-center pl-4">
                   {method.image ? (
                     <Image

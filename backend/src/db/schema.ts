@@ -73,7 +73,7 @@ export const cuisineTypeEnum = pgEnum('cuisine_type', [
 export const paymentMethodEnum = pgEnum(
   'method',
 
-  ['card', 'HewKawJangwallet', 'PromtPay'],
+  ['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay'],
 );
 
 export const restaurantTable = pgTable('restaurant', {
@@ -100,7 +100,7 @@ export const restaurantTable = pgTable('restaurant', {
   priceRange: integer('priceRange'),
   paymentMethod: paymentMethodEnum('payment_method')
     .notNull()
-    .default('HewKawJangwallet'),
+    .default('HewkawjangWallet'),
   status: restaurantStatusEnum('status').notNull().default('closed'), // open/close daily ops
   activation: restaurantActivationEnum('activation')
     .notNull()

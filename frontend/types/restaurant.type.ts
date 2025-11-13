@@ -3,15 +3,23 @@ import { CUISINE_TYPES } from '@/constants/cuisine-types';
 import { id } from 'zod/v4/locales';
 
 export const UpdateRestaurantInfoSchema = z.object({
-  id: z.number().int().positive(),
-  name: z.string().optional(),
-  phoneNo: z.string().optional(),
-  location: z.string().optional(),
-  province: z.string().optional(),
-  district: z.string().optional(),
-  subDistrict: z.string().optional(),
-  postalCode: z.string().optional(),
-  reservationFee: z.number().min(0).optional(),
+  id: z.number(),
+  name: z.string(),
+  phoneNo: z.string(),
+  houseNo: z.string().nullable(),
+  village: z.string().nullable(),
+  building: z.string().nullable(),
+  road: z.string().nullable(),
+  soi: z.string().nullable(),
+  subDistrict: z.string().nullable(),
+  district: z.string().nullable(),
+  province: z.string().nullable(),
+  postalCode: z.string().nullable(),
+  cuisineType: z.enum(CUISINE_TYPES),
+  priceRange: z.number().nullable(),
+  images: z.array(z.string()).nullish(),
+  reservationFee: z.number().min(0),
+  paymentMethod: z.enum(['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay']),
 });
 export type UpdateRestaurantInfo = z.infer<typeof UpdateRestaurantInfoSchema>;
 
@@ -38,6 +46,7 @@ export const RestaurantSchema = z.object({
   isDeleted: z.boolean(),
   images: z.array(z.string()).nullish(),
   reservationFee: z.number().min(0),
+  paymentMethod: z.enum(['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay']),
 });
 
 export const DaysOffSchema = z.object({
