@@ -150,4 +150,24 @@ router.post('/:chatId/messages', async (req, res) => {
   }
 });
 
+router.get('/admin/:adminId',async (req, res) => {
+  const { adminId } = req.params;
+  try {
+    const chats = await ChatService.getChatsByAdmin(Number(adminId));
+    res.json(chats);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get admin chats', error: err });
+  }
+})
+
+router.get('/admin/messages/:chatAdminId',async (req, res) => {
+  const { chatAdminId } = req.params;
+  try {
+    const messages = await ChatService.getAdminChatMessages(Number(chatAdminId));
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get admin chats', error: err });
+  }
+})
+
 export default router;

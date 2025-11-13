@@ -4,6 +4,10 @@ import {
   ChatChannelSchema,
   ChatMessage,
   ChatMessageSchema,
+  AdminChatChannel,
+  AdminChatChannelSchema,
+  AdminChatMessage,
+  AdminChatMessageSchema,
 } from '@/types/chat.type';
 import { normalizeError } from '@/utils/api-error';
 import { z } from 'zod';
@@ -101,5 +105,23 @@ export async function sendMessage(
   } catch (error) {
     normalizeError(error);
     return null;
+  }
+}
+
+export async function fetchAdminChats(adminId: number): Promise<AdminChatChannel[]> {
+  try {
+    const res = await ApiService.get(`/chat/admin/${adminId}`);
+    return z.array(AdminChatChannelSchema).parse(res.data);
+  } catch (error) {
+    return normalizeError(error) ?? [];
+  }
+}
+
+export async function fetchAdminChatMessages(chatAdminId: number): Promise<AdminChatMessage[]> {
+  try {
+    const res = await ApiService.get(`/chat/admin/messages/${chatAdminId}`);
+    return z.array(AdminChatMessageSchema).parse(res.data);
+  } catch (error) {
+    return normalizeError(error) ?? [];
   }
 }

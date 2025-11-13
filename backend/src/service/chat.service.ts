@@ -4,6 +4,8 @@ import {
   usersTable,
   messagesTable,
   restaurantTable,
+  chatAdminsTable,
+  adminMessagesTable,
 } from '../db/schema';
 import { eq, or, inArray, sql, and } from 'drizzle-orm';
 
@@ -141,6 +143,43 @@ class ChatService {
       return result;
     } catch (err) {
       //console.error(`[ChatService] ERROR in getChatsForUserOrOwner:`, err);
+      throw err;
+    }
+  }
+
+  async getChatsByAdmin(adminId: number) {
+    try {
+      console.log(`[ChatService] getChatsByAdmin: adminId=${adminId}`);
+      const result = await db
+        .select({
+          chatId: chatAdminsTable.id,
+          userId: chatAdminsTable.userId,
+          adminId: chatAdminsTable.adminId,
+          displayName: usersTable.displayName,
+          profileUrl: usersTable.profileUrl,
+        })
+        .from(chatAdminsTable)
+        .innerJoin(usersTable, eq(chatAdminsTable.userId, usersTable.id))
+        .where(eq(chatAdminsTable.adminId, adminId));
+      console.log(`[ChatService] getChatsByAdmin: found ${result.length} chats`);
+      return result;
+    } catch (err) {
+      console.error(`[ChatService] ERROR in getChatsByAdmin:`, err);
+      throw err;
+    }
+  }
+
+  async getAdminChatMessages(chatAdminId: number) {
+    try {
+      console.log(`[ChatService] getAdminChatMessages: chatAdminId=${chatAdminId}`);
+      const result = await db
+        .select()
+        .from(adminMessagesTable)
+        .where(eq(adminMessagesTable.chatAdminId, chatAdminId));
+      console.log(`[ChatService] getAdminChatMessages: found ${result.length} chats`);
+      return result;
+    } catch (err) {
+      console.error(`[ChatService] ERROR in getAdminChatMessages:`, err);
       throw err;
     }
   }
