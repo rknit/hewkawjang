@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useState, useEffect } from 'react';
 import ImageChooser from './image-chooser';
 import AvailableTimeDropdown from './available-time-dropdown';
@@ -7,6 +7,8 @@ import CuisineTypeDropdown from './cuisine-type-dropdown';
 import PaymentMethodSelector from './payment-method-selector';
 import { fetchRestaurantById, updateRestaurantInfo, getrestaurantHours, updateRestaurantHours, fecthDaysOff, updateDaysOff} from '@/apis/restaurant.api';
 import { RestaurantHours } from '@/types/restaurant.type';
+import SimpleAlert from './simple-alert';
+import { set } from 'zod';
 
 interface RestaurantEditProps {
   restaurantId: number;
@@ -30,6 +32,9 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
   const [images, setImages] = useState<(string | null)[]>([null]);
   const [daysOff, setDaysOff] = useState<string[]>([]);
 
+  const [showSubmitSuccessAlert, setShowSubmitSuccessAlert] = useState(false);
+  const [showSubmitFailureAlert, setShowSubmitFailureAlert] = useState(false);
+
   // Dropdown states
   const [showAvailableTimeDropdown, setShowAvailableTimeDropdown] = useState(false);
   const [availableTimeValue, setAvailableTimeValue] = useState<RestaurantHours[]>([]);
@@ -38,7 +43,6 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
   const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
-
 
   const loadData = async () => {
     const restaurant = await fetchRestaurantById(restaurantId);
@@ -216,10 +220,9 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
     // Update days off
     await updateDaysOff(restaurantId, daysOff);
 
-    alert('Success Restaurant information updated successfully!');
+    setShowSubmitSuccessAlert(true);
   } catch (error) {
-    console.error('Failed to update restaurant info:', error);
-    alert('Error Failed to update restaurant information.');
+    setShowSubmitFailureAlert(true);
   }
 };
 
@@ -485,7 +488,6 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
           />
         </View>
 
-
         {/* Submit Button */}
         <TouchableOpacity
           className="w-full rounded-lg py-4 mb-4 bg-[#E05910] shadow-lg"
@@ -495,6 +497,37 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
             Save
           </Text>
         </TouchableOpacity>
+
+      {/* SubmitSuccessModal */}
+      {showSubmitSuccessAlert && (
+        <Modal transparent animationType="fade">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <SimpleAlert
+              type="success"
+              title="Success!"
+              message="Update restaurant information successfully."
+              buttonText="OK"
+              onClose={() => setShowSubmitSuccessAlert(false)}
+            />
+          </View>
+        </Modal>
+      )}
+
+      {/* SubmitFailureModal */}
+      {showSubmitFailureAlert && (
+        <Modal transparent animationType="fade">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <SimpleAlert
+              type="error"
+              title="Fail!"
+              message="Failed to update restaurant information."
+              buttonText="OK"
+              onClose={() => setShowSubmitFailureAlert(false)}
+            />
+          </View>
+        </Modal>
+      )}
+
       </View>
     </View>
  

@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useState } from 'react';
 import ImageChooser from './image-chooser-reg';
 import AvailableTimeDropdown from './available-time-dropdown';
@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { uploadImage } from '../apis/image.api';
 import { set } from 'zod';
 import { id } from 'zod/v4/locales';
+import SimpleAlert from './simple-alert';
 
 export default function RegisterRestaurantForm() {
   // Form state
@@ -29,6 +30,9 @@ export default function RegisterRestaurantForm() {
   const [restaurant, setRestaurant] = useState<any>(null);
   const [images, setImages] = useState<(string | null)[]>([null]);
   const [daysOff, setDaysOff] = useState<string[]>([]);
+
+  const [showSubmitSuccessAlert, setShowSubmitSuccessAlert] = useState(false);
+  const [showSubmitFailureAlert, setShowSubmitFailureAlert] = useState(false);
 
   // Dropdown states
   const [showAvailableTimeDropdown, setShowAvailableTimeDropdown] = useState(false);
@@ -192,11 +196,11 @@ export default function RegisterRestaurantForm() {
       // Update days off
       await updateDaysOff(restaurantId, daysOff);
   
-      alert('Create restaurant successfully!');
-
+      setTimeout(() => {
       router.back();
+      }, 1500); // 1.5 seconds delay
     } catch (error) {
-      alert('Error creating restaurant. Please try again.');
+      setShowSubmitFailureAlert(true);
     }
   };
   
@@ -472,6 +476,36 @@ export default function RegisterRestaurantForm() {
               Save
             </Text>
           </TouchableOpacity>
+
+          {/* SubmitSuccessModal */}
+                {showSubmitSuccessAlert && (
+                  <Modal transparent animationType="fade">
+                    <View className="flex-1 justify-center items-center bg-black/50">
+                      <SimpleAlert
+                        type="success"
+                        title="Success!"
+                        message="Update restaurant information successfully."
+                        buttonText="OK"
+                        onClose={() => setShowSubmitSuccessAlert(false)}
+                      />
+                    </View>
+                  </Modal>
+                )}
+          
+                {/* SubmitFailureModal */}
+                {showSubmitFailureAlert && (
+                  <Modal transparent animationType="fade">
+                    <View className="flex-1 justify-center items-center bg-black/50">
+                      <SimpleAlert
+                        type="error"
+                        title="Fail!"
+                        message="Failed to update restaurant information."
+                        buttonText="OK"
+                        onClose={() => setShowSubmitFailureAlert(false)}
+                      />
+                    </View>
+                  </Modal>
+                )}
         </View>
       </View>
    
