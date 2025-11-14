@@ -411,6 +411,35 @@ router.post('/:id/createDaysOff', authHandler, async (req, res, next) => {
     next(error);
   }
 });
+
+// update days off with restaurant id and array of dates
+router.put('/:id/updateDaysOff', authHandler, async (req, res, next) => {
+  const userId = (req as any).userAuthPayload?.userId;
+  try {
+    const restaurant_id = parseInt(req.params.id);
+    const { dates } = req.body; // ["2025-11-15", "2025-12-25"]
+    const restaurant = await RestaurantService.getRestaurantById(restaurant_id);
+    if (restaurant?.ownerId !== userId) {
+      return res.status(403).json({ error: 'Forbidden: not owner' });
+    }
+    // Validate
+    if (!dates || !Array.isArray(dates)) {
+      return res.status(400).json({
+        error: 'dates array is required',
+      });
+    }
+    // update days off
+    await RestaurantService.updateDaysOff(restaurant_id, dates);
+    res.status(200).json({
+      message: 'Days off updated successfully',
+      restaurant_id,
+      dates,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/:id/daysOff', authHandler, async (req, res, next) => {
   const userId = (req as any).userAuthPayload?.userId;
   try {
@@ -432,6 +461,7 @@ router.get('/:id/daysOff', authHandler, async (req, res, next) => {
     next(error);
   }
 });
+
 router.post('/:id/report', authHandler, async (req, res) => {
   const restaurantId = Number(req.params.id);
   if (isNaN(restaurantId)) {

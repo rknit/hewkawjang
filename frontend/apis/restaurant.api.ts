@@ -10,6 +10,7 @@ import {
   UpdateRestaurantInfo,
   RestaurantHours,
   RestaurantHoursSchema,
+  DaysOff,
 } from '@/types/restaurant.type';
 import {
   Comment,
@@ -415,18 +416,17 @@ export async function fetchOwnerRestaurants(
   }
 }
 
+// Fetch days off for a restaurant as an array of date strings
 export async function fecthDaysOff(
   restaurantId: number,
-  startDate?: Date,
-  endDate?: Date,
-): Promise<Restaurant[]> {
+): Promise<string[]> {
   try {
-    const res = await ApiService.get(`/restaurants/${restaurantId}/daysOff`, {
-      params: { startDate, endDate },
-    });
-    return res.data.map((daysOff: any) => DaysOffSchema.parse(daysOff));
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/daysOff`,
+    );
+     return res.data.daysOff.map((dayOff: any) => DaysOffSchema.parse(dayOff).date);
   } catch (error) {
-    console.error('Failed to fetch ', error);
+    console.error('Failed to fetch days off:', error);
     return [];
   }
 }
@@ -437,6 +437,33 @@ export async function addDaysOff(
 ): Promise<void> {
   try {
     await ApiService.post(`/restaurants/${restaurantId}/createDaysOff`, {
+      dates,
+    });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function removeDaysOff(
+  restaurantId: number,
+  dates: Date[],
+): Promise<void> {
+  try {
+    await ApiService.post(`/restaurants/${restaurantId}/removeDaysOff`, {
+      dates,
+    });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+// update daysoff
+export async function updateDaysOff(
+  restaurantId: number,
+  dates: string[],
+): Promise<void> {
+  try {
+    await ApiService.put(`/restaurants/${restaurantId}/updateDaysOff`, {
       dates,
     });
   } catch (error) {
@@ -463,9 +490,7 @@ export async function updateRestaurantHours(
   hours: RestaurantHours[],
 ): Promise<void> {
   try {
-    await ApiService.put(`/restaurants/${restaurantId}/hours`, {
-      hours,
-    });
+    await ApiService.put(`/restaurants/${restaurantId}/hours`, hours);
   } catch (error) {
     normalizeError(error);
   }

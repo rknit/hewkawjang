@@ -5,7 +5,8 @@ import AvailableTimeDropdown from './available-time-dropdown';
 import ProvinceDropdown from './province-dropdown';
 import CuisineTypeDropdown from './cuisine-type-dropdown';
 import PaymentMethodSelector from './payment-method-selector';
-import { fetchRestaurantById, updateRestaurantInfo } from '@/apis/restaurant.api';
+import { fetchRestaurantById, updateRestaurantInfo, getrestaurantHours, updateRestaurantHours, fecthDaysOff, updateDaysOff} from '@/apis/restaurant.api';
+import { RestaurantHours } from '@/types/restaurant.type';
 
 interface RestaurantEditProps {
   restaurantId: number;
@@ -27,15 +28,17 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
   const [reservationFee, setReservationFee] = useState('');
   const [restaurant, setRestaurant] = useState<any>(null);
   const [images, setImages] = useState<(string | null)[]>([null]);
+  const [daysOff, setDaysOff] = useState<string[]>([]);
 
   // Dropdown states
   const [showAvailableTimeDropdown, setShowAvailableTimeDropdown] = useState(false);
-  const [availableTimeValue, setAvailableTimeValue] = useState<any>(null);
+  const [availableTimeValue, setAvailableTimeValue] = useState<RestaurantHours[]>([]);
   const [showProvinceDropdown, setShowProvinceDropdown] = useState(false);
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [showCuisineDropdown, setShowCuisineDropdown] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+
 
   const loadData = async () => {
     const restaurant = await fetchRestaurantById(restaurantId);
@@ -62,7 +65,20 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
     else {
       setImages([null]);
     }
-    // Note: availableTimeValue and selectedPaymentMethods loading logic would go here
+    const hours = await getrestaurantHours(restaurantId);
+
+    // Transform times to HH:MM
+    const formattedHours = hours.map(h => ({
+      ...h,
+      openTime: h.openTime.slice(0, 5),
+      closeTime: h.closeTime.slice(0, 5),
+    }));
+
+    setAvailableTimeValue(formattedHours);
+
+    const daysOffData = await fecthDaysOff(restaurantId);
+    setDaysOff(daysOffData);
+    console.log('Loaded days off:', daysOffData);
   };
 
   useEffect(() => {
@@ -79,12 +95,13 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
   const validatePostalCode = (postal: string): boolean => /^[0-9]+$/.test(postal) && postal.trim().length > 0;
   const validateProvince = (): boolean => selectedProvince !== null && selectedProvince.trim().length > 0;
   const validateAvailableTime = (): boolean => {
-    if (!availableTimeValue || !availableTimeValue.selectedDays || availableTimeValue.selectedDays.length === 0) return false;
-    return availableTimeValue.selectedDays.some((dayIdx: number) => {
-      const timeRange = availableTimeValue.timeRanges[dayIdx];
-      return timeRange && timeRange.start && timeRange.end;
-    });
+    if (!availableTimeValue || availableTimeValue.length === 0) return false;
+
+    return availableTimeValue.some(item =>
+      item.openTime && item.closeTime
+    );
   };
+
   const validateCuisines = (): boolean => selectedCuisine !== null;
   const validatePriceRange = (): boolean => {
     if (!priceRange) return false;
@@ -126,14 +143,30 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
   const handleReservationFeeChange = (text: string) => setReservationFee(text.replace(/[^0-9]/g, ''));
 
   const formatAvailableTimeDisplay = () => {
-    if (!availableTimeValue || !availableTimeValue.selectedDays || availableTimeValue.selectedDays.length === 0) return null;
-    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const sortedDays = availableTimeValue.selectedDays.sort((a: number, b: number) => a - b);
-    return sortedDays.map((dayIdx: number) => {
-      const timeRange = availableTimeValue.timeRanges[dayIdx];
-      if (!timeRange) return null;
-      return { day: dayNames[dayIdx], startTime: timeRange.start, endTime: timeRange.end };
-    }).filter(Boolean);
+    if (!availableTimeValue || availableTimeValue.length === 0) return null;
+
+    const dayNames: Record<string, string> = {
+      sunday: "Sunday",
+      monday: "Monday",
+      tuesday: "Tuesday",
+      wednesday: "Wednesday",
+      thursday: "Thursday",
+      friday: "Friday",
+      saturday: "Saturday",
+    };
+
+    return availableTimeValue
+      .sort((a, b) =>
+        ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"]
+          .indexOf(a.dayOfWeek) -
+        ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"]
+          .indexOf(b.dayOfWeek)
+      )
+      .map(item => ({
+        day: dayNames[item.dayOfWeek],
+        startTime: item.openTime,
+        endTime: item.closeTime,
+      }));
   };
 
   const timeDisplayData = formatAvailableTimeDisplay();
@@ -175,6 +208,13 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
   };
 
     await updateRestaurantInfo(payload);
+    // Update restaurant hours
+    if (availableTimeValue) {
+      await updateRestaurantHours(restaurantId, availableTimeValue);
+    }
+
+    // Update days off
+    await updateDaysOff(restaurantId, daysOff);
 
     alert('Success Restaurant information updated successfully!');
   } catch (error) {
@@ -295,27 +335,48 @@ export default function RestaurantEdit({ restaurantId }: RestaurantEditProps) {
           <Text className={`text-left text-base mb-1 ${hasAttemptedSubmit && !validateAvailableTime() ? 'text-red-500' : 'text-black'}`}>
             Available Time {hasAttemptedSubmit && !validateAvailableTime() && '*'}
           </Text>
+
+          {/* Display selected times or placeholder */}
           {!timeDisplayData || timeDisplayData.length === 0 ? (
             <TouchableOpacity
               className={`w-full rounded px-3 py-2 mb-4 bg-[#FAE8D1] flex-row justify-between items-center ${hasAttemptedSubmit && !validateAvailableTime() ? 'border-2 border-red-500' : ''}`}
-              onPress={() => setShowAvailableTimeDropdown(!showAvailableTimeDropdown)}
+              onPress={() => setShowAvailableTimeDropdown(true)}
             >
               <Text className="text-gray-900">Select available time</Text>
               <Text className="text-black font-bold text-lg">{showAvailableTimeDropdown ? '▲' : '▼'}</Text>
             </TouchableOpacity>
           ) : (
-            <View className="mb-4">
+            <TouchableOpacity
+              className="w-full rounded px-3 py-2 mb-4 bg-[#FAE8D1]"
+              onPress={() => setShowAvailableTimeDropdown(true)}
+            >
               {timeDisplayData.map((item: any, index: number) => (
                 <Text key={index} className="text-black text-base">
-                  {item.day}: {item.startTime} - {item.endTime}
+                  {item.day}: {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
                 </Text>
               ))}
-            </View>
+            </TouchableOpacity>
           )}
+
+          {/* Dropdown for editing */}
           {showAvailableTimeDropdown && (
             <AvailableTimeDropdown
-              value={availableTimeValue}
-              onChange={setAvailableTimeValue}
+              value={availableTimeValue.map(({ restaurantId, ...rest }) => rest)} // remove restaurantId for dropdown
+              daysOff={daysOff} // pass current daysOff array
+              onChange={(val) => {
+                // transform to HH:MM and attach restaurantId before saving
+                const transformed = val.map(v => ({
+                  ...v,
+                  restaurantId,
+                  openTime: v.openTime.slice(0, 5),
+                  closeTime: v.closeTime.slice(0, 5),
+                }));
+                setAvailableTimeValue(transformed);
+              }}
+              onDaysOffChange={(updatedDaysOff) => {
+                // update your parent state for daysOff
+                setDaysOff(updatedDaysOff);
+              }}
               onClose={() => setShowAvailableTimeDropdown(false)}
             />
           )}

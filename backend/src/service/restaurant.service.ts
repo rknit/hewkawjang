@@ -618,6 +618,28 @@ export default class RestaurantService {
       );
   }
 
+  // input array of date strings ["2025-11-15", "2025-11-16"] and restaurant_id
+  // update the days off for that restaurant
+  static async updateDaysOff(
+    restaurant_id: number,
+    dates: string[],
+  ) {
+    // First, delete existing days off for the restaurant
+    await db
+      .delete(restaurantDaysOff)
+      .where(eq(restaurantDaysOff.restaurantId, restaurant_id));
+    // Then, insert the new days off
+    const daysOffToInsert = dates.map((d) => ({
+      restaurantId: restaurant_id,
+      date: d.split('T')[0],  
+      // Ensure 'YYYY-MM-DD' format
+    }));
+    if(daysOffToInsert.length === 0) return;
+    await db
+      .insert(restaurantDaysOff)
+      .values(daysOffToInsert);
+  }
+
   // หรือรองรับทั้งอดีตและอนาคต
   static async getDayOffByRestaurantId(
     restaurant_id: number,
@@ -632,7 +654,8 @@ export default class RestaurantService {
       const today = new Date().toISOString().split('T')[0]; // "2025-11-06"
       conditions.push(gte(restaurantDaysOff.date, today));
     }
-
+    /*
+    shouldn't have end date
     if (endDate) {
       conditions.push(lte(restaurantDaysOff.date, endDate));
     } else {
@@ -641,7 +664,7 @@ export default class RestaurantService {
         .split('T')[0]; // "2025-11-13"
       conditions.push(lte(restaurantDaysOff.date, sevenDaysLater));
     }
-
+*/
     const daysOff = await db
       .select()
       .from(restaurantDaysOff)

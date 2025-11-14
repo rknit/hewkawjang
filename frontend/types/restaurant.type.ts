@@ -52,8 +52,7 @@ export const RestaurantSchema = z.object({
 export const DaysOffSchema = z.object({
   id: z.number(),
   restaurantId: z.number(),
-  date: z.date(),
-  createAt: z.string(),
+  date: z.string(),
 });
 
 export type DaysOff = z.infer<typeof DaysOffSchema>;
