@@ -29,3 +29,11 @@ export async function updateReportStatus(
     return normalizeError(error);
   }
 }
+
+export async function reportMessage(messageId: number): Promise<void> {
+  try {
+    await ApiService.post(`/reports/message/${messageId}`);
+  } catch (error) {
+    normalizeError(error);
+  }
+}

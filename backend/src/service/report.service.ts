@@ -69,4 +69,35 @@ export default class ReportService {
       reportType: 'review',
     });
   }
+
+  static async reportMessage({
+    reporterUserId,
+    targetMessageId,
+  }: {
+    reporterUserId: number;
+    targetMessageId: number;
+  }): Promise<void> {
+    // Check if this message has already been reported
+    const existingReport = await db
+      .select()
+      .from(reportsTable)
+      .where(
+        and(
+          eq(reportsTable.targetMessageId, targetMessageId),
+          eq(reportsTable.reportType, 'message'),
+        ),
+      )
+      .limit(1);
+
+    // If report already exists, don't create duplicate
+    if (existingReport.length > 0) {
+      return;
+    }
+
+    await db.insert(reportsTable).values({
+      userId: reporterUserId,
+      targetMessageId: targetMessageId,
+      reportType: 'message',
+    });
+  }
 }

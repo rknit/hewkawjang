@@ -41,6 +41,19 @@ const sidebarLayout: SidebarItem[] = [
       reports.filter((r) => r.reportType === 'chat').length,
   },
   {
+    name: 'Messages',
+    icon: (
+      <MaterialCommunityIcons
+        name="email-alert-outline"
+        size={24}
+        color="black"
+      />
+    ),
+    route: '/(admin)/messages',
+    getPendingCount: (reports) =>
+      reports.filter((r) => r.reportType === 'message' && !r.isSolved).length,
+  },
+  {
     name: 'Reviews',
     icon: (
       <MaterialCommunityIcons
@@ -58,7 +71,8 @@ const sidebarLayout: SidebarItem[] = [
     icon: <MaterialIcons name="storefront" size={24} color="black" />,
     route: '/restaurants',
     getPendingCount: (reports, restaurants) =>
-      reports.filter((r) => r.reportType === 'restaurant').length + (restaurants?.length ?? 0),
+      reports.filter((r) => r.reportType === 'restaurant').length +
+      (restaurants?.length ?? 0),
   },
   {
     name: 'Support',
@@ -89,7 +103,11 @@ export default function AdminSidebar({ children }: AdminSidebarProps) {
             icon={item.icon}
             selected={pathname === item.route}
             onPress={() => handleItemPress(item.route)}
-            pendingCount={item.name === "Restaurants" ? item.getPendingCount?.(pendingReports, pendingRestaurants) : item.getPendingCount?.(pendingReports)}
+            pendingCount={
+              item.name === 'Restaurants'
+                ? item.getPendingCount?.(pendingReports, pendingRestaurants)
+                : item.getPendingCount?.(pendingReports)
+            }
           />
         ))}
       </View>

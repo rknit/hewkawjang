@@ -10,7 +10,7 @@ import { supabase } from '@/utils/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Admin } from '@/types/admin.type';
 import { Report } from '@/types/report.type';
-import { Restaurant } from '@/types/restaurant.type'; 
+import { Restaurant } from '@/types/restaurant.type';
 import * as adminApi from '@/apis/admin.api';
 import * as reportApi from '@/apis/report.api';
 import * as restaurantApi from '@/apis/restaurant.api';
@@ -21,7 +21,10 @@ interface AdminContextType {
   pendingRestaurants: Restaurant[];
   isLoading: boolean;
   updateReportStatus: (id: number, isSolved: boolean) => Promise<void>;
-  updateRestaurantVerificationStatus: (id: number, isVerified: boolean) => Promise<void>;
+  updateRestaurantVerificationStatus: (
+    id: number,
+    isVerified: boolean,
+  ) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -35,7 +38,9 @@ export function AdminProvider({ children }: AdminProviderProps) {
   const { authRole } = useAuth();
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [pendingReports, setPendingReports] = useState<Report[]>([]);
-  const [pendingRestaurants, setPendingRestaurants] = useState<Restaurant[]>([]);
+  const [pendingRestaurants, setPendingRestaurants] = useState<Restaurant[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Fetch initial admin data and reports
@@ -50,11 +55,12 @@ export function AdminProvider({ children }: AdminProviderProps) {
 
     try {
       setIsLoading(true);
-      const [fetchedAdmin, fetchedReports, fetchedRestaurants] = await Promise.all([
-        adminApi.fetchCurrentAdmin(),
-        adminApi.fetchPendingReports(),
-        adminApi.fetchPendingRestaurants(),
-      ]);
+      const [fetchedAdmin, fetchedReports, fetchedRestaurants] =
+        await Promise.all([
+          adminApi.fetchCurrentAdmin(),
+          adminApi.fetchPendingReports(),
+          adminApi.fetchPendingRestaurants(),
+        ]);
       setAdmin(fetchedAdmin);
       setPendingReports(fetchedReports);
       setPendingRestaurants(fetchedRestaurants);
@@ -155,7 +161,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
             targetRestaurantId: payload.new.restaurant_id,
             targetReviewId: payload.new.review_id,
             targetUserId: payload.new.taget_user_id, // Note: DB has typo 'taget_user_id'
-            targetChatId: payload.new.chat_id,
+            targetMessageId: payload.new.message_id,
             isSolved: payload.new.is_solved,
             createdAt: payload.new.created_at,
           };
@@ -187,7 +193,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
             targetRestaurantId: payload.new.restaurant_id,
             targetReviewId: payload.new.review_id,
             targetUserId: payload.new.taget_user_id, // Note: DB has typo 'taget_user_id'
-            targetChatId: payload.new.chat_id,
+            targetMessageId: payload.new.message_id,
             isSolved: payload.new.is_solved,
             createdAt: payload.new.created_at,
           };
@@ -215,9 +221,9 @@ export function AdminProvider({ children }: AdminProviderProps) {
       .on(
         'postgres_changes',
         {
-          event: "INSERT",
-          schema: "public",
-          table: "restaurant",
+          event: 'INSERT',
+          schema: 'public',
+          table: 'restaurant',
         },
         (payload) => {
           if (__DEV__) {
@@ -249,21 +255,22 @@ export function AdminProvider({ children }: AdminProviderProps) {
             isDeleted: payload.new.is_deleted,
             images: payload.new.images,
             reservationFee: payload.new.reservation_fee,
-          }
- 
+          };
+
           // Only add if not deleted (this shouldn't happen)
           if (!newRestaurant.isDeleted && !newRestaurant.isVerified) {
             setPendingRestaurants((prev) => [newRestaurant, ...prev]);
           }
-        }
+        },
       )
-      .on( // In case other admin update
+      .on(
+        // In case other admin update
         'postgres_changes',
         {
-          event: "UPDATE",
-          schema: "public",
-          table: "restaurant",
-          filter: "is_verified=eq.true,is_deleted=eq.true",
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'restaurant',
+          filter: 'is_verified=eq.true,is_deleted=eq.true',
         },
         (payload) => {
           if (__DEV__) {
@@ -276,7 +283,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
           setPendingRestaurants((prev) =>
             prev.filter((restaurant) => restaurant.id !== updatedRestaurantId),
           );
-        }
+        },
       )
       .subscribe();
 
@@ -294,7 +301,8 @@ export function AdminProvider({ children }: AdminProviderProps) {
         pendingRestaurants,
         isLoading,
         updateReportStatus: updateReportStatusHandler,
-        updateRestaurantVerificationStatus: updateRestaurantVerificationStatusHandler,
+        updateRestaurantVerificationStatus:
+          updateRestaurantVerificationStatusHandler,
         refetch: fetchAdminData,
       }}
     >

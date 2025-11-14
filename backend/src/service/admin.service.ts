@@ -1,6 +1,6 @@
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
-import { adminsTable, restaurantTable } from '../db/schema';
+import { adminsTable, messagesTable, restaurantTable } from '../db/schema';
 import { db } from '../db';
 import { eq, isNull, inArray, gt } from 'drizzle-orm';
 import { Admin } from '../validators/admin.validator';
@@ -117,7 +117,7 @@ export default class AdminService {
         targetRestaurantId: reportsTable.targetRestaurantId,
         targetReviewId: reportsTable.targetReviewId,
         targetUserId: reportsTable.targetUserId,
-        targetChatId: reportsTable.targetChatId,
+        targetChatId: reportsTable.targetMessageId,
         isSolved: reportsTable.isSolved,
         createdAt: reportsTable.createdAt,
 
@@ -278,5 +278,89 @@ export default class AdminService {
         },
       ]);
     }
+  }
+  static async handleReportedMessage(
+    reportId: number,
+    action: boolean,
+  ): Promise<void> {
+    // Fetch the reported message
+    const [report] = await db
+      .select()
+      .from(reportsTable)
+      .where(eq(reportsTable.id, reportId))
+      .limit(1);
+
+    if (!report) {
+      throw createHttpError.NotFound('Report not found');
+    }
+
+    // If the report is already solved, throw an error
+    if (report.isSolved) {
+      throw createHttpError.BadRequest('This report has already been resolved');
+    }
+
+    // Mark the report as solved
+    await db
+      .update(reportsTable)
+      .set({ isSolved: true })
+      .where(eq(reportsTable.id, reportId));
+
+    // If the admin chooses to delete the message
+    if (action) {
+      const messageId = report.targetMessageId;
+      if (messageId) {
+        await db
+          .update(messagesTable)
+          .set({ text: '[deleted by admin]', imgURL: null })
+          .where(eq(messagesTable.id, messageId));
+      }
+    }
+    // If the action is to reject, do nothing to the message
+  }
+  static async getReportedMessages({
+    isSolved = false,
+    page = 1,
+    limit = 10,
+  }: {
+    isSolved?: boolean | string;
+    page?: number;
+    limit?: number;
+  }): Promise<any[]> {
+    if (page < 1 || limit < 1) {
+      throw createHttpError.BadRequest('Invalid page or limit');
+    }
+
+    const offset = (page - 1) * limit;
+    const isSolvedBool = String(isSolved) === 'true';
+
+    // Query for reported messages
+    const reportedMessages = await db
+      .select({
+        id: reportsTable.id,
+        reportType: reportsTable.reportType,
+        isSolved: reportsTable.isSolved,
+        createdAt: reportsTable.createdAt,
+        messageText: messagesTable.text,
+        messageImageUrl: messagesTable.imgURL,
+        reporterName: usersTable.displayName,
+        reporterImage: usersTable.profileUrl,
+      })
+      .from(reportsTable)
+      .leftJoin(
+        messagesTable,
+        eq(reportsTable.targetMessageId, messagesTable.id),
+      )
+      .leftJoin(usersTable, eq(reportsTable.userId, usersTable.id))
+      .where(
+        and(
+          eq(reportsTable.reportType, 'message'),
+          eq(reportsTable.isSolved, isSolvedBool),
+        ),
+      )
+      .orderBy(desc(reportsTable.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return reportedMessages;
   }
 }
