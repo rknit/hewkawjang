@@ -43,6 +43,11 @@ export default function RegisterRestaurantForm() {
   const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
 
+  function onSuccessAlertClose() {
+    setShowSubmitSuccessAlert(false);
+    router.back();
+  }
+
    // Validation state
     const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   
@@ -196,9 +201,7 @@ export default function RegisterRestaurantForm() {
       // Update days off
       await updateDaysOff(restaurantId, daysOff);
   
-      setTimeout(() => {
-      router.back();
-      }, 1500); // 1.5 seconds delay
+      setShowSubmitSuccessAlert(true);
     } catch (error) {
       setShowSubmitFailureAlert(true);
     }
@@ -486,7 +489,7 @@ export default function RegisterRestaurantForm() {
                         title="Success!"
                         message="Update restaurant information successfully."
                         buttonText="OK"
-                        onClose={() => setShowSubmitSuccessAlert(false)}
+                        onClose={onSuccessAlertClose}
                       />
                     </View>
                   </Modal>
