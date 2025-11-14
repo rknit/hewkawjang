@@ -78,3 +78,6 @@ export const RestaurantHoursSchema = z.object({
   closeTime: z.string(),
 });
 export type RestaurantHours = z.infer<typeof RestaurantHoursSchema>;
+
+export const CreateRestaurantSchema = UpdateRestaurantInfoSchema.omit({ id: true });
+export type CreateRestaurant = z.infer<typeof CreateRestaurantSchema>;

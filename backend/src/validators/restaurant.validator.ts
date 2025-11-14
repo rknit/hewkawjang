@@ -19,9 +19,28 @@ export const createRestaurantSchema = z.object({
   postalCode: z.string().optional(),
 
   // details
-  openTime: z.string().optional(), // later can refine to time format
-  closeTime: z.string().optional(),
   priceRange: z.number().optional(),
+  cuisineType: z.enum(['Thai',
+  'Chinese',
+  'Japanese',
+  'Korean',
+  'Western',
+  'Seafood',
+  'Vegetarian',
+  'Vegan',
+  'Halal',
+  'Bakery',
+  'Cafe',
+  'Buffet',
+  'BBQ',
+  'Steakhouse',
+  'Fast Food',
+  'Indian',
+  'Italian',
+  'Other',]),
+  images: z.array(z.string()).optional(),
+  reservationFee: z.number().min(0),
+  paymentMethod: z.enum(['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay']),
 });
 export type CreateRestaurantInput = z.infer<typeof createRestaurantSchema>;
 

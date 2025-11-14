@@ -189,8 +189,11 @@ router.put('/', authHandler, async (req, res) => {
   res.status(200).json(updated);
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/',authHandler, async (req, res, next) => {
   try {
+    if (req.body) {
+      req.body.ownerId = req.userAuthPayload!.userId; // from auth middleware
+    }
     // validate request body
     const parsedData = createRestaurantSchema.parse(req.body);
 
@@ -199,7 +202,7 @@ router.post('/', async (req, res, next) => {
 
     res.status(201).json({
       message: 'Restaurant submitted successfully',
-      restaurant,
+      id: restaurant.id,
     });
   } catch (err) {
     if (err instanceof Error) {

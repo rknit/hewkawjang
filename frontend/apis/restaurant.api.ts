@@ -11,6 +11,7 @@ import {
   RestaurantHours,
   RestaurantHoursSchema,
   DaysOff,
+  CreateRestaurant
 } from '@/types/restaurant.type';
 import {
   Comment,
@@ -493,5 +494,19 @@ export async function updateRestaurantHours(
     await ApiService.put(`/restaurants/${restaurantId}/hours`, hours);
   } catch (error) {
     normalizeError(error);
+  }
+}
+
+// create restaurant
+export async function createRestaurant(
+  data: CreateRestaurant,
+): Promise<number> {
+  try {
+    const res = await ApiService.post('/restaurants', data);
+    return res.data.id; // Return the newly created restaurant ID
+  }
+  catch (error) {
+    normalizeError(error);
+    return -1; // Indicate failure
   }
 }
