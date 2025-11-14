@@ -3,13 +3,47 @@ import { FaRegSmile } from "react-icons/fa";
 import { FiPaperclip } from "react-icons/fi"; 
 import { IoSend } from "react-icons/io5";   
 import { AdminChatChannel, AdminChatMessage } from "@/types/chat.type";
+import { useRef, useEffect } from "react";
+import {launchImageLibrary} from "react-native-image-picker"
 
 interface AdminChatAreaProps {
   adminChatChannel: AdminChatChannel;
   messages: AdminChatMessage[]; 
+  value: string;
+  onChangeText: (text: string) => void;
+  onPress: () => void;
+  onSendImage?: (imageUri: string) => void;
 }
 
-export default function AdminChatArea({ adminChatChannel, messages }: AdminChatAreaProps) {
+export default function AdminChatArea({ 
+  adminChatChannel, 
+  messages, 
+  value,
+  onChangeText,
+  onPress, 
+  onSendImage
+}: AdminChatAreaProps) {
+
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
+  const handleAttachImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: 1,
+    });
+
+    if (result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      if (uri && onSendImage) {
+        onSendImage(uri);
+      }
+    }
+  };
+
   return (
     <View className="flex-1">
       {/* Header */}
@@ -57,20 +91,19 @@ export default function AdminChatArea({ adminChatChannel, messages }: AdminChatA
 
       {/* Input bar */}
       <View className="flex-row items-center gap-2 border-t border-gray-300 bg-[#f7d6c2] px-3 py-2">
-        <TouchableOpacity className="p-2">
-          <FaRegSmile size={20} color="#555" />
-        </TouchableOpacity>
 
-        <TouchableOpacity className="p-2">
+        <TouchableOpacity className="p-2" onPress={handleAttachImage}>
           <FiPaperclip size={20} color="#555" />
         </TouchableOpacity>
 
         <TextInput
+          value = {value}
+          onChangeText={onChangeText}
           placeholder="Type a message..."
           className="flex-1 bg-white rounded-full px-3 py-2 text-gray-700"
         />
 
-        <TouchableOpacity className="p-2">
+        <TouchableOpacity className="p-2" onPress={onPress}>
           <IoSend size={20} color="#555" />
         </TouchableOpacity>
       </View>

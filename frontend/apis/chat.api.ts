@@ -125,3 +125,23 @@ export async function fetchAdminChatMessages(chatAdminId: number): Promise<Admin
     return normalizeError(error) ?? [];
   }
 }
+
+export async function createAdminChatMessage(
+  chatAdminId: number,
+  senderRole: 'admin' | 'user' | 'restaurant',
+  text: string | null,
+  imgURL: string | null
+): Promise<AdminChatMessage | null> {
+  try {
+    const res = await ApiService.post(`/chat/admin/messages`, {
+      chatAdminId,
+      senderRole,
+      text,
+      imgURL,
+    });
+
+    return res.data;
+  } catch (error) {
+    return normalizeError(error) ?? null;
+  }
+}

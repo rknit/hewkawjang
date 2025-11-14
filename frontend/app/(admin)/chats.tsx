@@ -1,4 +1,4 @@
-import { fetchAdminChats, fetchAdminChatMessages } from '@/apis/chat.api';
+import { fetchAdminChats, fetchAdminChatMessages, createAdminChatMessage } from '@/apis/chat.api';
 import ChatArea from '@/components/chat/ChatArea';
 import ChatChannelList from '@/components/chat/ChatChannelList';
 import { Text, View } from 'react-native';
@@ -14,6 +14,23 @@ export default function ChatsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [chatAdminId, setChatAdminId] = useState<number | null>(null);
   const [messages, setMessages] = useState<AdminChatMessage[]>([]);
+  const [messageText, setMessageText] = useState("");
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+
+  const handleSend = async () => {
+    if (!messageText.trim() && !attachedImage) return; // nothing to send
+
+    const newMessage = await createAdminChatMessage(
+      chatAdminId!,
+      "admin",
+      messageText.trim() || null, // text can be null
+      attachedImage || null       // image can be null
+    );
+
+    setMessages(prev => [...prev, newMessage]);
+    setMessageText("");
+    setAttachedImage(null); // reset after sending
+  };
 
   useEffect(() => {
     async function fetchChats() {
@@ -70,6 +87,9 @@ export default function ChatsAdminPage() {
               chatList.find(chat => chat.chatId === chatAdminId)
             }
             messages={messages}
+            value = {messageText}
+            onChangeText={setMessageText}
+            onPress={handleSend}
           />
         }
         

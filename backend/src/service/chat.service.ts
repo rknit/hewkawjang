@@ -160,7 +160,6 @@ class ChatService {
         })
         .from(chatAdminsTable)
         .innerJoin(usersTable, eq(chatAdminsTable.userId, usersTable.id))
-        .where(eq(chatAdminsTable.adminId, adminId));
       console.log(`[ChatService] getChatsByAdmin: found ${result.length} chats`);
       return result;
     } catch (err) {
@@ -180,6 +179,44 @@ class ChatService {
       return result;
     } catch (err) {
       console.error(`[ChatService] ERROR in getAdminChatMessages:`, err);
+      throw err;
+    }
+  }
+
+  async createAdminChatMessage({
+    chatAdminId,
+    senderId,
+    senderRole,
+    text,
+    imgURL,
+  }: {
+    chatAdminId: number;
+    senderId: number;
+    senderRole: 'user' | 'admin' | 'restaurant';
+    text?: string;
+    imgURL?: string;
+  }) {
+    try {
+      console.log(`[ChatService] createAdminChatMessage: chatAdminId=${chatAdminId}`);
+
+      const [inserted] = await db
+        .insert(adminMessagesTable)
+        .values({
+          chatAdminId,
+          senderId,
+          senderRole,
+          text: text ?? null,
+          imgURL: imgURL ?? null,
+        })
+        .returning();
+
+      console.log(
+        `[ChatService] createAdminChatMessage: message inserted with id=${inserted.id}`
+      );
+
+      return inserted;
+    } catch (err) {
+      console.error('[ChatService] ERROR in createAdminChatMessage:', err);
       throw err;
     }
   }
