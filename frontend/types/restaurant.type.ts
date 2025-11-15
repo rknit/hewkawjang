@@ -1,6 +1,5 @@
 import * as z from 'zod';
 import { CUISINE_TYPES } from '@/constants/cuisine-types';
-import { id } from 'zod/v4/locales';
 
 export const UpdateRestaurantInfoSchema = z.object({
   id: z.number(),
@@ -19,7 +18,12 @@ export const UpdateRestaurantInfoSchema = z.object({
   priceRange: z.number().nullable(),
   images: z.array(z.string()).nullish(),
   reservationFee: z.number().min(0),
-  paymentMethod: z.enum(['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay']),
+  paymentMethod: z.enum([
+    'MasterCard',
+    'Visa',
+    'HewkawjangWallet',
+    'PromptPay',
+  ]),
 });
 export type UpdateRestaurantInfo = z.infer<typeof UpdateRestaurantInfoSchema>;
 
@@ -46,7 +50,12 @@ export const RestaurantSchema = z.object({
   isDeleted: z.boolean(),
   images: z.array(z.string()).nullish(),
   reservationFee: z.number().min(0),
-  paymentMethod: z.enum(['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay']),
+  paymentMethod: z.enum([
+    'MasterCard',
+    'Visa',
+    'HewkawjangWallet',
+    'PromptPay',
+  ]),
 });
 
 export const DaysOffSchema = z.object({
@@ -73,11 +82,21 @@ export type Restaurant = z.infer<typeof RestaurantSchema>;
 
 export const RestaurantHoursSchema = z.object({
   restaurantId: z.number(),
-  dayOfWeek: z.enum(['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']),
+  dayOfWeek: z.enum([
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ]),
   openTime: z.string(),
   closeTime: z.string(),
 });
 export type RestaurantHours = z.infer<typeof RestaurantHoursSchema>;
 
-export const CreateRestaurantSchema = UpdateRestaurantInfoSchema.omit({ id: true });
+export const CreateRestaurantSchema = UpdateRestaurantInfoSchema.omit({
+  id: true,
+});
 export type CreateRestaurant = z.infer<typeof CreateRestaurantSchema>;
