@@ -282,7 +282,7 @@ export const chatAdminsTable = pgTable('chatadmin', {
   userId: integer('user_id')
     .notNull()
     .references(() => usersTable.id),
-  adminId: integer('user_id')
+  adminId: integer('admin_id')
     .notNull()
     .references(() => adminsTable.id),
 });
@@ -310,6 +310,27 @@ export const messagesTable = pgTable(
     )`,
     ),
   }),
+);
+
+export const senderEnum = pgEnum('senderType', [
+  'user',
+  'admin',
+  'restaurant'
+]);
+
+export const adminMessagesTable = pgTable(
+  'admin_message',
+  {
+    id: serial('id').primaryKey(),
+    chatAdminId: integer('chat_admin_id').references(() => chatAdminsTable.id).notNull(),
+    senderId: integer('sender_id')
+      .notNull()
+      .references(() => usersTable.id),
+    senderRole: senderEnum('sender_role').notNull(),
+    text: text('text'),
+    imgURL: text('img_url'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
 );
 
 export const imagesTable = pgTable(

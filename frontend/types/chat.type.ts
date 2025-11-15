@@ -45,3 +45,23 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 //     ),
 //   }),
 // );
+
+export const AdminChatChannelSchema = z.object({
+  chatId: z.number(),
+  userId: z.number(),
+  adminId: z.number(),
+  displayName: z.string(),
+  profileUrl: z.string().optional().nullable(),
+});
+export type AdminChatChannel = z.infer<typeof AdminChatChannelSchema>;
+
+export const AdminChatMessageSchema = z.object({
+  id: z.number(),
+  chatAdminId: z.number(),
+  senderId: z.number(),
+  senderRole: z.enum(['user', 'admin','restaurant']),
+  text: z.string(),
+  imgURL: z.string().nullable(),
+  createdAt: z.string()
+});
+export type AdminChatMessage = z.infer<typeof AdminChatMessageSchema>;

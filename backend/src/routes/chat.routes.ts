@@ -4,6 +4,7 @@ import MessageService from '../service/message.service'; // you'll add this soon
 import { db } from '../db';
 import { chatsTable, usersTable } from '../db/schema';
 import { eq } from 'drizzle-orm';
+import { adminRoleHandler, authHandler } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
@@ -103,9 +104,8 @@ router.get('/:chatId/messages', async (req, res) => {
  * @route POST /chat/:chatId/messages
  * @desc Send a message in a chat
  */
-router.post('/:chatId/messages', async (req, res) => {
-  const { chatId } = req.params;
-  const { senderId, text, imgURL } = req.body;
+router.post('/user/messages', async (req, res) => {
+  const { chatId, senderId, text, imgURL } = req.body;
 
   if (!senderId) {
     return res.status(400).json({ message: 'senderId is required' });
@@ -149,5 +149,52 @@ router.post('/:chatId/messages', async (req, res) => {
     });
   }
 });
+
+router.get('/admin/:adminId', authHandler, adminRoleHandler, async (req, res) => {
+  const adminId = req.userAuthPayload?.userId!;
+  try {
+    const chats = await ChatService.getChatsByAdmin(Number(adminId));
+    res.json(chats);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get admin chats', error: err });
+  }
+})
+
+router.get('/admin/messages/:chatAdminId', authHandler, adminRoleHandler, async (req, res) => {
+  const { chatAdminId } = req.params;
+  try {
+    const messages = await ChatService.getAdminChatMessages(Number(chatAdminId));
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get admin chats', error: err });
+  }
+})
+
+router.post('/admin/messages', authHandler, adminRoleHandler, async (req, res) => {
+  const adminId = req.userAuthPayload?.userId!;
+  const { chatAdminId, senderRole, text, imgURL } = req.body;
+  console.log(chatAdminId, adminId, senderRole, text, imgURL);
+  if (!chatAdminId || !adminId || !senderRole) {
+    return res.status(400).json({
+      message: 'chatAdminId, adminId and senderRole are required'
+    });
+  }
+
+  try {
+    const message = await ChatService.createAdminChatMessage({
+      chatAdminId: Number(chatAdminId),
+      senderId: Number(adminId),
+      senderRole,
+      text: text??null,
+      imgURL: imgURL??null,
+    });
+
+    res.status(201).json(message);
+  } catch (err) {
+    console.error('[POST /admin/messages] ERROR:', err);
+    res.status(500).json({ message: 'Failed to create admin message', error: err });
+  }
+});
+
 
 export default router;
