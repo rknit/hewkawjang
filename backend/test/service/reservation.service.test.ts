@@ -22,7 +22,9 @@ describe('ReservationService.cancelReservation', () => {
 
     // Setup default mocks
     RefundService.processRefund = jest.fn().mockResolvedValue(undefined);
-    NotificationService.notifyReservationStatuses = jest.fn().mockResolvedValue(undefined);
+    NotificationService.notifyReservationStatuses = jest
+      .fn()
+      .mockResolvedValue(undefined);
   });
 
   // Helper to create mock database query chains
@@ -95,10 +97,15 @@ describe('ReservationService.cancelReservation', () => {
       });
 
       // Verify refund was called (user cancellation triggers refund)
-      expect(RefundService.processRefund).toHaveBeenCalledWith(1, 'customer_cancel');
+      expect(RefundService.processRefund).toHaveBeenCalledWith(
+        1,
+        'customer_cancel',
+      );
 
       // Verify notification was sent to restaurant owner
-      expect(NotificationService.notifyReservationStatuses).toHaveBeenCalledWith([
+      expect(
+        NotificationService.notifyReservationStatuses,
+      ).toHaveBeenCalledWith([
         {
           reservation: mockUpdatedReservation,
           target: 'restaurant_owner',
@@ -161,7 +168,9 @@ describe('ReservationService.cancelReservation', () => {
       expect(RefundService.processRefund).not.toHaveBeenCalled();
 
       // Verify notification was sent to user
-      expect(NotificationService.notifyReservationStatuses).toHaveBeenCalledWith([
+      expect(
+        NotificationService.notifyReservationStatuses,
+      ).toHaveBeenCalledWith([
         {
           reservation: mockUpdatedReservation,
           target: 'user',
@@ -180,13 +189,13 @@ describe('ReservationService.cancelReservation', () => {
           reservationId: 999,
           userId: 100,
           cancelBy: 'user',
-        })
+        }),
       ).rejects.toThrow(createHttpError.NotFound('Reservation not found'));
     });
   });
 
   describe('Error cases - Authorization', () => {
-    it('should throw Forbidden when user tries to cancel someone else\'s reservation', async () => {
+    it("should throw Forbidden when user tries to cancel someone else's reservation", async () => {
       const mockReservation = {
         id: 1,
         userId: 100, // Different user
@@ -201,7 +210,7 @@ describe('ReservationService.cancelReservation', () => {
           reservationId: 1,
           userId: 999, // Wrong user
           cancelBy: 'user',
-        })
+        }),
       ).rejects.toThrow(createHttpError.Forbidden);
     });
 
@@ -244,7 +253,7 @@ describe('ReservationService.cancelReservation', () => {
           reservationId: 2,
           userId: 999, // Wrong owner
           cancelBy: 'restaurant_owner',
-        })
+        }),
       ).rejects.toThrow(createHttpError.Forbidden);
     });
   });
@@ -265,11 +274,11 @@ describe('ReservationService.cancelReservation', () => {
           reservationId: 1,
           userId: 100,
           cancelBy: 'user',
-        })
+        }),
       ).rejects.toThrow(
         createHttpError.BadRequest(
-          'Reservation status must be unconfirmed or confirmed to cancel'
-        )
+          'Reservation status must be unconfirmed or confirmed to cancel',
+        ),
       );
     });
 
@@ -288,7 +297,7 @@ describe('ReservationService.cancelReservation', () => {
           reservationId: 1,
           userId: 100,
           cancelBy: 'user',
-        })
+        }),
       ).rejects.toThrow(createHttpError.BadRequest);
     });
 
@@ -307,7 +316,7 @@ describe('ReservationService.cancelReservation', () => {
           reservationId: 1,
           userId: 100,
           cancelBy: 'user',
-        })
+        }),
       ).rejects.toThrow(createHttpError.BadRequest);
     });
   });
@@ -336,7 +345,10 @@ describe('ReservationService.cancelReservation', () => {
       });
 
       expect(RefundService.processRefund).toHaveBeenCalledTimes(1);
-      expect(RefundService.processRefund).toHaveBeenCalledWith(1, 'customer_cancel');
+      expect(RefundService.processRefund).toHaveBeenCalledWith(
+        1,
+        'customer_cancel',
+      );
     });
 
     it('should NOT call RefundService when restaurant owner cancels', async () => {
