@@ -8,6 +8,10 @@ import {
   RestaurantWithAvgRatingSchema,
   RestaurantWithRating,
   UpdateRestaurantInfo,
+  RestaurantHours,
+  RestaurantHoursSchema,
+  DaysOff,
+  CreateRestaurant
 } from '@/types/restaurant.type';
 import {
   Comment,
@@ -413,18 +417,17 @@ export async function fetchOwnerRestaurants(
   }
 }
 
+// Fetch days off for a restaurant as an array of date strings
 export async function fecthDaysOff(
   restaurantId: number,
-  startDate?: Date,
-  endDate?: Date,
-): Promise<Restaurant[]> {
+): Promise<string[]> {
   try {
-    const res = await ApiService.get(`/restaurants/${restaurantId}/daysOff`, {
-      params: { startDate, endDate },
-    });
-    return res.data.map((daysOff: any) => DaysOffSchema.parse(daysOff));
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/daysOff`,
+    );
+     return res.data.daysOff.map((dayOff: any) => DaysOffSchema.parse(dayOff).date);
   } catch (error) {
-    console.error('Failed to fetch ', error);
+    console.error('Failed to fetch days off:', error);
     return [];
   }
 }
@@ -439,5 +442,71 @@ export async function addDaysOff(
     });
   } catch (error) {
     normalizeError(error);
+  }
+}
+
+export async function removeDaysOff(
+  restaurantId: number,
+  dates: Date[],
+): Promise<void> {
+  try {
+    await ApiService.post(`/restaurants/${restaurantId}/removeDaysOff`, {
+      dates,
+    });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+// update daysoff
+export async function updateDaysOff(
+  restaurantId: number,
+  dates: string[],
+): Promise<void> {
+  try {
+    await ApiService.put(`/restaurants/${restaurantId}/updateDaysOff`, {
+      dates,
+    });
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+export async function getrestaurantHours(
+  restaurantId: number,
+): Promise<RestaurantHours[]> {
+  try {
+    const res = await ApiService.get(
+      `/restaurants/${restaurantId}/hours`,
+    );
+    return res.data.map((hours: any) => RestaurantHoursSchema.parse(hours));
+  } catch (error) {
+    console.error('Failed to fetch restaurant hours:', error);
+    return [];
+  }
+}
+
+export async function updateRestaurantHours(
+  restaurantId: number,
+  hours: RestaurantHours[],
+): Promise<void> {
+  try {
+    await ApiService.put(`/restaurants/${restaurantId}/hours`, hours);
+  } catch (error) {
+    normalizeError(error);
+  }
+}
+
+// create restaurant
+export async function createRestaurant(
+  data: CreateRestaurant,
+): Promise<number> {
+  try {
+    const res = await ApiService.post('/restaurants', data);
+    return res.data.id; // Return the newly created restaurant ID
+  }
+  catch (error) {
+    normalizeError(error);
+    return -1; // Indicate failure
   }
 }

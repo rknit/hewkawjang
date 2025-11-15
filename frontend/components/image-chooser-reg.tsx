@@ -5,10 +5,9 @@ import { uploadImage, deleteImage } from '@/apis/image.api';
 interface ImageChooserProps {
   images: (string | null)[];
   setImages: (images: (string | null)[]) => void;
-  restaurantId: number;
 }
 
-export default function ImageChooser({ images, setImages, restaurantId }: ImageChooserProps) {
+export default function ImageChooser({ images, setImages }: ImageChooserProps) {
   const pickImage = async (index: number) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -27,18 +26,8 @@ export default function ImageChooser({ images, setImages, restaurantId }: ImageC
       const newImages = [...images];
 
       const uri = result.assets[0].uri;
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const contentType = blob.type;
-      const fileName = `restaurant-${restaurantId}.${contentType.split('/')[1]}`;
-      const file = new File([blob], fileName, { type: contentType });
-      const uploadedImageUrl = await uploadImage(
-                file,
-                restaurantId.toString(),
-                'restaurant-images',
-              );
 
-      newImages[index] = uploadedImageUrl;
+      newImages[index] = uri;
 
       // Add a new empty slot if last slot was filled
       if (index === images.length - 1) {

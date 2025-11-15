@@ -27,6 +27,7 @@ import {
   getDefaultMinute,
 } from '@/utils/date-time';
 import { reservationTheme as brand, calendarTheme } from '@/utils/theme';
+import { set } from 'zod';
 
 export default function ReservationPane({
   visible = true,
@@ -42,6 +43,7 @@ export default function ReservationPane({
   const [children, setChildren] = useState<number>(0);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState<boolean>(false);
+  const [showFailureAlert, setShowFailureAlert] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
 
@@ -145,13 +147,8 @@ export default function ReservationPane({
       setShowConfirmation(false);
       setShowSuccessAlert(true);
     } catch (error: any) {
-      console.error('Failed to create reservation:', error);
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        'Failed to create reservation.';
-      alert(message);
+      setShowConfirmation(false);
+      setShowFailureAlert(true);
     }
   }
 
@@ -161,6 +158,11 @@ export default function ReservationPane({
 
   function onSuccessAlertClose() {
     setShowSuccessAlert(false);
+    onClose();
+  }
+
+  function onFaliureAlertClose() {
+    setShowFailureAlert(false);
     onClose();
   }
 
@@ -705,6 +707,22 @@ export default function ReservationPane({
           </View>
         </Modal>
       )}
+
+      {/* Failure Alert Modal */}
+      {showFailureAlert && (
+        <Modal transparent animationType="fade">
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <SimpleAlert
+              type="error"
+              title="Fail!"
+              message="Failed to create your reservation. Please try again later."
+              buttonText="OK"
+              onClose={onFaliureAlertClose}
+            />
+          </View>
+        </Modal>
+      )}
+
     </Modal>
   );
 }

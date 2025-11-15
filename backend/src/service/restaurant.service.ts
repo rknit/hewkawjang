@@ -20,6 +20,7 @@ import {
   restaurantTable,
   reviewTable,
   usersTable,
+  restaurantHoursTable,
 } from '../db/schema';
 import {
   CreateRestaurantInput,
@@ -33,6 +34,7 @@ export type NewRestaurant = InferInsertModel<typeof restaurantTable>;
 export type RestaurantStatus = NewRestaurant['status'];
 export type RestaurantActivation = NewRestaurant['activation'];
 export type Reservation = InferInsertModel<typeof reservationTable>;
+export type RestaurantHours = InferInsertModel<typeof restaurantHoursTable>;
 
 export interface SearchParams {
   query?: string;
@@ -616,6 +618,28 @@ export default class RestaurantService {
       );
   }
 
+  // input array of date strings ["2025-11-15", "2025-11-16"] and restaurant_id
+  // update the days off for that restaurant
+  static async updateDaysOff(
+    restaurant_id: number,
+    dates: string[],
+  ) {
+    // First, delete existing days off for the restaurant
+    await db
+      .delete(restaurantDaysOff)
+      .where(eq(restaurantDaysOff.restaurantId, restaurant_id));
+    // Then, insert the new days off
+    const daysOffToInsert = dates.map((d) => ({
+      restaurantId: restaurant_id,
+      date: d.split('T')[0],  
+      // Ensure 'YYYY-MM-DD' format
+    }));
+    if(daysOffToInsert.length === 0) return;
+    await db
+      .insert(restaurantDaysOff)
+      .values(daysOffToInsert);
+  }
+
   // หรือรองรับทั้งอดีตและอนาคต
   static async getDayOffByRestaurantId(
     restaurant_id: number,
@@ -630,7 +654,8 @@ export default class RestaurantService {
       const today = new Date().toISOString().split('T')[0]; // "2025-11-06"
       conditions.push(gte(restaurantDaysOff.date, today));
     }
-
+    /*
+    shouldn't have end date
     if (endDate) {
       conditions.push(lte(restaurantDaysOff.date, endDate));
     } else {
@@ -639,7 +664,7 @@ export default class RestaurantService {
         .split('T')[0]; // "2025-11-13"
       conditions.push(lte(restaurantDaysOff.date, sevenDaysLater));
     }
-
+*/
     const daysOff = await db
       .select()
       .from(restaurantDaysOff)
@@ -647,5 +672,29 @@ export default class RestaurantService {
       .orderBy(restaurantDaysOff.date);
 
     return daysOff;
+  }
+
+  static async getRestaurantHours(restaurantId: number): Promise<RestaurantHours[]> {
+    const hours = await db
+      .select()
+      .from(restaurantHoursTable)
+      .where(eq(restaurantHoursTable.restaurantId, restaurantId))
+      .orderBy(asc(restaurantHoursTable.dayOfWeek));
+    return hours;
+  }
+
+  static async updateRestaurantHours(restaurantId: number, hoursData: RestaurantHours[]): Promise<void> {
+    // First, delete existing hours for the restaurant
+    await db
+      .delete(restaurantHoursTable)
+      .where(eq(restaurantHoursTable.restaurantId, restaurantId));
+    // Then, insert the new hours
+    const hoursToInsert = hoursData.map(hour => ({
+      ...hour,
+      restaurantId: restaurantId,
+    }));
+    await db
+      .insert(restaurantHoursTable)
+      .values(hoursToInsert);
   }
 }

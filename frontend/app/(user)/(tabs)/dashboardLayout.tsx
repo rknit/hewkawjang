@@ -4,6 +4,7 @@ import { View, Text } from 'react-native';
 import Dashboard from '@/components/dashboard_layout/dashboard';
 import Reservation from '@/components/dashboard_layout/reservation';
 import RestaurantPreview from '@/components/dashboard_layout/RestaurantPreview';
+import RestaurantEdit from '@/components/restaurantEdit';
 import { useLocalSearchParams } from 'expo-router';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -48,7 +49,7 @@ export default function DashboardLayout() {
           )}
           {content === 'dashboard' && <Dashboard restaurantId={restaurantId} />}
           {content === 'settings' && (
-            <Text className="text-xl">丫 (๑°□°๑)丫</Text>
+            <RestaurantEdit restaurantId={restaurantId} />
           )}
         </View>
       </View>
