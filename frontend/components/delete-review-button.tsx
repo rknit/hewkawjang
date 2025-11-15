@@ -1,31 +1,40 @@
 // components/DeleteReviewButton.tsx
 import React, { useState } from 'react';
-import { TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { Trash2 } from 'lucide-react-native';
+import {
+  Alert,
+  ActivityIndicator,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { deleteReview } from '@/apis/user.api';
 
 type Props = {
   reviewId: number;
   onDeleted?: (id: number) => void; // callback to notify parent
-  style?: any; // optional style prop if you need to customize touchable
 };
 
-export default function DeleteReviewButton({ reviewId, onDeleted, style }: Props) {
+export default function DeleteReviewButton({ reviewId, onDeleted }: Props) {
   const [loading, setLoading] = useState(false);
 
-  const confirmAndDelete = () => {
+  const confirm = () => {
+    if (Platform.OS === 'web') {
+      const ok =
+        typeof window !== 'undefined' && window.confirm('Delete this review?');
+      if (ok) void handleDelete();
+      return;
+    }
     Alert.alert(
-      'Delete review',
-      'Are you sure you want to delete this review? This action cannot be undone.',
+      'Delete Review',
+      'Are you sure you want to delete this review?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: handleDelete,
+          onPress: () => void handleDelete(),
         },
       ],
-      { cancelable: true },
     );
   };
 
@@ -33,15 +42,10 @@ export default function DeleteReviewButton({ reviewId, onDeleted, style }: Props
     setLoading(true);
     try {
       const ok = await deleteReview(reviewId);
-      if (ok) {
-        // notify parent to remove from UI
-        onDeleted?.(reviewId);
-      } else {
-        Alert.alert('Delete failed', 'Unable to delete review. Please try again.');
-      }
-    } catch (err) {
-      console.log('delete review error', err);
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      if (ok) onDeleted?.(reviewId);
+      else Alert.alert('Failed', 'Could not delete review.');
+    } catch {
+      Alert.alert('Error', 'Unexpected error deleting review.');
     } finally {
       setLoading(false);
     }
@@ -49,16 +53,14 @@ export default function DeleteReviewButton({ reviewId, onDeleted, style }: Props
 
   return (
     <TouchableOpacity
-      onPress={confirmAndDelete}
+      onPress={confirm}
       disabled={loading}
-      style={style}
       accessibilityLabel="Delete review"
-      accessibilityHint="Deletes this review"
     >
       {loading ? (
-        <ActivityIndicator />
+        <ActivityIndicator size="small" />
       ) : (
-        <Trash2 size={20} color="#ef4444" />
+        <Feather name="trash-2" size={16} color="#EF4444" />
       )}
     </TouchableOpacity>
   );

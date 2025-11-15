@@ -55,22 +55,35 @@ export default function RestaurantScreen() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
+      try {
+        const p1 = fetchRestaurantById(restaurantId).then((data) =>
+          setRestaurant(data),
+        );
 
-      // Fetch restaurant data
-      const p1 = fetchRestaurantById(restaurantId).then((data) =>
-        setRestaurant(data),
-      );
+        const p2 = fetchReviewsByRestaurantId(restaurantId).then((data) => {
+          setReviews(data.reviews);
+          setAvgRating(data.avgRating);
+          setBreakdown(data.breakdown);
 
-      // Fetch reviews data
-      const p2 = fetchReviewsByRestaurantId(restaurantId).then((data) => {
-        setReviews(data.reviews);
-        setAvgRating(data.avgRating);
-        setBreakdown(data.breakdown);
-      });
+          // DEBUG: confirm reviews include userId and ids are numbers/strings
+          if (__DEV__) {
+            console.log('[Restaurant] user id:', user?.id);
+            console.log(
+              '[Restaurant] sample reviews:',
+              (data.reviews || []).slice(0, 3).map((r: any) => ({
+                id: r?.id,
+                userId: r?.userId,
+                typeofId: typeof r?.id,
+                typeofUserId: typeof r?.userId,
+              })),
+            );
+          }
+        });
 
-      await Promise.all([p1, p2]);
-
-      setIsLoading(false);
+        await Promise.all([p1, p2]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadData();
@@ -118,6 +131,7 @@ export default function RestaurantScreen() {
                 breakdown={breakdown}
                 onPressReport={handleReportReview}
                 isLoggedIn={!!user}
+                currentUserId={user?.id} // ensure this is a number
               />
 
               <RestaurantAbout

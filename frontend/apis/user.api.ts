@@ -3,7 +3,6 @@ import { User, UserSchema } from '@/types/user.type';
 import { normalizeError } from '@/utils/api-error';
 import { z } from 'zod';
 
-
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
     const res = await ApiService.get('/users/me');
@@ -57,52 +56,64 @@ export async function submitReview(
 
 export async function deleteReview(reviewId: number): Promise<boolean> {
   try {
-    await ApiService.delete(`/users/me/reviews/${reviewId}`);
-    return true;
-  } catch (error) {
-    normalizeError(error);
+    const res = await ApiService.delete(
+      `/users/me/reviews/${Number(reviewId)}`,
+    );
+    if (__DEV__) console.log('[deleteReview] status', res.status);
+    return res.status === 204 || res.status === 200;
+  } catch (e: any) {
+    if (__DEV__)
+      console.warn(
+        '[deleteReview] failed',
+        e?.response?.status,
+        e?.response?.data,
+      );
     return false;
   }
 }
 // Reservation schemas - using passthrough to allow extra fields from backend
-const RestaurantSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  phoneNo: z.string(),
-  cuisineType: z.string(),
-  priceRange: z.number().nullable().optional(),
-  houseNo: z.string().nullable().optional(),
-  village: z.string().nullable().optional(),
-  building: z.string().nullable().optional(),
-  road: z.string().nullable().optional(),
-  soi: z.string().nullable().optional(),
-  subDistrict: z.string().nullable().optional(),
-  district: z.string().nullable().optional(),
-  province: z.string().nullable().optional(),
-  postalCode: z.string().nullable().optional(),
-  images: z.array(z.string()).nullable().optional(),
-}).passthrough(); // Allow additional fields from backend
+const RestaurantSchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    phoneNo: z.string(),
+    cuisineType: z.string(),
+    priceRange: z.number().nullable().optional(),
+    houseNo: z.string().nullable().optional(),
+    village: z.string().nullable().optional(),
+    building: z.string().nullable().optional(),
+    road: z.string().nullable().optional(),
+    soi: z.string().nullable().optional(),
+    subDistrict: z.string().nullable().optional(),
+    district: z.string().nullable().optional(),
+    province: z.string().nullable().optional(),
+    postalCode: z.string().nullable().optional(),
+    images: z.array(z.string()).nullable().optional(),
+  })
+  .passthrough(); // Allow additional fields from backend
 
-const ReservationSchema = z.object({
-  id: z.number(),
-  userId: z.number(),
-  restaurantId: z.number(),
-  reserveAt: z.string(),
-  reservationFee: z.number().nullable().optional(),
-  numberOfAdult: z.number().nullable().optional(),
-  numberOfChildren: z.number().nullable().optional(),
-  status: z.enum([
-    'unconfirmed',
-    'expired',
-    'confirmed',
-    'cancelled',
-    'rejected',
-    'completed',
-    'uncompleted',
-  ]),
-  createdAt: z.string(),
-  restaurant: RestaurantSchema,
-}).passthrough(); // Allow additional fields from backend
+const ReservationSchema = z
+  .object({
+    id: z.number(),
+    userId: z.number(),
+    restaurantId: z.number(),
+    reserveAt: z.string(),
+    reservationFee: z.number().nullable().optional(),
+    numberOfAdult: z.number().nullable().optional(),
+    numberOfChildren: z.number().nullable().optional(),
+    status: z.enum([
+      'unconfirmed',
+      'expired',
+      'confirmed',
+      'cancelled',
+      'rejected',
+      'completed',
+      'uncompleted',
+    ]),
+    createdAt: z.string(),
+    restaurant: RestaurantSchema,
+  })
+  .passthrough(); // Allow additional fields from backend
 
 export type UserReservation = z.infer<typeof ReservationSchema>;
 export type ReservationStatus = UserReservation['status'];
@@ -155,4 +166,23 @@ export async function uploadProfileImage(file: File | Blob): Promise<string> {
   });
 
   return res.data.imageUrl;
+}
+
+const MyReviewIdsResp = z.object({ reviewIds: z.array(z.number()) });
+
+export async function fetchMyReviewIdsByRestaurant(
+  restaurantId: number,
+): Promise<number[]> {
+  try {
+    const res = await ApiService.get('/users/me/reviews', {
+      params: { restaurantId },
+    });
+    const parsed = MyReviewIdsResp.parse(res.data);
+    if (__DEV__)
+      console.log('[fetchMyReviewIdsByRestaurant]', parsed.reviewIds);
+    return parsed.reviewIds;
+  } catch (error) {
+    normalizeError(error);
+    return [];
+  }
 }

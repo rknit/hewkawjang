@@ -7,9 +7,11 @@ import { ReservationQuerySchema } from '../validators/reservation.validator';
 import ReservationService from '../service/reservation.service';
 import multer from 'multer';
 import SupabaseService from '../service/supabase.service';
+import { db } from '../db';
+import { reservationTable, reviewTable } from '../db/schema';
+import { and, eq } from 'drizzle-orm';
 
 const upload = multer({ storage: multer.memoryStorage() });
-
 
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
@@ -83,33 +85,44 @@ router.delete('/me', authHandler, async (req: Request, res: Response) => {
 });
 
 // POST /users/me/reviews - Add review as authenticated user
-router.post('/me/reviews', authHandler, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const reviewData = req.body;
-    
-    // Create the review and return the review ID
-    const reviewId = await UserService.createReview(reviewData);
+router.post(
+  '/me/reviews',
+  authHandler,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const reviewData = req.body;
 
-    // Return the reviewId in the response
-    res.status(201).json({ reviewId });
-  } catch (error) {
-    next(error); // Pass error to the error handler middleware
-  }
-});
+      // Create the review and return the review ID
+      const reviewId = await UserService.createReview(reviewData);
+
+      // Return the reviewId in the response
+      res.status(201).json({ reviewId });
+    } catch (error) {
+      next(error); // Pass error to the error handler middleware
+    }
+  },
+);
 
 router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
-  //console.log('DELETE /me/reviews/:id called', req.params);
   try {
     const reviewId = Number(req.params.id);
     const userId = req.userAuthPayload?.userId;
 
+    if (Number.isNaN(reviewId)) {
+      return res.status(400).json({ message: 'Invalid review id' });
+    }
     if (!userId) {
-      throw createHttpError.Unauthorized('Missing user authentication');
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
+    // DEBUG
+    console.log('[DELETE /me/reviews/:id]', { reviewId, userId });
+
     await UserService.deleteReview(reviewId, userId);
-    res.status(200).json({ message: 'Review deleted successfully' });
+    return res.sendStatus(204);
   } catch (error) {
+    // DEBUG
+    console.error('[DELETE /me/reviews/:id] error:', error);
     next(error);
   }
 });
@@ -166,16 +179,20 @@ router.post(
     try {
       const userId = req.userAuthPayload?.userId;
       const file = req.file;
-      if (!userId || !file) return res.status(400).json({ message: 'No file uploaded' });
+      if (!userId || !file)
+        return res.status(400).json({ message: 'No file uploaded' });
 
-      const imageUrl = await SupabaseService.uploadUserProfileImage(String(userId), file);
+      const imageUrl = await SupabaseService.uploadUserProfileImage(
+        String(userId),
+        file,
+      );
       await UserService.updateUser({ id: userId, profileUrl: imageUrl } as any);
 
       res.json({ imageUrl });
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 router.post('/updateProfile', authHandler, async (req, res, next) => {
@@ -200,5 +217,42 @@ router.post('/updateProfile', authHandler, async (req, res, next) => {
   }
 });
 
+// GET /users/me/reviews?restaurantId=123 → [your review ids at this restaurant]
+router.get(
+  '/me/reviews',
+  authHandler,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.userAuthPayload?.userId;
+      const restaurantId = Number(req.query.restaurantId);
+
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+      if (!restaurantId || Number.isNaN(restaurantId)) {
+        return res.status(400).json({ message: 'Invalid restaurantId' });
+      }
+
+      const rows = await db
+        .select({ reviewId: reviewTable.id })
+        .from(reviewTable)
+        .innerJoin(
+          reservationTable,
+          eq(reviewTable.reservationId, reservationTable.id),
+        )
+        .where(
+          and(
+            eq(reservationTable.userId, userId),
+            eq(reservationTable.restaurantId, restaurantId),
+            // If you have reviewTable.isDeleted, uncomment the next line:
+            // eq(reviewTable.isDeleted, false),
+          ),
+        );
+
+      const reviewIds = rows.map((r) => r.reviewId);
+      return res.json({ reviewIds });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 export default router;

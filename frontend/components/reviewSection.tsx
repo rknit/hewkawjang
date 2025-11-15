@@ -1,6 +1,7 @@
 import { fetchFilteredReviews } from '@/apis/restaurant.api';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { fetchMyReviewIdsByRestaurant } from '@/apis/user.api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, TouchableOpacity, View, Text } from 'react-native';
 import CommentList, { CommentListProps } from './commentList';
 import CommentSummary from './commentSummary';
 
@@ -9,15 +10,10 @@ interface ReviewSectionProps {
   comments: CommentListProps['comments'];
   average: number;
   totalReviews: number;
-  breakdown: {
-    5: number;
-    4: number;
-    3: number;
-    2: number;
-    1: number;
-  };
+  breakdown: { 5: number; 4: number; 3: number; 2: number; 1: number };
   onPressReport?: (reviewId: string) => void;
   isLoggedIn?: boolean;
+  currentUserId?: number;
 }
 
 const ReviewSection: React.FC<ReviewSectionProps> = ({
@@ -28,53 +24,80 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
   breakdown,
   onPressReport,
   isLoggedIn,
+  currentUserId,
 }) => {
   const [selectedRatings, setSelectedRatings] = useState<number[]>([
     1, 2, 3, 4, 5,
   ]);
-  const [filteredComments, setFilteredComments] =
-    useState<CommentListProps['comments']>(comments);
-  const [loading, setLoading] = useState(false);
 
-  const fetchFiltered = async (ratings: number[]) => {
-    setLoading(true);
+  // Loading for the list area (kept simple here)
+  const [loading] = useState(false);
 
-    if (ratings.length === 0) {
-      // No filter → show all
-      setFilteredComments(comments);
-      setLoading(false);
-      return;
-    }
+  // Track deleted ids so they don't reappear when filters change
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
-    const allFiltered: CommentListProps['comments'] = [];
-    for (const rating of ratings) {
-      const data = await fetchFilteredReviews(restaurantId, {
-        minRating: rating,
-        maxRating: rating,
-      });
-      allFiltered.push(...data.reviews);
-    }
+  // NEW: review ids owned by current user for this restaurant
+  const [ownedReviewIds, setOwnedReviewIds] = useState<Set<number>>(new Set());
 
-    setFilteredComments(allFiltered);
-    setLoading(false);
-  };
-
-  // Fetch all reviews on first load
+  // Fetch owned review ids for this restaurant (needed to show delete button)
   useEffect(() => {
-    fetchFiltered([]);
-  }, [restaurantId]);
+    let cancelled = false;
+    const run = async () => {
+      if (!isLoggedIn) {
+        setOwnedReviewIds(new Set());
+        return;
+      }
+      try {
+        const ids = await fetchMyReviewIdsByRestaurant(restaurantId);
+        const set = new Set(ids.map(Number));
+        if (!cancelled) setOwnedReviewIds(set);
+        if (__DEV__)
+          console.log('[ReviewSection] ownedReviewIds', Array.from(set));
+      } catch (e) {
+        if (__DEV__) console.warn('[ReviewSection] fetchMyReviewIds failed', e);
+        if (!cancelled) setOwnedReviewIds(new Set());
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurantId, isLoggedIn]);
 
-  // Fetch every time user toggles filter
-  useEffect(() => {
-    fetchFiltered(selectedRatings);
-  }, [selectedRatings]);
+  // Base list excluding deleted ids
+  const baseList = useMemo(
+    () => comments.filter((c) => !deletedIds.has(c.id)),
+    [comments, deletedIds],
+  );
 
+  // Apply client-side filter by selected ratings
+  const list = useMemo(() => {
+    if (selectedRatings.length === 5) return baseList;
+    const allowed = new Set(selectedRatings);
+    return baseList.filter((c) => allowed.has(Math.round(Number(c.rating))));
+  }, [baseList, selectedRatings]);
+
+  // Toggle rating filter chips
   const toggleRating = (rating: number) => {
     setSelectedRatings((prev) =>
       prev.includes(rating)
         ? prev.filter((r) => r !== rating)
         : [...prev, rating],
     );
+  };
+
+  // Remove from UI after delete
+  const handleDeleted = (id: string) => {
+    setDeletedIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+    setOwnedReviewIds((prev) => {
+      const next = new Set(prev);
+      next.delete(Number(id));
+      return next;
+    });
   };
 
   return (
@@ -103,9 +126,7 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
                 }`}
               >
                 <Text
-                  className={`text-xs font-bold ${
-                    isSelected ? 'text-white' : 'text-gray-700'
-                  }`}
+                  className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-gray-700'}`}
                 >
                   {rating}⭐
                 </Text>
@@ -124,9 +145,12 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({
         </View>
       ) : (
         <CommentList
-          comments={filteredComments}
+          comments={list}
           onPressReport={onPressReport}
           isLoggedIn={isLoggedIn}
+          currentUserId={currentUserId}
+          onDeleted={handleDeleted}
+          ownedReviewIds={ownedReviewIds} // NEW: drives the canDelete flag
         />
       )}
     </View>

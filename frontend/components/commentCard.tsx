@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Star } from "lucide-react-native"; // icon lib
+import React from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import DeleteReviewButton from './delete-review-button';
 
 type CommentProps = {
   name: string;
@@ -12,13 +12,29 @@ type CommentProps = {
   attachPhotos?: string[];
   onPressReport?: () => void;
   isLoggedIn?: boolean;
+  // NEW:
+  canDelete?: boolean;
+  reviewId?: number; // numeric id for deletion
+  onDeleted?: (id: number) => void;
 };
 
-const CommentCard: React.FC<CommentProps> = ({ name, avatar, rating, comment, date, attachPhotos, onPressReport, isLoggedIn }) => {
-  // Use default profile image if avatar is empty or null
-  const avatarSource = avatar && avatar.trim() !== ''
-    ? { uri: avatar }
-    : require('@/assets/images/default_profile.png');
+const CommentCard: React.FC<CommentProps> = ({
+  name,
+  avatar,
+  rating,
+  comment,
+  date,
+  attachPhotos,
+  onPressReport,
+  isLoggedIn,
+  canDelete,
+  reviewId,
+  onDeleted,
+}) => {
+  const avatarSource =
+    avatar && avatar.trim() !== ''
+      ? { uri: avatar }
+      : require('@/assets/images/default_profile.png');
 
   return (
     <View className="flex-row items-start space-x-3 p-4 rounded-xl">
@@ -31,15 +47,29 @@ const CommentCard: React.FC<CommentProps> = ({ name, avatar, rating, comment, da
 
       {/* Content */}
       <View className="flex-1">
-        {/* Name + Date + Report Button */}
+        {/* Name + Date + Actions */}
         <View className="flex-row items-center justify-between">
           <Text className="font-semibold text-gray-900">{name}</Text>
-          <View className="flex-row items-center gap-x-2">
+          <View className="flex-row items-center">
             <Text className="text-gray-400 text-xs">{date}</Text>
-            {/* Report button, only available when logged in */}
+
+            <View style={{ width: 8 }} />
+
+            {/* Delete button (only for owner), placed LEFT of report */}
+            {canDelete && reviewId !== undefined && (
+              <>
+                <DeleteReviewButton
+                  reviewId={reviewId}
+                  onDeleted={(id) => onDeleted?.(id)}
+                />
+                <View style={{ width: 8 }} />
+              </>
+            )}
+
+            {/* Report button */}
             {isLoggedIn && (
               <TouchableOpacity onPress={onPressReport}>
-                <Feather name="flag" size={14} color="#9C9C9C" />
+                <Feather name="flag" size={16} color="#9C9C9C" />
               </TouchableOpacity>
             )}
           </View>
@@ -48,15 +78,16 @@ const CommentCard: React.FC<CommentProps> = ({ name, avatar, rating, comment, da
         {/* Stars */}
         <View className="flex-row items-center mt-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star
+            <Feather
               key={i}
+              name="star"
               size={14}
-              color={i < rating ? "#FACC15" : "#D1D5DB"} // yellow-400 or gray-300
-              fill={i < rating ? "#FACC15" : "none"}
-              className="mr-0.5"
+              color={i < Math.round(Number(rating)) ? '#FACC15' : '#D1D5DB'}
             />
           ))}
-          <Text className="ml-2 text-sm text-gray-600">{rating.toFixed(1)}</Text>
+          <Text className="ml-2 text-sm text-gray-600">
+            {Number(rating).toFixed(1)}
+          </Text>
         </View>
 
         {/* Comment */}
