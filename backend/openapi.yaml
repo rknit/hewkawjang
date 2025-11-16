@@ -606,6 +606,20 @@ components:
         isSolved:
           type: boolean
           example: true
+    ImageDeleteRequest:
+      type: object
+      required:
+        - imageUrl
+      properties:
+        imageUrl:
+          type: string
+          example: https://example.com/uploads/image123.jpg
+    ImageDeleteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Image deleted successfully
   securitySchemes:
     bearerAuth:
       type: http
@@ -985,6 +999,70 @@ paths:
           description: Missing or invalid client type header
         "401":
           description: Invalid or expired refresh token, or user account deleted
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /images/upload:
+    post:
+      summary: Upload image to Supabase storage
+      tags:
+        - Image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - id
+                - file
+              properties:
+                id:
+                  type: string
+                  description: General ID for the image (e.g., review ID, user ID)
+                  example: "123"
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to upload
+                bucketName:
+                  type: string
+                  description: Supabase bucket name (defaults to 'review-images')
+                  example: review-images
+      responses:
+        "200":
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadImageResponse"
+        "400":
+          description: No file uploaded or id not provided
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /images/delete:
+    post:
+      summary: Delete image from Supabase storage
+      tags:
+        - Image
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageDeleteRequest"
+      responses:
+        "200":
+          description: Image deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageDeleteResponse"
+        "400":
+          description: Missing image URL
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         5XX:
           $ref: "#/components/responses/InternalServerError"
   /reports/{id}:

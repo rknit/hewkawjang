@@ -793,6 +793,25 @@ function schemas() {
         },
       },
     },
+    ImageDeleteRequest: {
+      type: 'object',
+      required: ['imageUrl'],
+      properties: {
+        imageUrl: {
+          type: 'string',
+          example: 'https://example.com/uploads/image123.jpg',
+        },
+      },
+    },
+    ImageDeleteResponse: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Image deleted successfully',
+        },
+      },
+    },
   };
 }
 
