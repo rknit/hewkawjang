@@ -102,6 +102,7 @@ const ReservationSchema = z.object({
   ]),
   createdAt: z.string(),
   restaurant: RestaurantSchema,
+  reviewId: z.number().nullable().optional(),
 }).passthrough(); // Allow additional fields from backend
 
 export type UserReservation = z.infer<typeof ReservationSchema>;

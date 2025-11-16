@@ -237,6 +237,7 @@ router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
  * /users/me/reservations:
  *   get:
  *     summary: Get reservations for the authenticated user
+ *     description: Returns user's reservations with restaurant details and review status. Each reservation includes a reviewId field (null if not reviewed) to indicate whether the user has already submitted a review.
  *     tags:
  *       - User
  *     security:
@@ -270,7 +271,7 @@ router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
  *           default: 50
  *     responses:
  *       200:
- *         description: Successfully retrieved user reservations
+ *         description: Successfully retrieved user reservations with review status
  *         content:
  *           application/json:
  *             schema:

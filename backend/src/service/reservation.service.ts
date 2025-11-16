@@ -11,7 +11,7 @@ import {
 } from 'drizzle-orm';
 import createHttpError from 'http-errors';
 import { db } from '../db';
-import { reservationTable, restaurantTable, usersTable } from '../db/schema';
+import { reservationTable, restaurantTable, usersTable, reviewTable } from '../db/schema';
 import NotificationService from './notification.service';
 import RefundService from './refund.service';
 
@@ -326,6 +326,10 @@ export default class ReservationService {
         restaurantTable,
         eq(reservationTable.restaurantId, restaurantTable.id),
       )
+      .leftJoin(
+        reviewTable,
+        eq(reservationTable.id, reviewTable.reservationId),
+      )
       .where(and(...conditions))
       .orderBy(desc(reservationTable.reserveAt))
       .offset(offset)
@@ -334,6 +338,7 @@ export default class ReservationService {
     return reservations.map((row) => ({
       ...row.reservation,
       restaurant: row.restaurant!,
+      reviewId: row.review?.id ?? null,
     }));
   }
 
