@@ -1181,6 +1181,85 @@ function schemas() {
         },
       },
     },
+    VerifySessionRequest: {
+      type: 'object',
+      required: ['sessionId'],
+      properties: {
+        sessionId: {
+          type: 'string',
+          description: 'Stripe checkout session ID',
+          example: 'cs_test_a1b2c3d4e5f6g7h8i9j0',
+        },
+      },
+    },
+    VerifySessionResponse: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'boolean',
+          example: true,
+        },
+        balance: {
+          type: 'integer',
+          description: 'Updated user balance after top-up',
+          example: 5000,
+        },
+      },
+    },
+    BalanceResponse: {
+      type: 'object',
+      properties: {
+        balance: {
+          type: 'integer',
+          description: 'Current user balance',
+          example: 3500,
+        },
+      },
+    },
+    CreateCheckoutSessionRequest: {
+      type: 'object',
+      required: ['amount'],
+      properties: {
+        amount: {
+          type: 'integer',
+          description: 'Amount to top up (must be greater than 0)',
+          example: 1000,
+          minimum: 1,
+        },
+      },
+    },
+    CreateCheckoutSessionResponse: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          format: 'uri',
+          description: 'Stripe checkout session URL to redirect user',
+          example: 'https://checkout.stripe.com/pay/cs_test_a1b2c3d4e5f6g7h8i9j0',
+        },
+      },
+    },
+    WithdrawRequest: {
+      type: 'object',
+      required: ['amount'],
+      properties: {
+        amount: {
+          type: 'integer',
+          description: 'Amount to withdraw from restaurant wallet (must be greater than 0)',
+          example: 500,
+          minimum: 1,
+        },
+      },
+    },
+    WithdrawResponse: {
+      type: 'object',
+      properties: {
+        success: {
+          type: 'boolean',
+          example: true,
+        },
+      },
+    },
   };
 }
 

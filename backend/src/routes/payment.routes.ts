@@ -11,6 +11,39 @@ import { authHandler } from '../middleware/auth.middleware';
 const stripe = require('stripe')(env.STRIPE_SK_API);
 const router = express.Router();
 
+/**
+ * @openapi
+ * /payment/verify-session:
+ *   post:
+ *     summary: Verify Stripe checkout session and update user balance
+ *     tags:
+ *       - Payment
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifySessionRequest'
+ *     responses:
+ *       200:
+ *         description: Session verified and balance updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/VerifySessionResponse'
+ *       400:
+ *         description: Session ID missing, payment not completed, or already processed
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: Session does not belong to this user
+ *       404:
+ *         description: Session not found
+ *       500:
+ *         description: Failed to verify session
+ */
 router.post('/verify-session', authHandler, async (req, res) => {
   try {
     const { sessionId } = req.body;
@@ -100,6 +133,29 @@ router.post('/verify-session', authHandler, async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /payment/balance:
+ *   get:
+ *     summary: Get user's current balance
+ *     tags:
+ *       - Payment
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user balance
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BalanceResponse'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Failed to fetch balance
+ */
 router.get('/balance', authHandler, async (req, res) => {
   try {
     const userId = req.userAuthPayload?.userId;
@@ -125,6 +181,35 @@ router.get('/balance', authHandler, async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /payment/create-checkout-session:
+ *   post:
+ *     summary: Create Stripe checkout session for balance top-up
+ *     tags:
+ *       - Payment
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateCheckoutSessionRequest'
+ *     responses:
+ *       200:
+ *         description: Checkout session created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateCheckoutSessionResponse'
+ *       400:
+ *         description: Amount must be greater than 0
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         description: Failed to create checkout session
+ */
 router.post('/create-checkout-session', authHandler, async (req, res) => {
   try {
     console.log('Create checkout session request:', {
@@ -165,6 +250,37 @@ router.post('/create-checkout-session', authHandler, async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /payment/withdraw/{id}:
+ *   post:
+ *     summary: Withdraw funds from restaurant wallet
+ *     tags:
+ *       - Payment
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/WithdrawRequest'
+ *     responses:
+ *       200:
+ *         description: Withdrawal successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/WithdrawResponse'
+ *       400:
+ *         description: Invalid restaurant ID, amount must be greater than 0, or insufficient balance
+ *       404:
+ *         description: Restaurant not found
+ *       500:
+ *         description: Withdrawal failed
+ */
 router.post('/withdraw/:id', authHandler, async (req, res) => {
   try {
     const restaurantId = Number(req.params.id);
@@ -221,6 +337,37 @@ router.post('/withdraw/:id', authHandler, async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /payment/webhook:
+ *   post:
+ *     summary: Stripe webhook endpoint for payment events
+ *     description: This endpoint is called by Stripe to notify about payment events. It is not intended to be called by clients directly.
+ *     tags:
+ *       - Payment
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Stripe webhook event payload
+ *     responses:
+ *       200:
+ *         description: Webhook event processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 received:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Missing stripe-signature header, invalid metadata, or webhook error
+ *       404:
+ *         description: User not found
+ */
 // Stripe webhook endpoint
 router.post(
   '/webhook',
