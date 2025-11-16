@@ -189,7 +189,7 @@ router.put('/', authHandler, async (req, res) => {
   res.status(200).json(updated);
 });
 
-router.post('/',authHandler, async (req, res, next) => {
+router.post('/', authHandler, async (req, res, next) => {
   try {
     if (req.body) {
       req.body.ownerId = req.userAuthPayload!.userId; // from auth middleware

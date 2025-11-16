@@ -570,6 +570,42 @@ components:
         imageUrl:
           type: string
           example: https://example.com/uploads/profile123.jpg
+    ReportUpdateRequest:
+      type: object
+      properties:
+        adminId:
+          type: integer
+          nullable: true
+          example: 1
+        reportType:
+          type: string
+          enum:
+            - user
+            - message
+            - review
+            - restaurant
+            - support
+          nullable: true
+          example: message
+        targetRestaurantId:
+          type: integer
+          nullable: true
+          example: 456
+        targetReviewId:
+          type: integer
+          nullable: true
+          example: 789
+        targetUserId:
+          type: integer
+          nullable: true
+          example: 321
+        targetMessageId:
+          type: integer
+          nullable: true
+          example: 111
+        isSolved:
+          type: boolean
+          example: true
   securitySchemes:
     bearerAuth:
       type: http
@@ -617,6 +653,13 @@ components:
       in: path
       required: true
       description: ID of the review
+      schema:
+        type: integer
+    messageId:
+      name: messageId
+      in: path
+      required: true
+      description: ID of the message
       schema:
         type: integer
   responses:
@@ -942,6 +985,54 @@ paths:
           description: Missing or invalid client type header
         "401":
           description: Invalid or expired refresh token, or user account deleted
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /reports/{id}:
+    patch:
+      summary: Update a report (admin only)
+      tags:
+        - Report
+      parameters:
+        - $ref: "#/components/parameters/reportId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportUpdateRequest"
+      responses:
+        "200":
+          description: Report updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "400":
+          description: Invalid report ID or update data
+        "401":
+          $ref: "#/components/responses/AdminAuthUnauthorized"
+        "404":
+          description: Report not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /reports/message/{messageId}:
+    post:
+      summary: Report a message
+      tags:
+        - Report
+      parameters:
+        - $ref: "#/components/parameters/messageId"
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Message reported successfully
+        "400":
+          description: Invalid message ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         5XX:
           $ref: "#/components/responses/InternalServerError"
   /users/me:

@@ -753,6 +753,46 @@ function schemas() {
         },
       },
     },
+    ReportUpdateRequest: {
+      type: 'object',
+      properties: {
+        adminId: {
+          type: 'integer',
+          nullable: true,
+          example: 1,
+        },
+        reportType: {
+          type: 'string',
+          enum: ['user', 'message', 'review', 'restaurant', 'support'],
+          nullable: true,
+          example: 'message',
+        },
+        targetRestaurantId: {
+          type: 'integer',
+          nullable: true,
+          example: 456,
+        },
+        targetReviewId: {
+          type: 'integer',
+          nullable: true,
+          example: 789,
+        },
+        targetUserId: {
+          type: 'integer',
+          nullable: true,
+          example: 321,
+        },
+        targetMessageId: {
+          type: 'integer',
+          nullable: true,
+          example: 111,
+        },
+        isSolved: {
+          type: 'boolean',
+          example: true,
+        },
+      },
+    },
   };
 }
 
@@ -820,6 +860,15 @@ function parameters() {
       in: 'path',
       required: true,
       description: 'ID of the review',
+      schema: {
+        type: 'integer',
+      },
+    },
+    messageId: {
+      name: 'messageId',
+      in: 'path',
+      required: true,
+      description: 'ID of the message',
       schema: {
         type: 'integer',
       },
