@@ -255,6 +255,8 @@ router.get(
  *         description: Invalid query parameters/body
  *       401:
  *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       404:
+ *         description: Report not found
  *       5XX:
  *         $ref: '#/components/responses/InternalServerError'
  */
@@ -293,6 +295,40 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /admins/restaurants/{restaurantId}/verify:
+ *   post:
+ *     summary: Verify or reject a restaurant's verification status
+ *     tags:
+ *       - Admin
+ *     parameters:
+ *      - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Action to take on the restaurant verification
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: boolean
+ *                 description: true to approve, false to reject
+ *     responses:
+ *       204:
+ *         description: Successfully updated restaurant verification status
+ *       400:
+ *         description: Invalid query parameters/body
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       404:
+ *         description: Restaurant not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/restaurants/:restaurantId/verify',
   authHandler,
@@ -300,6 +336,10 @@ router.post(
   async (req, res) => {
     const { restaurantId } = req.params;
     const { action } = req.body; // action: true for approve, false for reject
+
+    if (restaurantId === undefined) {
+      throw createHttpError.BadRequest('Restaurant ID must be provided');
+    }
 
     if (action === undefined) {
       throw createHttpError.BadRequest('Action (true/false) must be provided');
@@ -317,9 +357,7 @@ router.post(
         parseInt(restaurantId, 10),
         action,
       );
-      res
-        .status(200)
-        .send('Restaurant verification status updated successfully');
+      res.status(204).send();
     } catch (error) {
       console.error('Error in /reports/review/:reportId/handle route:', error);
       throw createHttpError.InternalServerError(
@@ -329,6 +367,40 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /admins/reports/message/{reportId}/handle:
+ *   post:
+ *     summary: Handle a reported message (delete or reject)
+ *     tags:
+ *       - Admin
+ *     parameters:
+ *      - $ref: '#/components/parameters/reportId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Action to take on the reported message
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: boolean
+ *                 description: true to delete the message, false to reject the report
+ *     responses:
+ *       204:
+ *         description: Successfully handled the reported message
+ *       400:
+ *         description: Invalid query parameters/body
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       404:
+ *         description: Report not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/reports/message/:reportId/handle',
   authHandler,
@@ -336,6 +408,10 @@ router.post(
   async (req, res) => {
     const { reportId } = req.params;
     const { action } = req.body; // action is a boolean: true for delete, false for reject
+
+    if (reportId === undefined) {
+      throw createHttpError.BadRequest('Report ID must be provided');
+    }
 
     if (action === undefined) {
       throw createHttpError.BadRequest('Action (true/false) must be provided');
@@ -349,7 +425,7 @@ router.post(
 
     try {
       await AdminService.handleReportedMessage(parseInt(reportId, 10), action);
-      res.status(200).send('Message report processed successfully');
+      res.status(204).send();
     } catch (error) {
       console.error('Error in /reports/message/:reportId/handle route:', error);
       throw createHttpError.InternalServerError(
@@ -359,6 +435,31 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /admins/reports/message:
+ *   get:
+ *     summary: Get reported messages for admin review
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved reported messages
+ *         content:
+ *          application/json:
+ *           schema:
+ *            type: array
+ *            items:
+ *             $ref: '#/components/schemas/ReportMessage'
+ *       400:
+ *         description: Invalid query parameters/body
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get(
   '/reports/message',
   authHandler,
@@ -383,7 +484,6 @@ router.get(
     }
 
     try {
-      // You need to implement getReportedMessages in your AdminService
       const reportedMessages = await AdminService.getReportedMessages({
         isSolved: isSolvedBool,
         page: pageNum,

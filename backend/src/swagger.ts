@@ -419,6 +419,52 @@ function schemas() {
         },
       },
     },
+    ReportMessage: {
+      type: 'object',
+      properties: {
+        // Report fields
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        reportType: {
+          type: 'string',
+          enum: ['message'],
+          example: 'message',
+        },
+        isSolved: {
+          type: 'boolean',
+          example: false,
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2024-01-15T10:30:00Z',
+        },
+        // Message fields
+        messageText: {
+          type: 'string',
+          nullable: true,
+          example: 'This is an inappropriate message',
+        },
+        messageImageUrl: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/message-image.jpg',
+        },
+        // Reporter fields
+        reporterName: {
+          type: 'string',
+          nullable: true,
+          example: 'John Doe',
+        },
+        reporterImage: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/reporter-profile.jpg',
+        },
+      },
+    },
   };
 }
 
@@ -477,9 +523,12 @@ function parameters() {
 
 function responses() {
   return {
+    Unauthorized: {
+      description: 'Unauthorized - Invalid or missing token (see authHandler)',
+    },
     AdminAuthUnauthorized: {
       description:
-        'Unauthorized - Invalid or missing token, or admin role required',
+        'Unauthorized - Invalid or missing token, or admin role required (see authHandler and adminRoleHandler)',
     },
     InternalServerError: {
       description: 'Internal Server Error',

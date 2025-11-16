@@ -304,6 +304,40 @@ components:
           type: string
           nullable: true
           example: Delicious Thai Restaurant
+    ReportMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        reportType:
+          type: string
+          enum:
+            - message
+          example: message
+        isSolved:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-01-15T10:30:00Z
+        messageText:
+          type: string
+          nullable: true
+          example: This is an inappropriate message
+        messageImageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/message-image.jpg
+        reporterName:
+          type: string
+          nullable: true
+          example: John Doe
+        reporterImage:
+          type: string
+          nullable: true
+          example: https://example.com/reporter-profile.jpg
   securitySchemes:
     bearerAuth:
       type: http
@@ -340,8 +374,11 @@ components:
       schema:
         type: integer
   responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing token (see authHandler)
     AdminAuthUnauthorized:
       description: Unauthorized - Invalid or missing token, or admin role required
+        (see authHandler and adminRoleHandler)
     InternalServerError:
       description: Internal Server Error
 security:
@@ -472,6 +509,92 @@ paths:
       responses:
         "204":
           description: Successfully handled the reported review
+        "400":
+          description: Invalid query parameters/body
+        "401":
+          $ref: "#/components/responses/AdminAuthUnauthorized"
+        "404":
+          description: Report not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /admins/restaurants/{restaurantId}/verify:
+    post:
+      summary: Verify or reject a restaurant's verification status
+      tags:
+        - Admin
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Action to take on the restaurant verification
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: boolean
+                  description: true to approve, false to reject
+      responses:
+        "204":
+          description: Successfully updated restaurant verification status
+        "400":
+          description: Invalid query parameters/body
+        "401":
+          $ref: "#/components/responses/AdminAuthUnauthorized"
+        "404":
+          description: Restaurant not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /admins/reports/message/{reportId}/handle:
+    post:
+      summary: Handle a reported message (delete or reject)
+      tags:
+        - Admin
+      parameters:
+        - $ref: "#/components/parameters/reportId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Action to take on the reported message
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: boolean
+                  description: true to delete the message, false to reject the report
+      responses:
+        "204":
+          description: Successfully handled the reported message
+        "400":
+          description: Invalid query parameters/body
+        "401":
+          $ref: "#/components/responses/AdminAuthUnauthorized"
+        "404":
+          description: Report not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /admins/reports/message:
+    get:
+      summary: Get reported messages for admin review
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved reported messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReportMessage"
         "400":
           description: Invalid query parameters/body
         "401":
