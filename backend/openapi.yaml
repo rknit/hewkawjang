@@ -25,7 +25,7 @@ components:
           example: admin@example.com
         phoneNo:
           type: string
-          example: "+1234567890"
+          example: '+1234567890'
         password:
           type: string
           format: password
@@ -105,7 +105,7 @@ components:
           example: Delicious Thai Restaurant
         phoneNo:
           type: string
-          example: "+66812345678"
+          example: '+66812345678'
         wallet:
           type: number
           format: double
@@ -117,7 +117,7 @@ components:
         houseNo:
           type: string
           nullable: true
-          example: "123"
+          example: '123'
         village:
           type: string
           nullable: true
@@ -149,7 +149,7 @@ components:
         postalCode:
           type: string
           nullable: true
-          example: "10110"
+          example: '10110'
         cuisineType:
           type: string
           enum:
@@ -215,7 +215,7 @@ components:
           example: 100
     RestaurantUnverified:
       allOf:
-        - $ref: "#/components/schemas/Restaurant"
+        - $ref: '#/components/schemas/Restaurant'
         - type: object
           properties:
             isVerified:
@@ -394,7 +394,7 @@ components:
           example: user@example.com
         phoneNo:
           type: string
-          example: "+66812345678"
+          example: '+66812345678'
         balance:
           type: number
           format: double
@@ -431,7 +431,7 @@ components:
       properties:
         otp:
           type: string
-          example: "123456"
+          example: '123456'
         firstName:
           type: string
           example: John
@@ -444,7 +444,7 @@ components:
           example: user@example.com
         phoneNo:
           type: string
-          example: "+66812345678"
+          example: '+66812345678'
         password:
           type: string
           format: password
@@ -472,7 +472,7 @@ components:
           example: Doe
         phoneNo:
           type: string
-          example: "+66812345678"
+          example: '+66812345678'
         email:
           type: string
           format: email
@@ -559,11 +559,11 @@ components:
           example: 2025-11-15T12:00:00Z
     ReservationWithRestaurant:
       allOf:
-        - $ref: "#/components/schemas/Reservation"
+        - $ref: '#/components/schemas/Reservation'
         - type: object
           properties:
             restaurant:
-              $ref: "#/components/schemas/Restaurant"
+              $ref: '#/components/schemas/Restaurant'
     UploadImageResponse:
       type: object
       properties:
@@ -1070,7 +1070,7 @@ components:
         restaurants:
           type: array
           items:
-            $ref: "#/components/schemas/Restaurant"
+            $ref: '#/components/schemas/Restaurant'
         total:
           type: integer
           description: Total number of matching restaurants
@@ -1080,7 +1080,7 @@ components:
           description: Whether there are more results available
           example: true
         searchParams:
-          $ref: "#/components/schemas/RestaurantSearchRequest"
+          $ref: '#/components/schemas/RestaurantSearchRequest'
     CreateRestaurantRequest:
       type: object
       required:
@@ -1095,7 +1095,7 @@ components:
           example: New Thai Restaurant
         phoneNo:
           type: string
-          example: "+66812345678"
+          example: '+66812345678'
         address:
           type: string
           nullable: true
@@ -1270,7 +1270,7 @@ components:
           type: string
           example: Restaurant activated successfully
         restaurant:
-          $ref: "#/components/schemas/Restaurant"
+          $ref: '#/components/schemas/Restaurant'
     RestaurantStatusRequest:
       type: object
       required:
@@ -1444,7 +1444,8 @@ components:
     Unauthorized:
       description: Unauthorized - Invalid or missing token (see authHandler)
     AdminAuthUnauthorized:
-      description: Unauthorized - Invalid or missing token, or admin role required
+      description:
+        Unauthorized - Invalid or missing token, or admin role required
         (see authHandler and adminRoleHandler)
     InternalServerError:
       description: Internal Server Error
@@ -1459,18 +1460,18 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved admin profile
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Admin"
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "404":
+                $ref: '#/components/schemas/Admin'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
           description: Admin not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/reports/pending:
     get:
       summary: Get pending reports for admin review
@@ -1479,18 +1480,18 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved pending reports
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Report"
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
+                  $ref: '#/components/schemas/Report'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/restaurants/pending-verification:
     get:
       summary: Get restaurants pending verification for admin review
@@ -1499,38 +1500,38 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved restaurants that are not verified
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RestaurantUnverified"
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
+                  $ref: '#/components/schemas/RestaurantUnverified'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/restaurants/{restaurantId}:
     delete:
       summary: Ban a restaurant by ID
       tags:
         - Admin
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       responses:
-        "204":
+        '204':
           description: Restaurant banned successfully
-        "400":
+        '400':
           description: Invalid restaurant ID provided
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
           description: Restaurant not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/reports/review:
     get:
       summary: Get reported reviews for admin review
@@ -1539,27 +1540,27 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved reported reviews
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ReportReview"
-        "400":
+                  $ref: '#/components/schemas/ReportReview'
+        '400':
           description: Invalid query parameters
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/reports/review/{reportId}/handle:
     post:
       summary: Handle a reported review (ban or reject)
       tags:
         - Admin
       parameters:
-        - $ref: "#/components/parameters/reportId"
+        - $ref: '#/components/parameters/reportId'
       security:
         - bearerAuth: []
       requestBody:
@@ -1574,23 +1575,23 @@ paths:
                   type: boolean
                   description: true to ban the review, false to reject the report
       responses:
-        "204":
+        '204':
           description: Successfully handled the reported review
-        "400":
+        '400':
           description: Invalid query parameters/body
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
           description: Report not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/restaurants/{restaurantId}/verify:
     post:
       summary: Verify or reject a restaurant's verification status
       tags:
         - Admin
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       requestBody:
@@ -1605,23 +1606,23 @@ paths:
                   type: boolean
                   description: true to approve, false to reject
       responses:
-        "204":
+        '204':
           description: Successfully updated restaurant verification status
-        "400":
+        '400':
           description: Invalid query parameters/body
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
           description: Restaurant not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/reports/message/{reportId}/handle:
     post:
       summary: Handle a reported message (delete or reject)
       tags:
         - Admin
       parameters:
-        - $ref: "#/components/parameters/reportId"
+        - $ref: '#/components/parameters/reportId'
       security:
         - bearerAuth: []
       requestBody:
@@ -1636,16 +1637,16 @@ paths:
                   type: boolean
                   description: true to delete the message, false to reject the report
       responses:
-        "204":
+        '204':
           description: Successfully handled the reported message
-        "400":
+        '400':
           description: Invalid query parameters/body
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
           description: Report not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /admins/reports/message:
     get:
       summary: Get reported messages for admin review
@@ -1654,117 +1655,119 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved reported messages
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ReportMessage"
-        "400":
+                  $ref: '#/components/schemas/ReportMessage'
+        '400':
           description: Invalid query parameters/body
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /auth/login:
     post:
       summary: Login with email and password
       tags:
         - Authentication
       parameters:
-        - $ref: "#/components/parameters/AuthClientTypeHeader"
+        - $ref: '#/components/parameters/AuthClientTypeHeader'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
+              $ref: '#/components/schemas/LoginRequest'
       responses:
-        "200":
+        '200':
           description: Successfully logged in (response varies by client type)
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/TokenResponseWeb"
-                  - $ref: "#/components/schemas/TokenResponseMobile"
+                  - $ref: '#/components/schemas/TokenResponseWeb'
+                  - $ref: '#/components/schemas/TokenResponseMobile'
           headers:
             Set-Cookie:
               description: Refresh token as HttpOnly cookie (web clients only)
               schema:
                 type: string
-                example: refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict;
+                example:
+                  refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict;
                   Max-Age=86400
-        "400":
+        '400':
           description: Missing required fields or invalid client type header
-        "401":
+        '401':
           description: Invalid email or password
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /auth/logout:
     post:
       summary: Logout and invalidate refresh token
       tags:
         - Authentication
       parameters:
-        - $ref: "#/components/parameters/AuthClientTypeHeader"
+        - $ref: '#/components/parameters/AuthClientTypeHeader'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully logged out
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LogoutResponse"
+                $ref: '#/components/schemas/LogoutResponse'
           headers:
             Set-Cookie:
               description: Clears the refresh token cookie
               schema:
                 type: string
                 example: refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0
-        "400":
+        '400':
           description: Missing or invalid client type header
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
           description: User or admin not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /auth/refresh:
     post:
       summary: Refresh access token using refresh token
       tags:
         - Authentication
       parameters:
-        - $ref: "#/components/parameters/AuthClientTypeHeader"
+        - $ref: '#/components/parameters/AuthClientTypeHeader'
       security:
         - cookieAuth: []
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully refreshed tokens (response varies by client type)
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/TokenResponseWeb"
-                  - $ref: "#/components/schemas/TokenResponseMobile"
+                  - $ref: '#/components/schemas/TokenResponseWeb'
+                  - $ref: '#/components/schemas/TokenResponseMobile'
           headers:
             Set-Cookie:
               description: New refresh token as HttpOnly cookie (web clients only)
               schema:
                 type: string
-                example: refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict;
+                example:
+                  refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict;
                   Max-Age=86400
-        "400":
+        '400':
           description: Missing or invalid client type header
-        "401":
+        '401':
           description: Invalid or expired refresh token, or user account deleted
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /chat/user/{userId}:
     get:
       summary: Get all chat channels for a specific user
@@ -1778,15 +1781,15 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: Successfully retrieved user chats
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Chat"
-        "500":
+                  $ref: '#/components/schemas/Chat'
+        '500':
           description: Failed to get user chats
   /chat/all/{userId}:
     get:
@@ -1801,15 +1804,15 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: Successfully retrieved all chats for user
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ChatWithDetails"
-        "500":
+                  $ref: '#/components/schemas/ChatWithDetails'
+        '500':
           description: Failed to fetch all chats
   /chat/{restaurantId}:
     post:
@@ -1817,21 +1820,21 @@ paths:
       tags:
         - Chat
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateChatRequest"
+              $ref: '#/components/schemas/CreateChatRequest'
       responses:
-        "200":
+        '200':
           description: Successfully created or found chat
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Chat"
-        "500":
+                $ref: '#/components/schemas/Chat'
+        '500':
           description: Failed to create or find chat
   /chat/{chatId}/messages:
     get:
@@ -1839,19 +1842,19 @@ paths:
       tags:
         - Chat
       parameters:
-        - $ref: "#/components/parameters/chatId"
+        - $ref: '#/components/parameters/chatId'
       responses:
-        "200":
+        '200':
           description: Successfully retrieved chat messages
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Message"
-        "400":
+                  $ref: '#/components/schemas/Message'
+        '400':
           description: Chat not found
-        "500":
+        '500':
           description: Failed to fetch messages
   /chat/user/messages:
     post:
@@ -1863,17 +1866,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SendMessageRequest"
+              $ref: '#/components/schemas/SendMessageRequest'
       responses:
-        "200":
+        '200':
           description: Message sent successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Message"
-        "400":
+                $ref: '#/components/schemas/Message'
+        '400':
           description: Invalid request - missing senderId or chat not found
-        "500":
+        '500':
           description: Failed to send message
   /chat/admin/{adminId}:
     get:
@@ -1890,17 +1893,17 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved admin chats
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ChatAdmin"
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "500":
+                  $ref: '#/components/schemas/ChatAdmin'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '500':
           description: Failed to get admin chats
   /chat/admin/messages/{chatAdminId}:
     get:
@@ -1908,21 +1911,21 @@ paths:
       tags:
         - Chat
       parameters:
-        - $ref: "#/components/parameters/chatAdminId"
+        - $ref: '#/components/parameters/chatAdminId'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved admin chat messages
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/AdminMessage"
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "500":
+                  $ref: '#/components/schemas/AdminMessage'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '500':
           description: Failed to get admin chat messages
   /chat/admin/messages:
     post:
@@ -1936,19 +1939,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SendAdminMessageRequest"
+              $ref: '#/components/schemas/SendAdminMessageRequest'
       responses:
-        "201":
+        '201':
           description: Admin message sent successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AdminMessage"
-        "400":
+                $ref: '#/components/schemas/AdminMessage'
+        '400':
           description: Missing required fields (chatAdminId, adminId, or senderRole)
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "500":
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '500':
           description: Failed to create admin message
   /images/upload:
     post:
@@ -1968,7 +1971,7 @@ paths:
                 id:
                   type: string
                   description: General ID for the image (e.g., review ID, user ID)
-                  example: "123"
+                  example: '123'
                 file:
                   type: string
                   format: binary
@@ -1978,16 +1981,16 @@ paths:
                   description: Supabase bucket name (defaults to 'review-images')
                   example: review-images
       responses:
-        "200":
+        '200':
           description: Image uploaded successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadImageResponse"
-        "400":
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
           description: No file uploaded or id not provided
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /images/delete:
     post:
       summary: Delete image from Supabase storage
@@ -2000,20 +2003,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ImageDeleteRequest"
+              $ref: '#/components/schemas/ImageDeleteRequest'
       responses:
-        "200":
+        '200':
           description: Image deleted successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ImageDeleteResponse"
-        "400":
+                $ref: '#/components/schemas/ImageDeleteResponse'
+        '400':
           description: Missing image URL
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /notifications/:
     get:
       summary: Get notifications for authenticated user
@@ -2037,18 +2040,18 @@ paths:
             minimum: 0
             default: 0
       responses:
-        "200":
+        '200':
           description: Successfully retrieved notifications
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Notification"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+                  $ref: '#/components/schemas/Notification'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
     post:
       summary: Create a notification
       tags:
@@ -2060,20 +2063,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateNotificationRequest"
+              $ref: '#/components/schemas/CreateNotificationRequest'
       responses:
-        "201":
+        '201':
           description: Notification created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Notification"
-        "400":
+                $ref: '#/components/schemas/Notification'
+        '400':
           description: Invalid request data
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /notifications/unread/count:
     get:
       summary: Get count of unread notifications
@@ -2082,16 +2085,16 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved unread count
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UnreadCountResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+                $ref: '#/components/schemas/UnreadCountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /notifications/mark-all-as-read:
     post:
       summary: Mark all notifications as read
@@ -2100,48 +2103,48 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "204":
+        '204':
           description: All notifications marked as read successfully
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /notifications/{notificationId}/read:
     patch:
       summary: Mark a notification as read
       tags:
         - Notification
       parameters:
-        - $ref: "#/components/parameters/notificationId"
+        - $ref: '#/components/parameters/notificationId'
       security:
         - bearerAuth: []
       responses:
-        "204":
+        '204':
           description: Notification marked as read successfully
-        "400":
+        '400':
           description: Invalid notification ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /notifications/{notificationId}:
     delete:
       summary: Delete a notification
       tags:
         - Notification
       parameters:
-        - $ref: "#/components/parameters/notificationId"
+        - $ref: '#/components/parameters/notificationId'
       security:
         - bearerAuth: []
       responses:
-        "204":
+        '204':
           description: Notification deleted successfully
-        "400":
+        '400':
           description: Invalid notification ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /payment/verify-session:
     post:
       summary: Verify Stripe checkout session and update user balance
@@ -2154,23 +2157,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VerifySessionRequest"
+              $ref: '#/components/schemas/VerifySessionRequest'
       responses:
-        "200":
+        '200':
           description: Session verified and balance updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VerifySessionResponse"
-        "400":
+                $ref: '#/components/schemas/VerifySessionResponse'
+        '400':
           description: Session ID missing, payment not completed, or already processed
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: Session does not belong to this user
-        "404":
+        '404':
           description: Session not found
-        "500":
+        '500':
           description: Failed to verify session
   /payment/balance:
     get:
@@ -2180,17 +2183,17 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved user balance
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BalanceResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
+                $ref: '#/components/schemas/BalanceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
           description: User not found
-        "500":
+        '500':
           description: Failed to fetch balance
   /payment/create-checkout-session:
     post:
@@ -2204,19 +2207,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateCheckoutSessionRequest"
+              $ref: '#/components/schemas/CreateCheckoutSessionRequest'
       responses:
-        "200":
+        '200':
           description: Checkout session created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateCheckoutSessionResponse"
-        "400":
+                $ref: '#/components/schemas/CreateCheckoutSessionResponse'
+        '400':
           description: Amount must be greater than 0
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
           description: Failed to create checkout session
   /payment/withdraw/{id}:
     post:
@@ -2226,31 +2229,32 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WithdrawRequest"
+              $ref: '#/components/schemas/WithdrawRequest'
       responses:
-        "200":
+        '200':
           description: Withdrawal successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WithdrawResponse"
-        "400":
+                $ref: '#/components/schemas/WithdrawResponse'
+        '400':
           description: Invalid restaurant ID, amount must be greater than 0, or
             insufficient balance
-        "404":
+        '404':
           description: Restaurant not found
-        "500":
+        '500':
           description: Withdrawal failed
   /payment/webhook:
     post:
       summary: Stripe webhook endpoint for payment events
-      description: This endpoint is called by Stripe to notify about payment events.
+      description:
+        This endpoint is called by Stripe to notify about payment events.
         It is not intended to be called by clients directly.
       tags:
         - Payment
@@ -2262,7 +2266,7 @@ paths:
               type: object
               description: Stripe webhook event payload
       responses:
-        "200":
+        '200':
           description: Webhook event processed successfully
           content:
             application/json:
@@ -2272,9 +2276,9 @@ paths:
                   received:
                     type: boolean
                     example: true
-        "400":
+        '400':
           description: Missing stripe-signature header, invalid metadata, or webhook error
-        "404":
+        '404':
           description: User not found
   /reports/{id}:
     patch:
@@ -2282,7 +2286,7 @@ paths:
       tags:
         - Report
       parameters:
-        - $ref: "#/components/parameters/reportId"
+        - $ref: '#/components/parameters/reportId'
       security:
         - bearerAuth: []
       requestBody:
@@ -2290,40 +2294,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReportUpdateRequest"
+              $ref: '#/components/schemas/ReportUpdateRequest'
       responses:
-        "200":
+        '200':
           description: Report updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Report"
-        "400":
+                $ref: '#/components/schemas/Report'
+        '400':
           description: Invalid report ID or update data
-        "401":
-          $ref: "#/components/responses/AdminAuthUnauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
           description: Report not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reports/message/{messageId}:
     post:
       summary: Report a message
       tags:
         - Report
       parameters:
-        - $ref: "#/components/parameters/messageId"
+        - $ref: '#/components/parameters/messageId'
       security:
         - bearerAuth: []
       responses:
-        "201":
+        '201':
           description: Message reported successfully
-        "400":
+        '400':
           description: Invalid message ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/unconfirmed/inspect:
     get:
       summary: Get unconfirmed reservations for a restaurant
@@ -2343,25 +2347,25 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        '200':
           description: Successfully retrieved unconfirmed reservations
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
-        "400":
+                  $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid restaurant ID
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/{id}/cancel:
     post:
       summary: Cancel a reservation
       tags:
         - Reservation
       parameters:
-        - $ref: "#/components/parameters/reservationId"
+        - $ref: '#/components/parameters/reservationId'
       security:
         - bearerAuth: []
       requestBody:
@@ -2369,16 +2373,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CancelReservationRequest"
+              $ref: '#/components/schemas/CancelReservationRequest'
       responses:
-        "200":
+        '200':
           description: Reservation cancelled successfully
-        "400":
+        '400':
           description: Invalid reservation ID or cancelBy value
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/create:
     post:
       summary: Create a new reservation
@@ -2391,20 +2395,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateReservationRequest"
+              $ref: '#/components/schemas/CreateReservationRequest'
       responses:
-        "201":
+        '201':
           description: Reservation created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
-          description: Invalid request data or reservation time must be at least 30
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description:
+            Invalid request data or reservation time must be at least 30
             minutes in advance
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
           description: Failed to create reservation
   /reservations/{id}/inspect:
     get:
@@ -2412,7 +2417,7 @@ paths:
       tags:
         - Reservation
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
         - name: month
           in: query
           required: true
@@ -2430,27 +2435,27 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved reservations for the month
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
-        "400":
+                  $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid restaurant ID or month/year parameters
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/{id}/status:
     patch:
       summary: Update reservation status
       tags:
         - Reservation
       parameters:
-        - $ref: "#/components/parameters/reservationId"
+        - $ref: '#/components/parameters/reservationId'
       security:
         - bearerAuth: []
       requestBody:
@@ -2458,86 +2463,86 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateReservationStatusRequest"
+              $ref: '#/components/schemas/UpdateReservationStatusRequest'
       responses:
-        "200":
+        '200':
           description: Reservation status updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid reservation ID, status, or updateBy value
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/{id}/confirm:
     post:
       summary: Confirm a reservation (restaurant owner action)
       tags:
         - Reservation
       parameters:
-        - $ref: "#/components/parameters/reservationId"
+        - $ref: '#/components/parameters/reservationId'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Reservation confirmed successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid reservation ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/{id}/arrived:
     post:
       summary: Mark customer as arrived (restaurant owner action)
       tags:
         - Reservation
       parameters:
-        - $ref: "#/components/parameters/reservationId"
+        - $ref: '#/components/parameters/reservationId'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Customer marked as arrived successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid reservation ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /reservations/{id}/no-show:
     post:
       summary: Mark customer as no-show (restaurant owner action)
       tags:
         - Reservation
       parameters:
-        - $ref: "#/components/parameters/reservationId"
+        - $ref: '#/components/parameters/reservationId'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Customer marked as no-show successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Reservation"
-        "400":
+                $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid reservation ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/:
     get:
       summary: Get restaurants by IDs (optional filter)
@@ -2551,16 +2556,16 @@ paths:
             type: string
             example: 1,2,3
       responses:
-        "200":
+        '200':
           description: Successfully retrieved restaurants
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Restaurant"
+                  $ref: '#/components/schemas/Restaurant'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
     put:
       summary: Update restaurant information (owner only)
       tags:
@@ -2572,21 +2577,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateRestaurantRequest"
+              $ref: '#/components/schemas/UpdateRestaurantRequest'
       responses:
-        "200":
+        '200':
           description: Restaurant updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Restaurant"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+                $ref: '#/components/schemas/Restaurant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
     post:
       summary: Create a new restaurant (owner only)
-      description: Submit a new restaurant for creation. Owner ID is automatically set
+      description:
+        Submit a new restaurant for creation. Owner ID is automatically set
         from authentication.
       tags:
         - Restaurant
@@ -2597,20 +2603,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateRestaurantRequest"
+              $ref: '#/components/schemas/CreateRestaurantRequest'
       responses:
-        "201":
+        '201':
           description: Restaurant created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateRestaurantResponse"
-        "400":
+                $ref: '#/components/schemas/CreateRestaurantResponse'
+        '400':
           description: Invalid request data or missing required fields
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/top-rated:
     get:
       summary: Get top-rated restaurants
@@ -2630,18 +2636,18 @@ paths:
             type: integer
             minimum: 0
       responses:
-        "200":
+        '200':
           description: Successfully retrieved top-rated restaurants
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Restaurant"
-        "400":
+                  $ref: '#/components/schemas/Restaurant'
+        '400':
           description: Invalid limit or offset parameter
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/owner/{ownerId}:
     get:
       summary: Get restaurants by owner ID
@@ -2665,18 +2671,18 @@ paths:
             type: integer
             minimum: 1
       responses:
-        "200":
+        '200':
           description: Successfully retrieved owner's restaurants
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Restaurant"
-        "400":
+                  $ref: '#/components/schemas/Restaurant'
+        '400':
           description: Invalid owner ID
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/my-reservations:
     get:
       summary: Get reservations for owner's restaurant (owner only)
@@ -2685,7 +2691,7 @@ paths:
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
         - name: status
           in: query
           description: Filter by reservation status (can be comma-separated)
@@ -2705,24 +2711,24 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved reservations
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
-        "400":
+                  $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid restaurant ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
-        "404":
+        '404':
           description: Restaurant not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/reservations:
     get:
       summary: Get public reservations for a restaurant
@@ -2730,7 +2736,7 @@ paths:
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
         - name: status
           in: query
           description: Filter by reservation status (can be comma-separated)
@@ -2747,25 +2753,25 @@ paths:
             type: integer
             minimum: 1
       responses:
-        "200":
+        '200':
           description: Successfully retrieved reservations
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Reservation"
-        "400":
+                  $ref: '#/components/schemas/Reservation'
+        '400':
           description: Invalid restaurant ID
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/reviews:
     get:
       summary: Get all reviews for a restaurant
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
         - name: offset
           in: query
           schema:
@@ -2777,18 +2783,18 @@ paths:
             type: integer
             minimum: 1
       responses:
-        "200":
+        '200':
           description: Successfully retrieved restaurant reviews
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Review"
-        "400":
+                  $ref: '#/components/schemas/Review'
+        '400':
           description: Invalid restaurant ID
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/update/status:
     put:
       summary: Update restaurant status (open/closed)
@@ -2801,18 +2807,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RestaurantStatusRequest"
+              $ref: '#/components/schemas/RestaurantStatusRequest'
       responses:
-        "200":
+        '200':
           description: Restaurant status updated successfully
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/search:
     post:
       summary: Advanced restaurant search with filters
-      description: Search for restaurants with multiple filter criteria including
+      description:
+        Search for restaurants with multiple filter criteria including
         query text, province, price range, cuisine types, minimum rating, and
         sorting options
       tags:
@@ -2822,19 +2829,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RestaurantSearchRequest"
+              $ref: '#/components/schemas/RestaurantSearchRequest'
       responses:
-        "200":
+        '200':
           description: Search completed successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RestaurantSearchResponse"
-        "400":
-          description: Invalid search parameters (e.g., invalid sort field or order,
+                $ref: '#/components/schemas/RestaurantSearchResponse'
+        '400':
+          description:
+            Invalid search parameters (e.g., invalid sort field or order,
             invalid offset/limit)
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/activation:
     patch:
       summary: Activate or deactivate a restaurant (owner only)
@@ -2843,7 +2851,7 @@ paths:
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       requestBody:
@@ -2851,24 +2859,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RestaurantActivationRequest"
+              $ref: '#/components/schemas/RestaurantActivationRequest'
       responses:
-        "200":
+        '200':
           description: Restaurant activation status updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RestaurantActivationResponse"
-        "400":
+                $ref: '#/components/schemas/RestaurantActivationResponse'
+        '400':
           description: Invalid restaurant ID or status value
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
-        "404":
+        '404':
           description: Restaurant not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}:
     delete:
       summary: Delete a restaurant (owner only)
@@ -2876,11 +2884,11 @@ paths:
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Restaurant deleted successfully
           content:
             application/json:
@@ -2890,23 +2898,23 @@ paths:
                   message:
                     type: string
                     example: Restaurant deleted successfully
-        "400":
+        '400':
           description: Invalid restaurant ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
-        "404":
+        '404':
           description: Restaurant not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/reviews/filter:
     get:
       summary: Get filtered reviews for a restaurant by rating range
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
         - name: minRating
           in: query
           description: Minimum rating filter
@@ -2936,25 +2944,25 @@ paths:
             minimum: 1
             default: 10
       responses:
-        "200":
+        '200':
           description: Successfully retrieved filtered reviews
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Review"
-        "400":
+                  $ref: '#/components/schemas/Review'
+        '400':
           description: Invalid restaurant ID
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/createDaysOff:
     post:
       summary: Create days off for a restaurant (owner only)
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       requestBody:
@@ -2962,22 +2970,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DaysOffRequest"
+              $ref: '#/components/schemas/DaysOffRequest'
       responses:
-        "201":
+        '201':
           description: Days off created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DaysOffResponse"
-        "400":
+                $ref: '#/components/schemas/DaysOffResponse'
+        '400':
           description: Missing or invalid dates array
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/updateDaysOff:
     put:
       summary: Update days off for a restaurant (owner only)
@@ -2985,7 +2993,7 @@ paths:
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       requestBody:
@@ -2993,22 +3001,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DaysOffRequest"
+              $ref: '#/components/schemas/DaysOffRequest'
       responses:
-        "200":
+        '200':
           description: Days off updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DaysOffResponse"
-        "400":
+                $ref: '#/components/schemas/DaysOffResponse'
+        '400':
           description: Missing or invalid dates array
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/daysOff:
     get:
       summary: Get days off for a restaurant (owner only)
@@ -3016,7 +3024,7 @@ paths:
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
         - name: startDate
           in: query
           description: Start date for filtering (YYYY-MM-DD)
@@ -3032,36 +3040,36 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved days off
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DaysOffData"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+                $ref: '#/components/schemas/DaysOffData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/report:
     post:
       summary: Report a restaurant
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       responses:
-        "201":
+        '201':
           description: Restaurant reported successfully
-        "400":
+        '400':
           description: Invalid restaurant ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/reviews/{reviewId}/report:
     post:
       summary: Report a review
@@ -3077,40 +3085,40 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        '201':
           description: Review reported successfully
-        "400":
+        '400':
           description: Invalid review ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /restaurants/{id}/hours:
     get:
       summary: Get operating hours for a restaurant
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       responses:
-        "200":
+        '200':
           description: Successfully retrieved restaurant hours
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RestaurantHours"
-        "400":
+                  $ref: '#/components/schemas/RestaurantHours'
+        '400':
           description: Invalid restaurant ID
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
     put:
       summary: Update operating hours for a restaurant (owner only)
       tags:
         - Restaurant
       parameters:
-        - $ref: "#/components/parameters/restaurantId"
+        - $ref: '#/components/parameters/restaurantId'
       security:
         - bearerAuth: []
       requestBody:
@@ -3120,26 +3128,26 @@ paths:
             schema:
               type: array
               items:
-                $ref: "#/components/schemas/RestaurantHours"
+                $ref: '#/components/schemas/RestaurantHours'
       responses:
-        "200":
+        '200':
           description: Restaurant hours updated successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RestaurantHours"
-        "400":
+                  $ref: '#/components/schemas/RestaurantHours'
+        '400':
           description: Invalid restaurant ID
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
           description: User is not the owner of this restaurant
-        "404":
+        '404':
           description: Restaurant not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/me:
     get:
       summary: Get authenticated user profile
@@ -3148,18 +3156,18 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Successfully retrieved user profile
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
           description: User not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
     delete:
       summary: Soft delete authenticated user account
       tags:
@@ -3167,14 +3175,14 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: User account successfully soft deleted
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
           description: User not found or already removed
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/register:
     post:
       summary: Send OTP to email for user registration
@@ -3185,14 +3193,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RegisterRequest"
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
-        "201":
+        '201':
           description: OTP sent successfully to email
-        "400":
+        '400':
           description: Invalid email address
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/verify:
     post:
       summary: Register user with OTP verification
@@ -3203,20 +3211,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VerifyUserRequest"
+              $ref: '#/components/schemas/VerifyUserRequest'
       responses:
-        "201":
+        '201':
           description: User successfully registered
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "400":
+                $ref: '#/components/schemas/User'
+        '400':
           description: Invalid OTP or registration data
-        "409":
+        '409':
           description: Email already exists
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/me/reviews:
     post:
       summary: Create a review for a completed reservation
@@ -3229,38 +3237,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateReviewRequest"
+              $ref: '#/components/schemas/CreateReviewRequest'
       responses:
-        "201":
+        '201':
           description: Review successfully created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateReviewResponse"
-        "400":
+                $ref: '#/components/schemas/CreateReviewResponse'
+        '400':
           description: Invalid review data
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/me/reviews/{id}:
     delete:
       summary: Delete a review created by the authenticated user
       tags:
         - User
       parameters:
-        - $ref: "#/components/parameters/reviewId"
+        - $ref: '#/components/parameters/reviewId'
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Review successfully deleted
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "404":
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
           description: Review not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/me/reservations:
     get:
       summary: Get reservations for the authenticated user
@@ -3310,40 +3318,40 @@ paths:
             maximum: 100
             default: 50
       responses:
-        "200":
+        '200':
           description: Successfully retrieved user reservations
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/ReservationWithRestaurant"
-        "400":
+                  $ref: '#/components/schemas/ReservationWithRestaurant'
+        '400':
           description: Invalid query parameters
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/{id}:
     get:
       summary: Get public user profile by ID
       tags:
         - User
       parameters:
-        - $ref: "#/components/parameters/userId"
+        - $ref: '#/components/parameters/userId'
       responses:
-        "200":
+        '200':
           description: Successfully retrieved user profile
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "400":
+                $ref: '#/components/schemas/User'
+        '400':
           description: Invalid user ID
-        "404":
+        '404':
           description: User not found
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/me/uploadProfileImage:
     post:
       summary: Upload profile image for authenticated user
@@ -3365,18 +3373,18 @@ paths:
                   format: binary
                   description: Profile image file to upload
       responses:
-        "200":
+        '200':
           description: Profile image uploaded successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadImageResponse"
-        "400":
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
           description: No file uploaded or invalid file
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
   /users/updateProfile:
     post:
       summary: Update authenticated user profile
@@ -3389,18 +3397,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateUserProfileRequest"
+              $ref: '#/components/schemas/UpdateUserProfileRequest'
       responses:
-        "200":
+        '200':
           description: Profile updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-        "400":
+                $ref: '#/components/schemas/User'
+        '400':
           description: Invalid profile data
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         5XX:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
 tags: []

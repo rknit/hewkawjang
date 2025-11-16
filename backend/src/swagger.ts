@@ -46,7 +46,7 @@ export function setupSwagger(app: Express, port: number): void {
     );
 
     // Also output the OpenAPI spec to a YAML file for reference
-    fs.writeFileSync('openapi.yaml', YAML.stringify(swaggerDocs), 'utf8');
+    // fs.writeFileSync('openapi.yaml', YAML.stringify(swaggerDocs), 'utf8');
   }
 }
 
@@ -573,7 +573,14 @@ function schemas() {
     },
     VerifyUserRequest: {
       type: 'object',
-      required: ['otp', 'firstName', 'lastName', 'email', 'phoneNo', 'password'],
+      required: [
+        'otp',
+        'firstName',
+        'lastName',
+        'email',
+        'phoneNo',
+        'password',
+      ],
       properties: {
         otp: {
           type: 'string',
@@ -665,7 +672,10 @@ function schemas() {
             type: 'string',
           },
           nullable: true,
-          example: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+          example: [
+            'https://example.com/photo1.jpg',
+            'https://example.com/photo2.jpg',
+          ],
         },
       },
     },
@@ -715,7 +725,15 @@ function schemas() {
         },
         status: {
           type: 'string',
-          enum: ['unconfirmed', 'expired', 'confirmed', 'cancelled', 'rejected', 'completed', 'uncompleted'],
+          enum: [
+            'unconfirmed',
+            'expired',
+            'confirmed',
+            'cancelled',
+            'rejected',
+            'completed',
+            'uncompleted',
+          ],
           example: 'confirmed',
         },
         createdAt: {
@@ -1235,7 +1253,8 @@ function schemas() {
           type: 'string',
           format: 'uri',
           description: 'Stripe checkout session URL to redirect user',
-          example: 'https://checkout.stripe.com/pay/cs_test_a1b2c3d4e5f6g7h8i9j0',
+          example:
+            'https://checkout.stripe.com/pay/cs_test_a1b2c3d4e5f6g7h8i9j0',
         },
       },
     },
@@ -1245,7 +1264,8 @@ function schemas() {
       properties: {
         amount: {
           type: 'integer',
-          description: 'Amount to withdraw from restaurant wallet (must be greater than 0)',
+          description:
+            'Amount to withdraw from restaurant wallet (must be greater than 0)',
           example: 500,
           minimum: 1,
         },
@@ -1373,7 +1393,13 @@ function schemas() {
     },
     CreateRestaurantRequest: {
       type: 'object',
-      required: ['name', 'phoneNo', 'cuisineType', 'paymentMethod', 'reservationFee'],
+      required: [
+        'name',
+        'phoneNo',
+        'cuisineType',
+        'paymentMethod',
+        'reservationFee',
+      ],
       properties: {
         name: {
           type: 'string',
