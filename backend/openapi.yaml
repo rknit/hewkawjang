@@ -620,6 +620,82 @@ components:
         message:
           type: string
           example: Image deleted successfully
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        title:
+          type: string
+          example: Reservation Confirmed
+        message:
+          type: string
+          nullable: true
+          example: Your reservation at Thai Restaurant has been confirmed
+        imageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/restaurant-image.jpg
+        reservationId:
+          type: integer
+          nullable: true
+          example: 456
+        notificationType:
+          type: string
+          enum:
+            - reservation_status
+            - chat
+            - system
+          example: reservation_status
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-11-16T10:00:00Z
+        isRead:
+          type: boolean
+          example: false
+    CreateNotificationRequest:
+      type: object
+      required:
+        - userId
+        - title
+        - message
+        - notificationType
+      properties:
+        userId:
+          type: integer
+          example: 123
+        title:
+          type: string
+          example: Reservation Confirmed
+        message:
+          type: string
+          example: Your reservation at Thai Restaurant has been confirmed
+        imageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/restaurant-image.jpg
+        reservationId:
+          type: integer
+          nullable: true
+          example: 456
+        notificationType:
+          type: string
+          enum:
+            - reservation_status
+            - chat
+            - system
+          example: reservation_status
+    UnreadCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 5
   securitySchemes:
     bearerAuth:
       type: http
@@ -674,6 +750,13 @@ components:
       in: path
       required: true
       description: ID of the message
+      schema:
+        type: integer
+    notificationId:
+      name: notificationId
+      in: path
+      required: true
+      description: ID of the notification
       schema:
         type: integer
   responses:
@@ -1061,6 +1144,134 @@ paths:
                 $ref: "#/components/schemas/ImageDeleteResponse"
         "400":
           description: Missing image URL
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /notifications/:
+    get:
+      summary: Get notifications for authenticated user
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of notifications to return
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: offset
+          in: query
+          description: Number of notifications to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Successfully retrieved notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create a notification
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNotificationRequest"
+      responses:
+        "201":
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "400":
+          description: Invalid request data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /notifications/unread/count:
+    get:
+      summary: Get count of unread notifications
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved unread count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadCountResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /notifications/mark-all-as-read:
+    post:
+      summary: Mark all notifications as read
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: All notifications marked as read successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /notifications/{notificationId}/read:
+    patch:
+      summary: Mark a notification as read
+      tags:
+        - Notification
+      parameters:
+        - $ref: "#/components/parameters/notificationId"
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Notification marked as read successfully
+        "400":
+          description: Invalid notification ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /notifications/{notificationId}:
+    delete:
+      summary: Delete a notification
+      tags:
+        - Notification
+      parameters:
+        - $ref: "#/components/parameters/notificationId"
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Notification deleted successfully
+        "400":
+          description: Invalid notification ID
         "401":
           $ref: "#/components/responses/Unauthorized"
         5XX:

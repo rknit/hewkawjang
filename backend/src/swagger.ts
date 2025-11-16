@@ -812,6 +812,94 @@ function schemas() {
         },
       },
     },
+    Notification: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        title: {
+          type: 'string',
+          example: 'Reservation Confirmed',
+        },
+        message: {
+          type: 'string',
+          nullable: true,
+          example: 'Your reservation at Thai Restaurant has been confirmed',
+        },
+        imageUrl: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/restaurant-image.jpg',
+        },
+        reservationId: {
+          type: 'integer',
+          nullable: true,
+          example: 456,
+        },
+        notificationType: {
+          type: 'string',
+          enum: ['reservation_status', 'chat', 'system'],
+          example: 'reservation_status',
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-11-16T10:00:00Z',
+        },
+        isRead: {
+          type: 'boolean',
+          example: false,
+        },
+      },
+    },
+    CreateNotificationRequest: {
+      type: 'object',
+      required: ['userId', 'title', 'message', 'notificationType'],
+      properties: {
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        title: {
+          type: 'string',
+          example: 'Reservation Confirmed',
+        },
+        message: {
+          type: 'string',
+          example: 'Your reservation at Thai Restaurant has been confirmed',
+        },
+        imageUrl: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/restaurant-image.jpg',
+        },
+        reservationId: {
+          type: 'integer',
+          nullable: true,
+          example: 456,
+        },
+        notificationType: {
+          type: 'string',
+          enum: ['reservation_status', 'chat', 'system'],
+          example: 'reservation_status',
+        },
+      },
+    },
+    UnreadCountResponse: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'integer',
+          example: 5,
+        },
+      },
+    },
   };
 }
 
@@ -888,6 +976,15 @@ function parameters() {
       in: 'path',
       required: true,
       description: 'ID of the message',
+      schema: {
+        type: 'integer',
+      },
+    },
+    notificationId: {
+      name: 'notificationId',
+      in: 'path',
+      required: true,
+      description: 'ID of the notification',
       schema: {
         type: 'integer',
       },
