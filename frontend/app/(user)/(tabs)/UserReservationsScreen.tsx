@@ -286,16 +286,21 @@ export default function UserReservationsScreen() {
 
     // === Completed ===
     if (r.status === 'completed') {
+      // Only show "Give Rating" button if the reservation hasn't been reviewed yet
+      if (!r.reviewId) {
+        actions.push(
+          addTextAction(
+            'Give Rating',
+            <Entypo name="chevron-right" size={14} color="#e05910" />,
+            () => {
+              setSelectedReservation(r);
+              setReviewModalVisible(true);
+            },
+            'rating',
+          ),
+        );
+      }
       actions.push(
-        addTextAction(
-          'Give Rating',
-          <Entypo name="chevron-right" size={14} color="#e05910" />,
-          () => {
-            setSelectedReservation(r);
-            setReviewModalVisible(true);
-          },
-          'rating',
-        ),
         addTextAction(
           'Book Again',
           <Entypo name="chevron-right" size={14} color="#e05910" />,

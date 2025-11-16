@@ -758,6 +758,11 @@ function schemas() {
             restaurant: {
               $ref: '#/components/schemas/Restaurant',
             },
+            reviewId: {
+              type: 'integer',
+              nullable: true,
+              description: 'ID of the review if the reservation has been reviewed, null otherwise',
+            },
           },
         },
       ],

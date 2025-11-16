@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import {Star} from 'lucide-react-native';
 import DeleteReviewButton from './delete-review-button';
 
 type CommentProps = {
@@ -78,11 +79,12 @@ const CommentCard: React.FC<CommentProps> = ({
         {/* Stars */}
         <View className="flex-row items-center mt-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Feather
+            <Star
               key={i}
-              name="star"
               size={14}
-              color={i < Math.round(Number(rating)) ? '#FACC15' : '#D1D5DB'}
+              color={i < rating ? '#FACC15' : '#D1D5DB'} // yellow-400 or gray-300
+              fill={i < rating ? '#FACC15' : 'none'}
+              className="mr-0.5"
             />
           ))}
           <Text className="ml-2 text-sm text-gray-600">

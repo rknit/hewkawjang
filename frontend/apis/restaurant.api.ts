@@ -245,6 +245,7 @@ export async function searchRestaurants(params: {
           isDeleted: restaurant.isDeleted,
           images: restaurant.images,
           reservationFee: restaurant.reservationFee,
+          paymentMethod: restaurant.paymentMethod,
         }),
         // Add the rating fields
         avgRating: restaurant.avgRating || 0,
