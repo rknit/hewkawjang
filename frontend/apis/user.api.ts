@@ -92,28 +92,27 @@ const RestaurantSchema = z
   })
   .passthrough(); // Allow additional fields from backend
 
-const ReservationSchema = z
-  .object({
-    id: z.number(),
-    userId: z.number(),
-    restaurantId: z.number(),
-    reserveAt: z.string(),
-    reservationFee: z.number().nullable().optional(),
-    numberOfAdult: z.number().nullable().optional(),
-    numberOfChildren: z.number().nullable().optional(),
-    status: z.enum([
-      'unconfirmed',
-      'expired',
-      'confirmed',
-      'cancelled',
-      'rejected',
-      'completed',
-      'uncompleted',
-    ]),
-    createdAt: z.string(),
-    restaurant: RestaurantSchema,
-  })
-  .passthrough(); // Allow additional fields from backend
+const ReservationSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  restaurantId: z.number(),
+  reserveAt: z.string(),
+  reservationFee: z.number().nullable().optional(),
+  numberOfAdult: z.number().nullable().optional(),
+  numberOfChildren: z.number().nullable().optional(),
+  status: z.enum([
+    'unconfirmed',
+    'expired',
+    'confirmed',
+    'cancelled',
+    'rejected',
+    'completed',
+    'uncompleted',
+  ]),
+  createdAt: z.string(),
+  restaurant: RestaurantSchema,
+  reviewId: z.number().nullable().optional(),
+}).passthrough(); // Allow additional fields from backend
 
 export type UserReservation = z.infer<typeof ReservationSchema>;
 export type ReservationStatus = UserReservation['status'];
