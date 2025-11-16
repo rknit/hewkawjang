@@ -1117,6 +1117,70 @@ function schemas() {
         },
       },
     },
+    CreateReservationRequest: {
+      type: 'object',
+      required: ['restaurantId', 'reserveAt', 'reservationFee'],
+      properties: {
+        restaurantId: {
+          type: 'integer',
+          example: 456,
+        },
+        reserveAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-12-25T18:00:00Z',
+        },
+        numberOfAdult: {
+          type: 'integer',
+          nullable: true,
+          example: 2,
+        },
+        numberOfChildren: {
+          type: 'integer',
+          nullable: true,
+          example: 1,
+        },
+        reservationFee: {
+          type: 'integer',
+          example: 100,
+        },
+      },
+    },
+    CancelReservationRequest: {
+      type: 'object',
+      required: ['cancelBy'],
+      properties: {
+        cancelBy: {
+          type: 'string',
+          enum: ['user', 'restaurant_owner'],
+          example: 'user',
+        },
+      },
+    },
+    UpdateReservationStatusRequest: {
+      type: 'object',
+      required: ['status', 'updateBy'],
+      properties: {
+        status: {
+          type: 'string',
+          enum: [
+            'unconfirmed',
+            'expired',
+            'confirmed',
+            'cancelled',
+            'rejected',
+            'completed',
+            'uncompleted',
+          ],
+          example: 'confirmed',
+        },
+        updateBy: {
+          type: 'string',
+          enum: ['user', 'restaurant_owner'],
+          example: 'restaurant_owner',
+        },
+      },
+    },
   };
 }
 
@@ -1220,6 +1284,15 @@ function parameters() {
       in: 'path',
       required: true,
       description: 'ID of the admin chat',
+      schema: {
+        type: 'integer',
+      },
+    },
+    reservationId: {
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'ID of the reservation',
       schema: {
         type: 'integer',
       },

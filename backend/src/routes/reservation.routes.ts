@@ -4,6 +4,40 @@ import { authHandler } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /reservations/unconfirmed/inspect:
+ *   get:
+ *     summary: Get unconfirmed reservations for a restaurant
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - name: restaurantId
+ *         in: query
+ *         required: true
+ *         description: ID of the restaurant
+ *         schema:
+ *           type: integer
+ *       - name: offset
+ *         in: query
+ *         required: false
+ *         description: Number of reservations to skip
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved unconfirmed reservations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/unconfirmed/inspect', async (req, res) => {
   const restaurantId = req.query.restaurantId
     ? Number(req.query.restaurantId)
@@ -23,6 +57,33 @@ router.get('/unconfirmed/inspect', async (req, res) => {
   return res.json(reservations);
 });
 
+/**
+ * @openapi
+ * /reservations/{id}/cancel:
+ *   post:
+ *     summary: Cancel a reservation
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - $ref: '#/components/parameters/reservationId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CancelReservationRequest'
+ *     responses:
+ *       200:
+ *         description: Reservation cancelled successfully
+ *       400:
+ *         description: Invalid reservation ID or cancelBy value
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/:id/cancel', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload!.userId;
@@ -49,6 +110,35 @@ router.post('/:id/cancel', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /reservations/create:
+ *   post:
+ *     summary: Create a new reservation
+ *     tags:
+ *       - Reservation
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateReservationRequest'
+ *     responses:
+ *       201:
+ *         description: Reservation created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid request data or reservation time must be at least 30 minutes in advance
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         description: Failed to create reservation
+ */
 router.post('/create', authHandler, async (req, res) => {
   const userId = req.userAuthPayload?.userId;
   const {
@@ -90,6 +180,47 @@ router.post('/create', authHandler, async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /reservations/{id}/inspect:
+ *   get:
+ *     summary: Get reservations for a restaurant in a specific month
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *       - name: month
+ *         in: query
+ *         required: true
+ *         description: Month (1-12)
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 12
+ *       - name: year
+ *         in: query
+ *         required: true
+ *         description: Year
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved reservations for the month
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid restaurant ID or month/year parameters
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/:id/inspect', authHandler, async (req, res) => {
   const restaurantId = Number(req.params.id);
   if (isNaN(restaurantId)) {
@@ -112,6 +243,37 @@ router.get('/:id/inspect', authHandler, async (req, res) => {
   return res.json(reservations);
 });
 
+/**
+ * @openapi
+ * /reservations/{id}/status:
+ *   patch:
+ *     summary: Update reservation status
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - $ref: '#/components/parameters/reservationId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateReservationStatusRequest'
+ *     responses:
+ *       200:
+ *         description: Reservation status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid reservation ID, status, or updateBy value
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.patch('/:id/status', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload!.userId;
@@ -162,7 +324,31 @@ router.patch('/:id/status', authHandler, async (req, res, next) => {
   }
 });
 
-// Confirm reservation (restaurant owner action)
+/**
+ * @openapi
+ * /reservations/{id}/confirm:
+ *   post:
+ *     summary: Confirm a reservation (restaurant owner action)
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - $ref: '#/components/parameters/reservationId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Reservation confirmed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid reservation ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/:id/confirm', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload!.userId;
@@ -181,7 +367,31 @@ router.post('/:id/confirm', authHandler, async (req, res, next) => {
   }
 });
 
-// Mark customer as arrived (restaurant owner action)
+/**
+ * @openapi
+ * /reservations/{id}/arrived:
+ *   post:
+ *     summary: Mark customer as arrived (restaurant owner action)
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - $ref: '#/components/parameters/reservationId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Customer marked as arrived successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid reservation ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/:id/arrived', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload!.userId;
@@ -200,7 +410,31 @@ router.post('/:id/arrived', authHandler, async (req, res, next) => {
   }
 });
 
-// Mark customer as no-show (restaurant owner action)
+/**
+ * @openapi
+ * /reservations/{id}/no-show:
+ *   post:
+ *     summary: Mark customer as no-show (restaurant owner action)
+ *     tags:
+ *       - Reservation
+ *     parameters:
+ *       - $ref: '#/components/parameters/reservationId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Customer marked as no-show successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid reservation ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/:id/no-show', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload!.userId;
