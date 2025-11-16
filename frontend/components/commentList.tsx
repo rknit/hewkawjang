@@ -34,44 +34,50 @@ const CommentList: React.FC<CommentListProps> = ({
 }) => {
   return (
     <View className="p-4 h-[400px]">
-      <FlatList
-        data={comments}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={() => (
-          <View className="h-[1px] bg-gray-200 my-2" />
-        )}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
-          // Build owned set from props (if provided)
-          let ownedSet: Set<number> | undefined;
-          if (Array.isArray(ownedReviewIds)) {
-            ownedSet = new Set(ownedReviewIds.map(Number));
-          } else if (ownedReviewIds instanceof Set) {
-            ownedSet = ownedReviewIds;
-          }
+      {comments.length === 0 ? (
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-gray-500 text-base">No reviews yet</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={comments}
+          keyExtractor={(item) => item.id}
+          ItemSeparatorComponent={() => (
+            <View className="h-[1px] bg-gray-200 my-2" />
+          )}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            // Build owned set from props (if provided)
+            let ownedSet: Set<number> | undefined;
+            if (Array.isArray(ownedReviewIds)) {
+              ownedSet = new Set(ownedReviewIds.map(Number));
+            } else if (ownedReviewIds instanceof Set) {
+              ownedSet = ownedReviewIds;
+            }
 
-          const canDeleteFromSet = ownedSet?.has(Number(item.id)) === true;
-          const canDeleteFromUserId =
-            !!isLoggedIn &&
-            currentUserId !== undefined &&
-            item.userId !== undefined &&
-            Number(item.userId) === Number(currentUserId);
-          const canDelete = canDeleteFromSet || canDeleteFromUserId;
+            const canDeleteFromSet = ownedSet?.has(Number(item.id)) === true;
+            const canDeleteFromUserId =
+              !!isLoggedIn &&
+              currentUserId !== undefined &&
+              item.userId !== undefined &&
+              Number(item.userId) === Number(currentUserId);
+            const canDelete = canDeleteFromSet || canDeleteFromUserId;
 
-          return (
-            <CommentCard
-              {...item}
-              reviewId={Number(item.id)}
-              isLoggedIn={isLoggedIn}
-              onPressReport={
-                onPressReport ? () => onPressReport(item.id) : undefined
-              }
-              canDelete={canDelete}
-              onDeleted={(rid) => onDeleted?.(String(rid))}
-            />
-          );
-        }}
-      />
+            return (
+              <CommentCard
+                {...item}
+                reviewId={Number(item.id)}
+                isLoggedIn={isLoggedIn}
+                onPressReport={
+                  onPressReport ? () => onPressReport(item.id) : undefined
+                }
+                canDelete={canDelete}
+                onDeleted={(rid) => onDeleted?.(String(rid))}
+              />
+            );
+          }}
+        />
+      )}
     </View>
   );
 };
