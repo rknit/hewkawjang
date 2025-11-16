@@ -17,6 +17,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { startScheduledJobs } from './jobs';
 import chatRoutes from './routes/chat.routes';
+import { setupSwagger } from './swagger';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -35,6 +36,9 @@ app.use(helmet());
 
 app.use(cookieParser());
 app.use(express.json());
+
+// Swagger setup
+setupSwagger(app, Number(port));
 
 app.use('/admins', adminRoute);
 app.use('/reports', reportRoute);

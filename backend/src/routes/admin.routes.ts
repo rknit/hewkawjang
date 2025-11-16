@@ -7,6 +7,29 @@ import ReportService from '../service/report.service';
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /admins/me:
+ *   get:
+ *     summary: Get current admin profile
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved admin profile
+ *         content:
+ *           application/json:
+ *            schema:
+ *             $ref: '#/components/schemas/Admin'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       404:
+ *         description: Admin not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/me', authHandler, adminRoleHandler, async (req, res) => {
   const admin = await AdminService.getAdminById(req.userAuthPayload?.userId!);
   res.status(200).json(admin);
