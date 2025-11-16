@@ -515,6 +515,244 @@ function schemas() {
         },
       },
     },
+    User: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        firstName: {
+          type: 'string',
+          example: 'John',
+        },
+        lastName: {
+          type: 'string',
+          example: 'Doe',
+        },
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+        },
+        phoneNo: {
+          type: 'string',
+          example: '+66812345678',
+        },
+        balance: {
+          type: 'number',
+          format: 'double',
+          example: 1000.0,
+        },
+        displayName: {
+          type: 'string',
+          nullable: true,
+          example: 'John D.',
+        },
+        profileUrl: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/profile.jpg',
+        },
+        isDeleted: {
+          type: 'boolean',
+          example: false,
+        },
+      },
+    },
+    RegisterRequest: {
+      type: 'object',
+      required: ['email'],
+      properties: {
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+        },
+      },
+    },
+    VerifyUserRequest: {
+      type: 'object',
+      required: ['otp', 'firstName', 'lastName', 'email', 'phoneNo', 'password'],
+      properties: {
+        otp: {
+          type: 'string',
+          example: '123456',
+        },
+        firstName: {
+          type: 'string',
+          example: 'John',
+        },
+        lastName: {
+          type: 'string',
+          example: 'Doe',
+        },
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+        },
+        phoneNo: {
+          type: 'string',
+          example: '+66812345678',
+        },
+        password: {
+          type: 'string',
+          format: 'password',
+          example: 'SecurePassword123!',
+        },
+        displayName: {
+          type: 'string',
+          nullable: true,
+          example: 'John D.',
+        },
+        profileUrl: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/profile.jpg',
+        },
+      },
+    },
+    UpdateUserProfileRequest: {
+      type: 'object',
+      properties: {
+        displayName: {
+          type: 'string',
+          nullable: true,
+          example: 'John D.',
+        },
+        firstName: {
+          type: 'string',
+          example: 'John',
+        },
+        lastName: {
+          type: 'string',
+          example: 'Doe',
+        },
+        phoneNo: {
+          type: 'string',
+          example: '+66812345678',
+        },
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+        },
+      },
+    },
+    CreateReviewRequest: {
+      type: 'object',
+      required: ['reservationId', 'rating'],
+      properties: {
+        reservationId: {
+          type: 'integer',
+          example: 123,
+        },
+        rating: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 5,
+          example: 5,
+        },
+        comment: {
+          type: 'string',
+          nullable: true,
+          example: 'Great food and excellent service!',
+        },
+        attachPhotos: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          nullable: true,
+          example: ['https://example.com/photo1.jpg', 'https://example.com/photo2.jpg'],
+        },
+      },
+    },
+    CreateReviewResponse: {
+      type: 'object',
+      properties: {
+        reviewId: {
+          type: 'integer',
+          example: 456,
+        },
+      },
+    },
+    Reservation: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        restaurantId: {
+          type: 'integer',
+          example: 456,
+        },
+        reserveAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-12-25T18:00:00Z',
+        },
+        reservationFee: {
+          type: 'integer',
+          nullable: true,
+          example: 100,
+        },
+        numberOfAdult: {
+          type: 'integer',
+          nullable: true,
+          example: 2,
+        },
+        numberOfChildren: {
+          type: 'integer',
+          nullable: true,
+          example: 1,
+        },
+        status: {
+          type: 'string',
+          enum: ['unconfirmed', 'expired', 'confirmed', 'cancelled', 'rejected', 'completed', 'uncompleted'],
+          example: 'confirmed',
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-11-15T10:00:00Z',
+        },
+        confirmedAt: {
+          type: 'string',
+          format: 'date-time',
+          nullable: true,
+          example: '2025-11-15T12:00:00Z',
+        },
+      },
+    },
+    ReservationWithRestaurant: {
+      allOf: [
+        { $ref: '#/components/schemas/Reservation' },
+        {
+          type: 'object',
+          properties: {
+            restaurant: {
+              $ref: '#/components/schemas/Restaurant',
+            },
+          },
+        },
+      ],
+    },
+    UploadImageResponse: {
+      type: 'object',
+      properties: {
+        imageUrl: {
+          type: 'string',
+          example: 'https://example.com/uploads/profile123.jpg',
+        },
+      },
+    },
   };
 }
 
@@ -564,6 +802,24 @@ function parameters() {
       in: 'path',
       required: true,
       description: 'ID of the report',
+      schema: {
+        type: 'integer',
+      },
+    },
+    userId: {
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'ID of the user',
+      schema: {
+        type: 'integer',
+      },
+    },
+    reviewId: {
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'ID of the review',
       schema: {
         type: 'integer',
       },

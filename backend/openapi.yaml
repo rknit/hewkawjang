@@ -376,6 +376,200 @@ components:
         message:
           type: string
           example: Logged out successfully
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        phoneNo:
+          type: string
+          example: "+66812345678"
+        balance:
+          type: number
+          format: double
+          example: 1000
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        profileUrl:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+        isDeleted:
+          type: boolean
+          example: false
+    RegisterRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+    VerifyUserRequest:
+      type: object
+      required:
+        - otp
+        - firstName
+        - lastName
+        - email
+        - phoneNo
+        - password
+      properties:
+        otp:
+          type: string
+          example: "123456"
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        phoneNo:
+          type: string
+          example: "+66812345678"
+        password:
+          type: string
+          format: password
+          example: SecurePassword123!
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        profileUrl:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+    UpdateUserProfileRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNo:
+          type: string
+          example: "+66812345678"
+        email:
+          type: string
+          format: email
+          example: user@example.com
+    CreateReviewRequest:
+      type: object
+      required:
+        - reservationId
+        - rating
+      properties:
+        reservationId:
+          type: integer
+          example: 123
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          nullable: true
+          example: Great food and excellent service!
+        attachPhotos:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example:
+            - https://example.com/photo1.jpg
+            - https://example.com/photo2.jpg
+    CreateReviewResponse:
+      type: object
+      properties:
+        reviewId:
+          type: integer
+          example: 456
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        restaurantId:
+          type: integer
+          example: 456
+        reserveAt:
+          type: string
+          format: date-time
+          example: 2025-12-25T18:00:00Z
+        reservationFee:
+          type: integer
+          nullable: true
+          example: 100
+        numberOfAdult:
+          type: integer
+          nullable: true
+          example: 2
+        numberOfChildren:
+          type: integer
+          nullable: true
+          example: 1
+        status:
+          type: string
+          enum:
+            - unconfirmed
+            - expired
+            - confirmed
+            - cancelled
+            - rejected
+            - completed
+            - uncompleted
+          example: confirmed
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-11-15T10:00:00Z
+        confirmedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2025-11-15T12:00:00Z
+    ReservationWithRestaurant:
+      allOf:
+        - $ref: "#/components/schemas/Reservation"
+        - type: object
+          properties:
+            restaurant:
+              $ref: "#/components/schemas/Restaurant"
+    UploadImageResponse:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          example: https://example.com/uploads/profile123.jpg
   securitySchemes:
     bearerAuth:
       type: http
@@ -409,6 +603,20 @@ components:
       in: path
       required: true
       description: ID of the report
+      schema:
+        type: integer
+    userId:
+      name: id
+      in: path
+      required: true
+      description: ID of the user
+      schema:
+        type: integer
+    reviewId:
+      name: id
+      in: path
+      required: true
+      description: ID of the review
       schema:
         type: integer
   responses:
@@ -734,6 +942,269 @@ paths:
           description: Missing or invalid client type header
         "401":
           description: Invalid or expired refresh token, or user account deleted
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/me:
+    get:
+      summary: Get authenticated user profile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: User not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: Soft delete authenticated user account
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User account successfully soft deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: User not found or already removed
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/register:
+    post:
+      summary: Send OTP to email for user registration
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: OTP sent successfully to email
+        "400":
+          description: Invalid email address
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/verify:
+    post:
+      summary: Register user with OTP verification
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyUserRequest"
+      responses:
+        "201":
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid OTP or registration data
+        "409":
+          description: Email already exists
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/me/reviews:
+    post:
+      summary: Create a review for a completed reservation
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewRequest"
+      responses:
+        "201":
+          description: Review successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateReviewResponse"
+        "400":
+          description: Invalid review data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/me/reviews/{id}:
+    delete:
+      summary: Delete a review created by the authenticated user
+      tags:
+        - User
+      parameters:
+        - $ref: "#/components/parameters/reviewId"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Review successfully deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Review not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/me/reservations:
+    get:
+      summary: Get reservations for the authenticated user
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by reservation status (can specify multiple)
+          schema:
+            oneOf:
+              - type: string
+                enum:
+                  - unconfirmed
+                  - expired
+                  - confirmed
+                  - cancelled
+                  - rejected
+                  - completed
+                  - uncompleted
+              - type: array
+                items:
+                  type: string
+                  enum:
+                    - unconfirmed
+                    - expired
+                    - confirmed
+                    - cancelled
+                    - rejected
+                    - completed
+                    - uncompleted
+        - name: offset
+          in: query
+          description: Number of reservations to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of reservations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        "200":
+          description: Successfully retrieved user reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReservationWithRestaurant"
+        "400":
+          description: Invalid query parameters
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/{id}:
+    get:
+      summary: Get public user profile by ID
+      tags:
+        - User
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "200":
+          description: Successfully retrieved user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid user ID
+        "404":
+          description: User not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/me/uploadProfileImage:
+    post:
+      summary: Upload profile image for authenticated user
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Profile image file to upload
+      responses:
+        "200":
+          description: Profile image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadImageResponse"
+        "400":
+          description: No file uploaded or invalid file
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /users/updateProfile:
+    post:
+      summary: Update authenticated user profile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfileRequest"
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid profile data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         5XX:
           $ref: "#/components/responses/InternalServerError"
 tags: []
