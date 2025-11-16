@@ -2,7 +2,7 @@
 const path = require("path");
 
 // Import the Express app from the compiled backend
-const backendPath = path.join(__dirname, "../backend/dist/index.js");
+const backendPath = path.join(__dirname, "../backend/dist/src/index.js");
 const app = require(backendPath).default || require(backendPath);
 
 // Wrapper to strip /api prefix before passing to Express
