@@ -3,16 +3,37 @@ import ChatService from '../service/chat.service';
 import MessageService from '../service/message.service';
 import { db } from '../db';
 import { chatsTable, usersTable, chatAdminsTable } from '../db/schema';
-import { eq } from 'drizzle-orm';
 import { adminRoleHandler, authHandler } from '../middleware/auth.middleware';
+import { eq, and } from 'drizzle-orm';
 
 const router = express.Router();
 
 /**
- * USER CHAT ROUTES
+ * @openapi
+ * /chat/user/{userId}:
+ *   get:
+ *     summary: Get all chat channels for a specific user
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user chats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Chat'
+ *       500:
+ *         description: Failed to get user chats
  */
-
-// 1) Messages routes FIRST (no inline regex)
 router.get('/user/messages/:chatId', async (req, res) => {
   const { chatId } = req.params;
   const cid = Number(chatId);
@@ -37,6 +58,32 @@ router.get('/user/messages/:chatId', async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /chat/all/{userId}:
+ *   get:
+ *     summary: Get all chats where user is either a customer or restaurant owner
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all chats for user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ChatWithDetails'
+ *       500:
+ *         description: Failed to fetch all chats
+ */
 router.post('/user/messages', async (req, res) => {
   const { chatId, senderId, text, imgURL } = req.body;
   const cid = Number(chatId);
@@ -77,7 +124,32 @@ router.post('/user/messages', async (req, res) => {
   }
 });
 
-// 2) List all chats where user is customer or owner
+/**
+ * @openapi
+ * /chat/all/{userId}:
+ *   get:
+ *     summary: Get all chats where user is either a customer or restaurant owner
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all chats for user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ChatWithDetails'
+ *       500:
+ *         description: Failed to fetch all chats
+ */
 router.get('/user/all/:userId', async (req, res) => {
   const uid = Number(req.params.userId);
   if (!Number.isFinite(uid))
@@ -94,7 +166,31 @@ router.get('/user/all/:userId', async (req, res) => {
   }
 });
 
-// 3) Legacy get chats by userId
+/**
+ * @openapi
+ * /chat/{restaurantId}:
+ *   post:
+ *     summary: Create or find chat between user and restaurant
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateChatRequest'
+ *     responses:
+ *       200:
+ *         description: Successfully created or found chat
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Chat'
+ *       500:
+ *         description: Failed to create or find chat
+ */
 router.get('/user/:userId', async (req, res) => {
   const uid = Number(req.params.userId);
   if (!Number.isFinite(uid))
@@ -108,7 +204,29 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// 4) Create/find chat by restaurant (must come AFTER the above)
+/**
+ * @openapi
+ * /chat/{chatId}/messages:
+ *   get:
+ *     summary: Get messages of a chat
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - $ref: '#/components/parameters/chatId'
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved chat messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Chat not found
+ *       500:
+ *         description: Failed to fetch messages
+ */
 router.post('/user/:restaurantId', async (req, res) => {
   const rid = Number(req.params.restaurantId);
   const uid = Number(req.body.userId);
@@ -131,7 +249,29 @@ router.post('/user/:restaurantId', async (req, res) => {
 });
 
 /**
- * ADMIN CHAT ROUTES (unchanged)
+ * @openapi
+ * /chat/user/messages:
+ *   post:
+ *     summary: Send a message in a chat
+ *     tags:
+ *       - Chat
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SendMessageRequest'
+ *     responses:
+ *       200:
+ *         description: Message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Invalid request - missing senderId or chat not found
+ *       500:
+ *         description: Failed to send message
  */
 router.get(
   '/admin/:adminId',
@@ -149,7 +289,36 @@ router.get(
     }
   },
 );
-
+/**
+ * @openapi
+ * /chat/admin/{adminId}:
+ *   get:
+ *     summary: Get all admin chats for a specific admin
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: adminId
+ *         in: path
+ *         required: true
+ *         description: ID of the admin
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved admin chats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ChatAdmin'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       500:
+ *         description: Failed to get admin chats
+ */
 router.get(
   '/admin/messages/:chatAdminId',
   authHandler,
@@ -168,7 +337,31 @@ router.get(
     }
   },
 );
-
+/**
+ * @openapi
+ * /chat/admin/messages/{chatAdminId}:
+ *   get:
+ *     summary: Get messages in an admin chat
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - $ref: '#/components/parameters/chatAdminId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved admin chat messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/AdminMessage'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       500:
+ *         description: Failed to get admin chat messages
+ */
 router.post(
   '/admin/messages',
   authHandler,
@@ -202,7 +395,35 @@ router.post(
   },
 );
 
-// USER-FACING: list admin chats for a user
+/**
+ * @openapi
+ * /chat/admin/messages:
+ *   post:
+ *     summary: Send a message in an admin chat
+ *     tags:
+ *       - Chat
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SendAdminMessageRequest'
+ *     responses:
+ *       201:
+ *         description: Admin message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AdminMessage'
+ *       400:
+ *         description: Missing required fields (chatAdminId, adminId, or senderRole)
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       500:
+ *         description: Failed to create admin message
+ */
 router.get('/admin/user/:userId', async (req, res) => {
   const uid = Number(req.params.userId);
   if (!Number.isFinite(uid))
@@ -278,6 +499,44 @@ router.post('/admin/messages/user', async (req, res) => {
     console.error('[POST /admin/messages/user] ERROR:', err);
     res.status(500).json({
       message: 'Failed to create admin message as user',
+      error: err?.message ?? String(err),
+    });
+  }
+});
+
+// USER-FACING: ensure a user/admin chat exists, return its chatAdminId
+router.post('/admin/user/start', async (req, res) => {
+  const { userId, adminId } = req.body;
+  const uid = Number(userId);
+  const aid = Number(adminId ?? 1);
+
+  if (!Number.isFinite(uid) || !Number.isFinite(aid)) {
+    return res
+      .status(400)
+      .json({ message: 'userId and adminId must be numbers' });
+  }
+
+  try {
+    const existing = await db
+      .select()
+      .from(chatAdminsTable)
+      .where(
+        and(eq(chatAdminsTable.userId, uid), eq(chatAdminsTable.adminId, aid)),
+      );
+
+    if (existing.length > 0) {
+      return res.json({ chatAdminId: existing[0].id });
+    }
+
+    const inserted = await db
+      .insert(chatAdminsTable)
+      .values({ userId: uid, adminId: aid })
+      .returning();
+
+    return res.status(201).json({ chatAdminId: inserted[0].id });
+  } catch (err: any) {
+    return res.status(500).json({
+      message: 'Failed to start admin chat',
       error: err?.message ?? String(err),
     });
   }

@@ -187,3 +187,15 @@ export async function sendAdminMessageAsUser(
     return normalizeError(error) ?? null;
   }
 }
+
+export async function ensureUserAdminSupportChat(
+  userId: number,
+  adminId: number = 1,
+): Promise<number> {
+  const res = await ApiService.post('/chat/admin/user/start', {
+    userId,
+    adminId,
+  });
+  const schema = z.object({ chatAdminId: z.number() });
+  return schema.parse(res.data).chatAdminId;
+}

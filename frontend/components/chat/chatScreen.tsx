@@ -15,9 +15,11 @@ import {
 } from '@/types/chat.type';
 import { useEffect, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function ChatsUserPage() {
   const { user } = useUser();
+  const params = useLocalSearchParams<{ adminChatId?: string }>();
   const [channels, setChannels] = useState<ChatChannel[]>([]);
   const [adminChannels, setAdminChannels] = useState<AdminChatChannel[]>([]);
   const [selectedKind, setSelectedKind] = useState<'user' | 'admin' | null>(
@@ -162,6 +164,17 @@ export default function ChatsUserPage() {
     loadAdminMessages(selectedAdminChatId);
   };
 
+  useEffect(() => {
+    // Preselect admin chat if a deep link param is provided
+    const raw = params?.adminChatId;
+    const adminChatId = raw ? Number(raw) : null;
+    if (adminChatId && Number.isFinite(adminChatId)) {
+      setSelectedKind('admin');
+      setSelectedAdminChatId(adminChatId);
+      setSelectedChatId(null);
+    }
+  }, [params?.adminChatId]);
+
   return (
     <View className="flex flex-row h-full">
       <View className="w-[30%] h-full p-4 border-r">
@@ -213,16 +226,29 @@ export default function ChatsUserPage() {
             onSend={handleSend}
           />
         ) : selectedKind === 'admin' && selectedAdminChatId ? (
-          <AdminChatArea
-            adminChatChannel={
-              adminChannels.find((c) => c.chatId === selectedAdminChatId)!
+          // Guard until the admin channel is available to avoid undefined access in AdminChatArea
+          (() => {
+            const selectedAdminChannel = adminChannels.find(
+              (c) => c.chatId === selectedAdminChatId,
+            );
+            if (!selectedAdminChannel) {
+              return (
+                <View className="flex-1 items-center justify-center">
+                  <Text className="text-gray-500">Loading chat…</Text>
+                </View>
+              );
             }
-            messages={adminMessages}
-            value={adminInput}
-            onChangeText={setAdminInput}
-            onPress={() => handleSend(adminInput)}
-            onSendImage={handleSendAdminImage}
-          />
+            return (
+              <AdminChatArea
+                adminChatChannel={selectedAdminChannel}
+                messages={adminMessages}
+                value={adminInput}
+                onChangeText={setAdminInput}
+                onPress={() => handleSend(adminInput)}
+                onSendImage={handleSendAdminImage}
+              />
+            );
+          })()
         ) : (
           <View className="flex-1 items-center justify-center">
             <Text className="text-gray-500">
