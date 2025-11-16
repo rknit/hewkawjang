@@ -988,6 +988,374 @@ components:
         success:
           type: boolean
           example: true
+    RestaurantSearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Search term for restaurant name or description
+          example: Thai restaurant
+        province:
+          type: string
+          description: Filter by province
+          example: Bangkok
+        priceRange:
+          type: object
+          properties:
+            min:
+              type: integer
+              example: 0
+            max:
+              type: integer
+              example: 1000
+        cuisineTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - Thai
+              - Chinese
+              - Japanese
+              - Korean
+              - Western
+              - Seafood
+              - Vegetarian
+              - Vegan
+              - Halal
+              - Bakery
+              - Cafe
+              - Buffet
+              - BBQ
+              - Steakhouse
+              - Fast Food
+              - Indian
+              - Italian
+              - Other
+          example:
+            - Thai
+            - Japanese
+        minRating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 5
+          example: 4
+        sortBy:
+          type: object
+          properties:
+            field:
+              type: string
+              enum:
+                - rating
+                - price
+                - name
+              example: rating
+            order:
+              type: string
+              enum:
+                - asc
+                - desc
+              example: desc
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+        limit:
+          type: integer
+          minimum: 1
+          default: 20
+    RestaurantSearchResponse:
+      type: object
+      properties:
+        restaurants:
+          type: array
+          items:
+            $ref: "#/components/schemas/Restaurant"
+        total:
+          type: integer
+          description: Total number of matching restaurants
+          example: 150
+        hasMore:
+          type: boolean
+          description: Whether there are more results available
+          example: true
+        searchParams:
+          $ref: "#/components/schemas/RestaurantSearchRequest"
+    CreateRestaurantRequest:
+      type: object
+      required:
+        - name
+        - phoneNo
+        - cuisineType
+        - paymentMethod
+        - reservationFee
+      properties:
+        name:
+          type: string
+          example: New Thai Restaurant
+        phoneNo:
+          type: string
+          example: "+66812345678"
+        address:
+          type: string
+          nullable: true
+          example: 123 Main Street
+        houseNo:
+          type: string
+          nullable: true
+        village:
+          type: string
+          nullable: true
+        building:
+          type: string
+          nullable: true
+        road:
+          type: string
+          nullable: true
+        soi:
+          type: string
+          nullable: true
+        subDistrict:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        cuisineType:
+          type: string
+          enum:
+            - Thai
+            - Chinese
+            - Japanese
+            - Korean
+            - Western
+            - Seafood
+            - Vegetarian
+            - Vegan
+            - Halal
+            - Bakery
+            - Cafe
+            - Buffet
+            - BBQ
+            - Steakhouse
+            - Fast Food
+            - Indian
+            - Italian
+            - Other
+        priceRange:
+          type: integer
+          nullable: true
+        paymentMethod:
+          type: string
+          enum:
+            - MasterCard
+            - Visa
+            - HewkawjangWallet
+            - PromptPay
+        images:
+          type: array
+          items:
+            type: string
+          nullable: true
+        reservationFee:
+          type: integer
+    CreateRestaurantResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Restaurant submitted successfully
+        id:
+          type: integer
+          example: 42
+    UpdateRestaurantRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Restaurant ID to update
+        name:
+          type: string
+        phoneNo:
+          type: string
+        address:
+          type: string
+          nullable: true
+        houseNo:
+          type: string
+          nullable: true
+        village:
+          type: string
+          nullable: true
+        building:
+          type: string
+          nullable: true
+        road:
+          type: string
+          nullable: true
+        soi:
+          type: string
+          nullable: true
+        subDistrict:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        cuisineType:
+          type: string
+          enum:
+            - Thai
+            - Chinese
+            - Japanese
+            - Korean
+            - Western
+            - Seafood
+            - Vegetarian
+            - Vegan
+            - Halal
+            - Bakery
+            - Cafe
+            - Buffet
+            - BBQ
+            - Steakhouse
+            - Fast Food
+            - Indian
+            - Italian
+            - Other
+        priceRange:
+          type: integer
+          nullable: true
+        paymentMethod:
+          type: string
+          enum:
+            - MasterCard
+            - Visa
+            - HewkawjangWallet
+            - PromptPay
+        images:
+          type: array
+          items:
+            type: string
+          nullable: true
+        reservationFee:
+          type: integer
+    RestaurantActivationRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          example: active
+    RestaurantActivationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Restaurant activated successfully
+        restaurant:
+          $ref: "#/components/schemas/Restaurant"
+    RestaurantStatusRequest:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: integer
+          description: Restaurant ID
+        status:
+          type: string
+          enum:
+            - open
+            - closed
+          example: open
+    RestaurantHours:
+      type: object
+      properties:
+        id:
+          type: integer
+        restaurantId:
+          type: integer
+        dayOfWeek:
+          type: string
+          enum:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+            - Saturday
+            - Sunday
+          example: Monday
+        openTime:
+          type: string
+          format: time
+          example: 09:00:00
+        closeTime:
+          type: string
+          format: time
+          example: 22:00:00
+        isClosed:
+          type: boolean
+          example: false
+    DaysOffRequest:
+      type: object
+      required:
+        - dates
+      properties:
+        dates:
+          type: array
+          items:
+            type: string
+            format: date
+          example:
+            - 2025-11-15
+            - 2025-12-25
+    DaysOffResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Days off created successfully
+        restaurant_id:
+          type: integer
+        dates:
+          type: array
+          items:
+            type: string
+            format: date
+    DaysOffData:
+      type: object
+      properties:
+        daysOff:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              restaurantId:
+                type: integer
+              date:
+                type: string
+                format: date
   securitySchemes:
     bearerAuth:
       type: http
@@ -2168,6 +2536,608 @@ paths:
           description: Invalid reservation ID
         "401":
           $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/:
+    get:
+      summary: Get restaurants by IDs (optional filter)
+      tags:
+        - Restaurant
+      parameters:
+        - name: ids
+          in: query
+          description: Comma-separated list of restaurant IDs to fetch
+          schema:
+            type: string
+            example: 1,2,3
+      responses:
+        "200":
+          description: Successfully retrieved restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: Update restaurant information (owner only)
+      tags:
+        - Restaurant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRestaurantRequest"
+      responses:
+        "200":
+          description: Restaurant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurant"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create a new restaurant (owner only)
+      description: Submit a new restaurant for creation. Owner ID is automatically set
+        from authentication.
+      tags:
+        - Restaurant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRestaurantRequest"
+      responses:
+        "201":
+          description: Restaurant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateRestaurantResponse"
+        "400":
+          description: Invalid request data or missing required fields
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/top-rated:
+    get:
+      summary: Get top-rated restaurants
+      tags:
+        - Restaurant
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of restaurants to return
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          description: Number of restaurants to skip
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        "200":
+          description: Successfully retrieved top-rated restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+        "400":
+          description: Invalid limit or offset parameter
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/owner/{ownerId}:
+    get:
+      summary: Get restaurants by owner ID
+      tags:
+        - Restaurant
+      parameters:
+        - name: ownerId
+          in: path
+          required: true
+          description: ID of the restaurant owner
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved owner's restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+        "400":
+          description: Invalid owner ID
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/my-reservations:
+    get:
+      summary: Get reservations for owner's restaurant (owner only)
+      description: Allows restaurant owners to view all reservations for their
+        restaurant with filtering options
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+        - name: status
+          in: query
+          description: Filter by reservation status (can be comma-separated)
+          schema:
+            type: string
+            example: confirmed,completed
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+        "400":
+          description: Invalid restaurant ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        "404":
+          description: Restaurant not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/reservations:
+    get:
+      summary: Get public reservations for a restaurant
+      description: Public endpoint to view reservations for a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+        - name: status
+          in: query
+          description: Filter by reservation status (can be comma-separated)
+          schema:
+            type: string
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+        "400":
+          description: Invalid restaurant ID
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/reviews:
+    get:
+      summary: Get all reviews for a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved restaurant reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+        "400":
+          description: Invalid restaurant ID
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/update/status:
+    put:
+      summary: Update restaurant status (open/closed)
+      tags:
+        - Restaurant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantStatusRequest"
+      responses:
+        "200":
+          description: Restaurant status updated successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/search:
+    post:
+      summary: Advanced restaurant search with filters
+      description: Search for restaurants with multiple filter criteria including
+        query text, province, price range, cuisine types, minimum rating, and
+        sorting options
+      tags:
+        - Restaurant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantSearchRequest"
+      responses:
+        "200":
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantSearchResponse"
+        "400":
+          description: Invalid search parameters (e.g., invalid sort field or order,
+            invalid offset/limit)
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/activation:
+    patch:
+      summary: Activate or deactivate a restaurant (owner only)
+      description: Change restaurant activation status. Deactivating will
+        automatically cancel all active reservations.
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantActivationRequest"
+      responses:
+        "200":
+          description: Restaurant activation status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantActivationResponse"
+        "400":
+          description: Invalid restaurant ID or status value
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        "404":
+          description: Restaurant not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}:
+    delete:
+      summary: Delete a restaurant (owner only)
+      description: Soft delete a restaurant. Only the owner can delete their restaurant.
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Restaurant deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Restaurant deleted successfully
+        "400":
+          description: Invalid restaurant ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        "404":
+          description: Restaurant not found
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/reviews/filter:
+    get:
+      summary: Get filtered reviews for a restaurant by rating range
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+        - name: minRating
+          in: query
+          description: Minimum rating filter
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            maximum: 5
+        - name: maxRating
+          in: query
+          description: Maximum rating filter
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            maximum: 5
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+      responses:
+        "200":
+          description: Successfully retrieved filtered reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+        "400":
+          description: Invalid restaurant ID
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/createDaysOff:
+    post:
+      summary: Create days off for a restaurant (owner only)
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DaysOffRequest"
+      responses:
+        "201":
+          description: Days off created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DaysOffResponse"
+        "400":
+          description: Missing or invalid dates array
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/updateDaysOff:
+    put:
+      summary: Update days off for a restaurant (owner only)
+      description: Replace existing days off with a new list of dates
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DaysOffRequest"
+      responses:
+        "200":
+          description: Days off updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DaysOffResponse"
+        "400":
+          description: Missing or invalid dates array
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/daysOff:
+    get:
+      summary: Get days off for a restaurant (owner only)
+      description: Retrieve list of days off for a restaurant within an optional date range
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+        - name: startDate
+          in: query
+          description: Start date for filtering (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date for filtering (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved days off
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DaysOffData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/report:
+    post:
+      summary: Report a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Restaurant reported successfully
+        "400":
+          description: Invalid restaurant ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/reviews/{reviewId}/report:
+    post:
+      summary: Report a review
+      tags:
+        - Restaurant
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          description: ID of the review to report
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Review reported successfully
+        "400":
+          description: Invalid review ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+  /restaurants/{id}/hours:
+    get:
+      summary: Get operating hours for a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      responses:
+        "200":
+          description: Successfully retrieved restaurant hours
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RestaurantHours"
+        "400":
+          description: Invalid restaurant ID
+        5XX:
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: Update operating hours for a restaurant (owner only)
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: "#/components/parameters/restaurantId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RestaurantHours"
+      responses:
+        "200":
+          description: Restaurant hours updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RestaurantHours"
+        "400":
+          description: Invalid restaurant ID
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: User is not the owner of this restaurant
+        "404":
+          description: Restaurant not found
         5XX:
           $ref: "#/components/responses/InternalServerError"
   /users/me:

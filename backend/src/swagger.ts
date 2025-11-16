@@ -1260,6 +1260,454 @@ function schemas() {
         },
       },
     },
+    RestaurantSearchRequest: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search term for restaurant name or description',
+          example: 'Thai restaurant',
+        },
+        province: {
+          type: 'string',
+          description: 'Filter by province',
+          example: 'Bangkok',
+        },
+        priceRange: {
+          type: 'object',
+          properties: {
+            min: {
+              type: 'integer',
+              example: 0,
+            },
+            max: {
+              type: 'integer',
+              example: 1000,
+            },
+          },
+        },
+        cuisineTypes: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: [
+              'Thai',
+              'Chinese',
+              'Japanese',
+              'Korean',
+              'Western',
+              'Seafood',
+              'Vegetarian',
+              'Vegan',
+              'Halal',
+              'Bakery',
+              'Cafe',
+              'Buffet',
+              'BBQ',
+              'Steakhouse',
+              'Fast Food',
+              'Indian',
+              'Italian',
+              'Other',
+            ],
+          },
+          example: ['Thai', 'Japanese'],
+        },
+        minRating: {
+          type: 'number',
+          format: 'double',
+          minimum: 0,
+          maximum: 5,
+          example: 4.0,
+        },
+        sortBy: {
+          type: 'object',
+          properties: {
+            field: {
+              type: 'string',
+              enum: ['rating', 'price', 'name'],
+              example: 'rating',
+            },
+            order: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              example: 'desc',
+            },
+          },
+        },
+        offset: {
+          type: 'integer',
+          minimum: 0,
+          default: 0,
+        },
+        limit: {
+          type: 'integer',
+          minimum: 1,
+          default: 20,
+        },
+      },
+    },
+    RestaurantSearchResponse: {
+      type: 'object',
+      properties: {
+        restaurants: {
+          type: 'array',
+          items: {
+            $ref: '#/components/schemas/Restaurant',
+          },
+        },
+        total: {
+          type: 'integer',
+          description: 'Total number of matching restaurants',
+          example: 150,
+        },
+        hasMore: {
+          type: 'boolean',
+          description: 'Whether there are more results available',
+          example: true,
+        },
+        searchParams: {
+          $ref: '#/components/schemas/RestaurantSearchRequest',
+        },
+      },
+    },
+    CreateRestaurantRequest: {
+      type: 'object',
+      required: ['name', 'phoneNo', 'cuisineType', 'paymentMethod', 'reservationFee'],
+      properties: {
+        name: {
+          type: 'string',
+          example: 'New Thai Restaurant',
+        },
+        phoneNo: {
+          type: 'string',
+          example: '+66812345678',
+        },
+        address: {
+          type: 'string',
+          nullable: true,
+          example: '123 Main Street',
+        },
+        houseNo: {
+          type: 'string',
+          nullable: true,
+        },
+        village: {
+          type: 'string',
+          nullable: true,
+        },
+        building: {
+          type: 'string',
+          nullable: true,
+        },
+        road: {
+          type: 'string',
+          nullable: true,
+        },
+        soi: {
+          type: 'string',
+          nullable: true,
+        },
+        subDistrict: {
+          type: 'string',
+          nullable: true,
+        },
+        district: {
+          type: 'string',
+          nullable: true,
+        },
+        province: {
+          type: 'string',
+          nullable: true,
+        },
+        postalCode: {
+          type: 'string',
+          nullable: true,
+        },
+        cuisineType: {
+          type: 'string',
+          enum: [
+            'Thai',
+            'Chinese',
+            'Japanese',
+            'Korean',
+            'Western',
+            'Seafood',
+            'Vegetarian',
+            'Vegan',
+            'Halal',
+            'Bakery',
+            'Cafe',
+            'Buffet',
+            'BBQ',
+            'Steakhouse',
+            'Fast Food',
+            'Indian',
+            'Italian',
+            'Other',
+          ],
+        },
+        priceRange: {
+          type: 'integer',
+          nullable: true,
+        },
+        paymentMethod: {
+          type: 'string',
+          enum: ['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay'],
+        },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          nullable: true,
+        },
+        reservationFee: {
+          type: 'integer',
+        },
+      },
+    },
+    CreateRestaurantResponse: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Restaurant submitted successfully',
+        },
+        id: {
+          type: 'integer',
+          example: 42,
+        },
+      },
+    },
+    UpdateRestaurantRequest: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          description: 'Restaurant ID to update',
+        },
+        name: {
+          type: 'string',
+        },
+        phoneNo: {
+          type: 'string',
+        },
+        address: {
+          type: 'string',
+          nullable: true,
+        },
+        houseNo: {
+          type: 'string',
+          nullable: true,
+        },
+        village: {
+          type: 'string',
+          nullable: true,
+        },
+        building: {
+          type: 'string',
+          nullable: true,
+        },
+        road: {
+          type: 'string',
+          nullable: true,
+        },
+        soi: {
+          type: 'string',
+          nullable: true,
+        },
+        subDistrict: {
+          type: 'string',
+          nullable: true,
+        },
+        district: {
+          type: 'string',
+          nullable: true,
+        },
+        province: {
+          type: 'string',
+          nullable: true,
+        },
+        postalCode: {
+          type: 'string',
+          nullable: true,
+        },
+        cuisineType: {
+          type: 'string',
+          enum: [
+            'Thai',
+            'Chinese',
+            'Japanese',
+            'Korean',
+            'Western',
+            'Seafood',
+            'Vegetarian',
+            'Vegan',
+            'Halal',
+            'Bakery',
+            'Cafe',
+            'Buffet',
+            'BBQ',
+            'Steakhouse',
+            'Fast Food',
+            'Indian',
+            'Italian',
+            'Other',
+          ],
+        },
+        priceRange: {
+          type: 'integer',
+          nullable: true,
+        },
+        paymentMethod: {
+          type: 'string',
+          enum: ['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay'],
+        },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          nullable: true,
+        },
+        reservationFee: {
+          type: 'integer',
+        },
+      },
+    },
+    RestaurantActivationRequest: {
+      type: 'object',
+      required: ['status'],
+      properties: {
+        status: {
+          type: 'string',
+          enum: ['active', 'inactive'],
+          example: 'active',
+        },
+      },
+    },
+    RestaurantActivationResponse: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Restaurant activated successfully',
+        },
+        restaurant: {
+          $ref: '#/components/schemas/Restaurant',
+        },
+      },
+    },
+    RestaurantStatusRequest: {
+      type: 'object',
+      required: ['id', 'status'],
+      properties: {
+        id: {
+          type: 'integer',
+          description: 'Restaurant ID',
+        },
+        status: {
+          type: 'string',
+          enum: ['open', 'closed'],
+          example: 'open',
+        },
+      },
+    },
+    RestaurantHours: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+        },
+        restaurantId: {
+          type: 'integer',
+        },
+        dayOfWeek: {
+          type: 'string',
+          enum: [
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+            'Sunday',
+          ],
+          example: 'Monday',
+        },
+        openTime: {
+          type: 'string',
+          format: 'time',
+          example: '09:00:00',
+        },
+        closeTime: {
+          type: 'string',
+          format: 'time',
+          example: '22:00:00',
+        },
+        isClosed: {
+          type: 'boolean',
+          example: false,
+        },
+      },
+    },
+    DaysOffRequest: {
+      type: 'object',
+      required: ['dates'],
+      properties: {
+        dates: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'date',
+          },
+          example: ['2025-11-15', '2025-12-25'],
+        },
+      },
+    },
+    DaysOffResponse: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Days off created successfully',
+        },
+        restaurant_id: {
+          type: 'integer',
+        },
+        dates: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'date',
+          },
+        },
+      },
+    },
+    DaysOffData: {
+      type: 'object',
+      properties: {
+        daysOff: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: {
+                type: 'integer',
+              },
+              restaurantId: {
+                type: 'integer',
+              },
+              date: {
+                type: 'string',
+                format: 'date',
+              },
+            },
+          },
+        },
+      },
+    },
   };
 }
 

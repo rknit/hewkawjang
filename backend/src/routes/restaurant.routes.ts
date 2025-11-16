@@ -12,6 +12,32 @@ import ReportService from '../service/report.service';
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /restaurants/:
+ *   get:
+ *     summary: Get restaurants by IDs (optional filter)
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - name: ids
+ *         in: query
+ *         description: Comma-separated list of restaurant IDs to fetch
+ *         schema:
+ *           type: string
+ *           example: '1,2,3'
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Restaurant'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/', async (req, res) => {
   const querySchema = z.object({
     ids: z
@@ -30,6 +56,40 @@ router.get('/', async (req, res) => {
   res.json(restaurants);
 });
 
+/**
+ * @openapi
+ * /restaurants/top-rated:
+ *   get:
+ *     summary: Get top-rated restaurants
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - name: limit
+ *         in: query
+ *         description: Maximum number of restaurants to return
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - name: offset
+ *         in: query
+ *         description: Number of restaurants to skip
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved top-rated restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Restaurant'
+ *       400:
+ *         description: Invalid limit or offset parameter
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/top-rated', async (req, res) => {
   const limit = req.query.limit ? Number(req.query.limit) : undefined;
   const offset = req.query.offset ? Number(req.query.offset) : undefined;
@@ -47,6 +107,44 @@ router.get('/top-rated', async (req, res) => {
   res.json(restaurants);
 });
 
+/**
+ * @openapi
+ * /restaurants/owner/{ownerId}:
+ *   get:
+ *     summary: Get restaurants by owner ID
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - name: ownerId
+ *         in: path
+ *         required: true
+ *         description: ID of the restaurant owner
+ *         schema:
+ *           type: integer
+ *       - name: offset
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved owner's restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Restaurant'
+ *       400:
+ *         description: Invalid owner ID
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/owner/:ownerId', async (req, res) => {
   const ownerId = Number(req.params.ownerId);
   const offset = req.query.offset ? Number(req.query.offset) : undefined;
@@ -65,6 +163,54 @@ router.get('/owner/:ownerId', async (req, res) => {
   res.json(restaurants);
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/my-reservations:
+ *   get:
+ *     summary: Get reservations for owner's restaurant (owner only)
+ *     description: Allows restaurant owners to view all reservations for their restaurant with filtering options
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *       - name: status
+ *         in: query
+ *         description: Filter by reservation status (can be comma-separated)
+ *         schema:
+ *           type: string
+ *           example: 'confirmed,completed'
+ *       - name: offset
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved reservations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       404:
+ *         description: Restaurant not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // Owner-facing: list reservations for a restaurant (owner only)
 router.get('/:id/my-reservations', authHandler, async (req, res, next) => {
   try {
@@ -113,6 +259,45 @@ router.get('/:id/my-reservations', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/reservations:
+ *   get:
+ *     summary: Get public reservations for a restaurant
+ *     description: Public endpoint to view reservations for a restaurant
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *       - name: status
+ *         in: query
+ *         description: Filter by reservation status (can be comma-separated)
+ *         schema:
+ *           type: string
+ *       - name: offset
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved reservations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Reservation'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // Public/user-facing: list reservations for a restaurant
 router.get('/:id/reservations', async (req, res, next) => {
   try {
@@ -147,6 +332,39 @@ router.get('/:id/reservations', async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/reviews:
+ *   get:
+ *     summary: Get all reviews for a restaurant
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *       - name: offset
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved restaurant reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Review'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // Public: list all reviews for a restaurant
 router.get('/:id/reviews', async (req, res, next) => {
   try {
@@ -170,16 +388,61 @@ router.get('/:id/reviews', async (req, res, next) => {
   }
 });
 
-router.get('/reject', authHandler, async (req, res) => {
-  await RestaurantService.rejectReservation(req.body.id);
-  res.status(200).send();
-});
-
+/**
+ * @openapi
+ * /restaurants/update/status:
+ *   put:
+ *     summary: Update restaurant status (open/closed)
+ *     tags:
+ *       - Restaurant
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RestaurantStatusRequest'
+ *     responses:
+ *       200:
+ *         description: Restaurant status updated successfully
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.put('/update/status', authHandler, async (req, res) => {
   await RestaurantService.updateRestaurantStatus(req.body.id, req.body.status);
   res.status(200).send();
 });
 
+/**
+ * @openapi
+ * /restaurants/:
+ *   put:
+ *     summary: Update restaurant information (owner only)
+ *     tags:
+ *       - Restaurant
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateRestaurantRequest'
+ *     responses:
+ *       200:
+ *         description: Restaurant updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Restaurant'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.put('/', authHandler, async (req, res) => {
   if (req.body) {
     req.body.ownerId = req.userAuthPayload!.userId; // from auth middleware
@@ -189,6 +452,36 @@ router.put('/', authHandler, async (req, res) => {
   res.status(200).json(updated);
 });
 
+/**
+ * @openapi
+ * /restaurants/:
+ *   post:
+ *     summary: Create a new restaurant (owner only)
+ *     description: Submit a new restaurant for creation. Owner ID is automatically set from authentication.
+ *     tags:
+ *       - Restaurant
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateRestaurantRequest'
+ *     responses:
+ *       201:
+ *         description: Restaurant created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateRestaurantResponse'
+ *       400:
+ *         description: Invalid request data or missing required fields
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/', authHandler, async (req, res, next) => {
   try {
     if (req.body) {
@@ -214,6 +507,32 @@ router.post('/', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/search:
+ *   post:
+ *     summary: Advanced restaurant search with filters
+ *     description: Search for restaurants with multiple filter criteria including query text, province, price range, cuisine types, minimum rating, and sorting options
+ *     tags:
+ *       - Restaurant
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RestaurantSearchRequest'
+ *     responses:
+ *       200:
+ *         description: Search completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RestaurantSearchResponse'
+ *       400:
+ *         description: Invalid search parameters (e.g., invalid sort field or order, invalid offset/limit)
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/search', async (req, res, next) => {
   try {
     const {
@@ -277,6 +596,42 @@ router.post('/search', async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/activation:
+ *   patch:
+ *     summary: Activate or deactivate a restaurant (owner only)
+ *     description: Change restaurant activation status. Deactivating will automatically cancel all active reservations.
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RestaurantActivationRequest'
+ *     responses:
+ *       200:
+ *         description: Restaurant activation status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RestaurantActivationResponse'
+ *       400:
+ *         description: Invalid restaurant ID or status value
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       404:
+ *         description: Restaurant not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.patch('/:id/activation', authHandler, async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
@@ -330,6 +685,40 @@ router.patch('/:id/activation', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}:
+ *   delete:
+ *     summary: Delete a restaurant (owner only)
+ *     description: Soft delete a restaurant. Only the owner can delete their restaurant.
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Restaurant deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Restaurant deleted successfully'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       404:
+ *         description: Restaurant not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.delete('/:id', authHandler, async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
@@ -356,6 +745,57 @@ router.delete('/:id', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/reviews/filter:
+ *   get:
+ *     summary: Get filtered reviews for a restaurant by rating range
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *       - name: minRating
+ *         in: query
+ *         description: Minimum rating filter
+ *         schema:
+ *           type: number
+ *           format: double
+ *           minimum: 0
+ *           maximum: 5
+ *       - name: maxRating
+ *         in: query
+ *         description: Maximum rating filter
+ *         schema:
+ *           type: number
+ *           format: double
+ *           minimum: 0
+ *           maximum: 5
+ *       - name: offset
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved filtered reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Review'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // /restaurants/:id/reviews/filter?minRating=3&maxRating=5
 router.get('/:id/reviews/filter', async (req, res, next) => {
   try {
@@ -385,6 +825,39 @@ router.get('/:id/reviews/filter', async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/createDaysOff:
+ *   post:
+ *     summary: Create days off for a restaurant (owner only)
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/DaysOffRequest'
+ *     responses:
+ *       201:
+ *         description: Days off created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DaysOffResponse'
+ *       400:
+ *         description: Missing or invalid dates array
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/:id/createDaysOff', authHandler, async (req, res, next) => {
   const userId = (req as any).userAuthPayload?.userId;
   try {
@@ -415,6 +888,40 @@ router.post('/:id/createDaysOff', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/updateDaysOff:
+ *   put:
+ *     summary: Update days off for a restaurant (owner only)
+ *     description: Replace existing days off with a new list of dates
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/DaysOffRequest'
+ *     responses:
+ *       200:
+ *         description: Days off updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DaysOffResponse'
+ *       400:
+ *         description: Missing or invalid dates array
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // update days off with restaurant id and array of dates
 router.put('/:id/updateDaysOff', authHandler, async (req, res, next) => {
   const userId = (req as any).userAuthPayload?.userId;
@@ -443,6 +950,44 @@ router.put('/:id/updateDaysOff', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/daysOff:
+ *   get:
+ *     summary: Get days off for a restaurant (owner only)
+ *     description: Retrieve list of days off for a restaurant within an optional date range
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *       - name: startDate
+ *         in: query
+ *         description: Start date for filtering (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         description: End date for filtering (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved days off
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DaysOffData'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/:id/daysOff', authHandler, async (req, res, next) => {
   const userId = (req as any).userAuthPayload?.userId;
   try {
@@ -465,6 +1010,27 @@ router.get('/:id/daysOff', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/report:
+ *   post:
+ *     summary: Report a restaurant
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Restaurant reported successfully
+ *       400:
+ *         description: Invalid restaurant ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/:id/report', authHandler, async (req, res) => {
   const restaurantId = Number(req.params.id);
   if (isNaN(restaurantId)) {
@@ -481,6 +1047,32 @@ router.post('/:id/report', authHandler, async (req, res) => {
   res.sendStatus(201);
 });
 
+/**
+ * @openapi
+ * /restaurants/reviews/{reviewId}/report:
+ *   post:
+ *     summary: Report a review
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - name: reviewId
+ *         in: path
+ *         required: true
+ *         description: ID of the review to report
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Review reported successfully
+ *       400:
+ *         description: Invalid review ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/reviews/:reviewId/report', authHandler, async (req, res) => {
   const reviewId = Number(req.params.reviewId);
   if (isNaN(reviewId)) {
@@ -497,6 +1089,29 @@ router.post('/reviews/:reviewId/report', authHandler, async (req, res) => {
   res.sendStatus(201);
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/hours:
+ *   get:
+ *     summary: Get operating hours for a restaurant
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved restaurant hours
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/RestaurantHours'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/:id/hours', async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
@@ -510,6 +1125,45 @@ router.get('/:id/hours', async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /restaurants/{id}/hours:
+ *   put:
+ *     summary: Update operating hours for a restaurant (owner only)
+ *     tags:
+ *       - Restaurant
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/RestaurantHours'
+ *     responses:
+ *       200:
+ *         description: Restaurant hours updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/RestaurantHours'
+ *       400:
+ *         description: Invalid restaurant ID
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         description: User is not the owner of this restaurant
+ *       404:
+ *         description: Restaurant not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.put('/:id/hours', authHandler, async (req, res, next) => {
   try {
     const restaurantId = Number(req.params.id);
