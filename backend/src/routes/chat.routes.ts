@@ -9,11 +9,147 @@ import { adminRoleHandler, authHandler } from '../middleware/auth.middleware';
 const router = express.Router();
 
 /**
- * USER CHAT ROUTES
+ * @openapi
+ * /chat/user/{userId}:
+ *   get:
+ *     summary: Get all chat channels for a specific user
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user chats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Chat'
+ *       500:
+ *         description: Failed to get user chats
  */
+router.get('/user/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const chats = await ChatService.getChatsByUser(Number(userId));
+    res.json(chats);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to get user chats', error: err });
+  }
+});
 
-// 1) Messages routes FIRST (no inline regex)
-router.get('/user/messages/:chatId', async (req, res) => {
+/**
+ * @openapi
+ * /chat/all/{userId}:
+ *   get:
+ *     summary: Get all chats where user is either a customer or restaurant owner
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all chats for user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ChatWithDetails'
+ *       500:
+ *         description: Failed to fetch all chats
+ */
+router.get('/all/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const chats = await ChatService.getChatsForUserOrOwner(Number(userId));
+    res.json(chats);
+  } catch (err: any) {
+    console.error('Error fetching combined chats:', err);
+    const detail = err?.cause?.detail ?? err?.message;
+    res.status(500).json({
+      message: 'Failed to fetch all chats',
+      error: detail ?? String(err),
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /chat/{restaurantId}:
+ *   post:
+ *     summary: Create or find chat between user and restaurant
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - $ref: '#/components/parameters/restaurantId'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateChatRequest'
+ *     responses:
+ *       200:
+ *         description: Successfully created or found chat
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Chat'
+ *       500:
+ *         description: Failed to create or find chat
+ */
+router.post('/:restaurantId', async (req, res) => {
+  const { restaurantId } = req.params;
+  const { userId } = req.body;
+  try {
+    const chat = await ChatService.findOrCreateChat(
+      Number(userId),
+      Number(restaurantId),
+    );
+    res.json(chat);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: 'Failed to create or find chat', error: err });
+  }
+});
+
+/**
+ * @openapi
+ * /chat/{chatId}/messages:
+ *   get:
+ *     summary: Get messages of a chat
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - $ref: '#/components/parameters/chatId'
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved chat messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Chat not found
+ *       500:
+ *         description: Failed to fetch messages
+ */
+router.get('/:chatId/messages', async (req, res) => {
   const { chatId } = req.params;
   const cid = Number(chatId);
   if (!Number.isFinite(cid))
@@ -37,6 +173,31 @@ router.get('/user/messages/:chatId', async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /chat/user/messages:
+ *   post:
+ *     summary: Send a message in a chat
+ *     tags:
+ *       - Chat
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SendMessageRequest'
+ *     responses:
+ *       200:
+ *         description: Message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Invalid request - missing senderId or chat not found
+ *       500:
+ *         description: Failed to send message
+ */
 router.post('/user/messages', async (req, res) => {
   const { chatId, senderId, text, imgURL } = req.body;
   const cid = Number(chatId);
@@ -94,44 +255,35 @@ router.get('/user/all/:userId', async (req, res) => {
   }
 });
 
-// 3) Legacy get chats by userId
-router.get('/user/:userId', async (req, res) => {
-  const uid = Number(req.params.userId);
-  if (!Number.isFinite(uid))
-    return res.status(400).json({ message: 'userId must be a number' });
-
-  try {
-    const chats = await ChatService.getChatsByUser(uid);
-    res.json(chats);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to get user chats', error: err });
-  }
-});
-
-// 4) Create/find chat by restaurant (must come AFTER the above)
-router.post('/user/:restaurantId', async (req, res) => {
-  const rid = Number(req.params.restaurantId);
-  const uid = Number(req.body.userId);
-  if (!Number.isFinite(uid) || !Number.isFinite(rid)) {
-    return res.status(400).json({
-      message: 'userId and restaurantId must be valid integers',
-      userId: req.body.userId,
-      restaurantId: req.params.restaurantId,
-    });
-  }
-
-  try {
-    const chat = await ChatService.findOrCreateChat(uid, rid);
-    res.json(chat);
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: 'Failed to create or find chat', error: err });
-  }
-});
-
 /**
- * ADMIN CHAT ROUTES (unchanged)
+ * @openapi
+ * /chat/admin/{adminId}:
+ *   get:
+ *     summary: Get all admin chats for a specific admin
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - name: adminId
+ *         in: path
+ *         required: true
+ *         description: ID of the admin
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved admin chats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ChatAdmin'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       500:
+ *         description: Failed to get admin chats
  */
 router.get(
   '/admin/:adminId',
@@ -150,6 +302,31 @@ router.get(
   },
 );
 
+/**
+ * @openapi
+ * /chat/admin/messages/{chatAdminId}:
+ *   get:
+ *     summary: Get messages in an admin chat
+ *     tags:
+ *       - Chat
+ *     parameters:
+ *       - $ref: '#/components/parameters/chatAdminId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved admin chat messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/AdminMessage'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       500:
+ *         description: Failed to get admin chat messages
+ */
 router.get(
   '/admin/messages/:chatAdminId',
   authHandler,
@@ -169,6 +346,35 @@ router.get(
   },
 );
 
+/**
+ * @openapi
+ * /chat/admin/messages:
+ *   post:
+ *     summary: Send a message in an admin chat
+ *     tags:
+ *       - Chat
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SendAdminMessageRequest'
+ *     responses:
+ *       201:
+ *         description: Admin message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AdminMessage'
+ *       400:
+ *         description: Missing required fields (chatAdminId, adminId, or senderRole)
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       500:
+ *         description: Failed to create admin message
+ */
 router.post(
   '/admin/messages',
   authHandler,

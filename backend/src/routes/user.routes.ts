@@ -13,19 +13,31 @@ import { and, eq } from 'drizzle-orm';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-interface MulterRequest extends Request {
-  file?: Express.Multer.File;
-}
-
 const router = express.Router();
 
-// GET /users - Get all users (not recommended to expose publicly)
-router.get('/', async (req: Request, res: Response) => {
-  const users = await UserService.getUsers(req.body);
-  res.json(users);
-});
-
-// GET /users/me - Get authenticated user profile
+/**
+ * @openapi
+ * /users/me:
+ *   get:
+ *     summary: Get authenticated user profile
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         description: User not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/me', authHandler, async (req: Request, res: Response) => {
   const userId = req.userAuthPayload?.userId;
 
@@ -42,30 +54,84 @@ router.get('/me', authHandler, async (req: Request, res: Response) => {
   res.json(user);
 });
 
-// POST /users/register - Send OTP to email
+/**
+ * @openapi
+ * /users/register:
+ *   post:
+ *     summary: Send OTP to email for user registration
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterRequest'
+ *     responses:
+ *       201:
+ *         description: OTP sent successfully to email
+ *       400:
+ *         description: Invalid email address
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/register', async (req: Request, res: Response) => {
   await MailerService.sendOTP(req.body.email);
   res.status(201).send();
 });
 
-// POST /users/verify - Register user with OTP
+/**
+ * @openapi
+ * /users/verify:
+ *   post:
+ *     summary: Register user with OTP verification
+ *     tags:
+ *       - User
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyUserRequest'
+ *     responses:
+ *       201:
+ *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid OTP or registration data
+ *       409:
+ *         description: Email already exists
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/verify', async (req: Request, res: Response) => {
   const { otp, ...userData } = req.body;
   const newUser = await UserService.registerUser(userData, otp);
   res.status(201).json(newUser);
 });
 
-// POST /users/updateProfile - Update user profile
-router.post(
-  '/updateProfile',
-  authHandler,
-  async (req: Request, res: Response) => {
-    await UserService.updateUser(req.body);
-    res.sendStatus(200);
-  },
-);
-
-// DELETE /users/me - Soft delete authenticated user
+/**
+ * @openapi
+ * /users/me:
+ *   delete:
+ *     summary: Soft delete authenticated user account
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User account successfully soft deleted
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         description: User not found or already removed
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.delete('/me', authHandler, async (req: Request, res: Response) => {
   const userId = req.userAuthPayload?.userId;
 
@@ -81,10 +147,38 @@ router.delete('/me', authHandler, async (req: Request, res: Response) => {
       .json({ message: 'User not found or already removed' });
   }
 
-  res.json({ message: 'User soft deleted successfully' });
+  res.status(200).send();
 });
 
-// POST /users/me/reviews - Add review as authenticated user
+/**
+ * @openapi
+ * /users/me/reviews:
+ *   post:
+ *     summary: Create a review for a completed reservation
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateReviewRequest'
+ *     responses:
+ *       201:
+ *         description: Review successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateReviewResponse'
+ *       400:
+ *         description: Invalid review data
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/me/reviews',
   authHandler,
@@ -103,6 +197,27 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /users/me/reviews/{id}:
+ *   delete:
+ *     summary: Delete a review created by the authenticated user
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - $ref: '#/components/parameters/reviewId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Review successfully deleted
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         description: Review not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
   try {
     const reviewId = Number(req.params.id);
@@ -119,7 +234,7 @@ router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
     console.log('[DELETE /me/reviews/:id]', { reviewId, userId });
 
     await UserService.deleteReview(reviewId, userId);
-    return res.sendStatus(204);
+    res.status(200).send();
   } catch (error) {
     // DEBUG
     console.error('[DELETE /me/reviews/:id] error:', error);
@@ -127,6 +242,58 @@ router.delete('/me/reviews/:id', authHandler, async (req, res, next) => {
   }
 });
 
+/**
+ * @openapi
+ * /users/me/reservations:
+ *   get:
+ *     summary: Get reservations for the authenticated user
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: status
+ *         in: query
+ *         description: Filter by reservation status (can specify multiple)
+ *         schema:
+ *           oneOf:
+ *             - type: string
+ *               enum: [unconfirmed, expired, confirmed, cancelled, rejected, completed, uncompleted]
+ *             - type: array
+ *               items:
+ *                 type: string
+ *                 enum: [unconfirmed, expired, confirmed, cancelled, rejected, completed, uncompleted]
+ *       - name: offset
+ *         in: query
+ *         description: Number of reservations to skip
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *       - name: limit
+ *         in: query
+ *         description: Maximum number of reservations to return
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user reservations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ReservationWithRestaurant'
+ *       400:
+ *         description: Invalid query parameters
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get(
   '/me/reservations',
   authHandler,
@@ -155,7 +322,29 @@ router.get(
   },
 );
 
-// GET /users/:id - Public user profile by ID
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     summary: Get public user profile by ID
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - $ref: '#/components/parameters/userId'
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid user ID
+ *       404:
+ *         description: User not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get('/:id', async (req: Request, res: Response) => {
   const id = Number(req.params.id);
   if (isNaN(id)) {
@@ -170,6 +359,42 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json(user);
 });
 
+/**
+ * @openapi
+ * /users/me/uploadProfileImage:
+ *   post:
+ *     summary: Upload profile image for authenticated user
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile image file to upload
+ *     responses:
+ *       200:
+ *         description: Profile image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UploadImageResponse'
+ *       400:
+ *         description: No file uploaded or invalid file
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/me/uploadProfileImage',
   authHandler,
@@ -195,6 +420,35 @@ router.post(
   },
 );
 
+/**
+ * @openapi
+ * /users/updateProfile:
+ *   post:
+ *     summary: Update authenticated user profile
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserProfileRequest'
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid profile data
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post('/updateProfile', authHandler, async (req, res, next) => {
   try {
     const userId = req.userAuthPayload?.userId;
