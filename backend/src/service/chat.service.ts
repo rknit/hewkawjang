@@ -6,6 +6,7 @@ import {
   restaurantTable,
   chatAdminsTable,
   adminMessagesTable,
+  adminsTable,
 } from '../db/schema';
 import { eq, or, inArray, sql, and } from 'drizzle-orm';
 
@@ -16,6 +17,10 @@ class ChatService {
    */
   async findOrCreateChat(userId: number, restaurantId: number) {
     try {
+      if (!Number.isFinite(userId) || !Number.isFinite(restaurantId)) {
+        throw new Error('Invalid userId or restaurantId');
+      }
+
       console.log(
         `[ChatService] findOrCreateChat: userId=${userId}, restaurantId=${restaurantId}`,
       );
@@ -159,8 +164,10 @@ class ChatService {
           profileUrl: usersTable.profileUrl,
         })
         .from(chatAdminsTable)
-        .innerJoin(usersTable, eq(chatAdminsTable.userId, usersTable.id))
-      console.log(`[ChatService] getChatsByAdmin: found ${result.length} chats`);
+        .innerJoin(usersTable, eq(chatAdminsTable.userId, usersTable.id));
+      console.log(
+        `[ChatService] getChatsByAdmin: found ${result.length} chats`,
+      );
       return result;
     } catch (err) {
       console.error(`[ChatService] ERROR in getChatsByAdmin:`, err);
@@ -170,12 +177,16 @@ class ChatService {
 
   async getAdminChatMessages(chatAdminId: number) {
     try {
-      console.log(`[ChatService] getAdminChatMessages: chatAdminId=${chatAdminId}`);
+      console.log(
+        `[ChatService] getAdminChatMessages: chatAdminId=${chatAdminId}`,
+      );
       const result = await db
         .select()
         .from(adminMessagesTable)
         .where(eq(adminMessagesTable.chatAdminId, chatAdminId));
-      console.log(`[ChatService] getAdminChatMessages: found ${result.length} chats`);
+      console.log(
+        `[ChatService] getAdminChatMessages: found ${result.length} chats`,
+      );
       return result;
     } catch (err) {
       console.error(`[ChatService] ERROR in getAdminChatMessages:`, err);
@@ -197,7 +208,9 @@ class ChatService {
     imgURL?: string;
   }) {
     try {
-      console.log(`[ChatService] createAdminChatMessage: chatAdminId=${chatAdminId}`);
+      console.log(
+        `[ChatService] createAdminChatMessage: chatAdminId=${chatAdminId}`,
+      );
 
       const [inserted] = await db
         .insert(adminMessagesTable)
@@ -211,12 +224,34 @@ class ChatService {
         .returning();
 
       console.log(
-        `[ChatService] createAdminChatMessage: message inserted with id=${inserted.id}`
+        `[ChatService] createAdminChatMessage: message inserted with id=${inserted.id}`,
       );
 
       return inserted;
     } catch (err) {
       console.error('[ChatService] ERROR in createAdminChatMessage:', err);
+      throw err;
+    }
+  }
+
+  async getUserAdminChats(userId: number) {
+    try {
+      // Return the admin channels for a user, showing the admin's display info
+      const result = await db
+        .select({
+          chatId: chatAdminsTable.id,
+          userId: chatAdminsTable.userId,
+          adminId: chatAdminsTable.adminId,
+          displayName: adminsTable.displayName,
+          profileUrl: adminsTable.profileUrl,
+        })
+        .from(chatAdminsTable)
+        .innerJoin(adminsTable, eq(chatAdminsTable.adminId, adminsTable.id))
+        .where(eq(chatAdminsTable.userId, userId));
+
+      return result;
+    } catch (err) {
+      console.error(`[ChatService] ERROR in getUserAdminChats:`, err);
       throw err;
     }
   }

@@ -3,9 +3,12 @@ import * as z from 'zod';
 // A chat channel between user and restaurant
 export const ChatChannelSchema = z.object({
   id: z.number(),
-  restaurantName: z.string().optional().nullable(),
-  userName: z.string().optional().nullable(),
-  lastMessage: z.string().optional().nullable(),
+  userId: z.number(), // <-- add
+  restaurantId: z.number(), // <-- add
+  userName: z.string().nullable().optional(),
+  restaurantName: z.string().nullable().optional(),
+  lastMessage: z.string().nullable().optional(),
+  displayName: z.string().nullable().optional(),
 });
 export type ChatChannel = z.infer<typeof ChatChannelSchema>;
 
@@ -59,9 +62,9 @@ export const AdminChatMessageSchema = z.object({
   id: z.number(),
   chatAdminId: z.number(),
   senderId: z.number(),
-  senderRole: z.enum(['user', 'admin','restaurant']),
+  senderRole: z.enum(['user', 'admin', 'restaurant']),
   text: z.string(),
   imgURL: z.string().nullable(),
-  createdAt: z.string()
+  createdAt: z.string(),
 });
 export type AdminChatMessage = z.infer<typeof AdminChatMessageSchema>;

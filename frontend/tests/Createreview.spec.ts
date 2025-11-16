@@ -21,7 +21,7 @@ test('WriteReview', async ({ page, context }) => {
   await page.getByText('Log in').click();
   await page.getByText('My Reservation').click();
   await page.getByText('Completed').click();
-  await page.getByText('Give Rating').nth(7).click();
+  await page.getByText('Give Rating').first().click();
   await page.getByRole('img').nth(3).click();
   page.once('dialog', async (dialog) => {
     expect(dialog.message()).toBe('Review submitted successfully!');
