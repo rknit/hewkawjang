@@ -226,6 +226,38 @@ router.get(
   },
 );
 
+/**
+ * @openapi
+ * /admins/reports/review/{reportId}/handle:
+ *   post:
+ *     summary: Handle a reported review (ban or reject)
+ *     tags:
+ *       - Admin
+ *     parameters:
+ *      - $ref: '#/components/parameters/reportId'
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Action to take on the reported review
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: boolean
+ *                 description: true to ban the review, false to reject the report
+ *     responses:
+ *       204:
+ *         description: Successfully handled the reported review
+ *       400:
+ *         description: Invalid query parameters/body
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/reports/review/:reportId/handle',
   authHandler,
@@ -233,6 +265,10 @@ router.post(
   async (req, res) => {
     const { reportId } = req.params;
     const { action } = req.body; // action is a boolean: true for ban, false for reject
+
+    if (reportId === undefined) {
+      throw createHttpError.BadRequest('Report ID must be provided');
+    }
 
     if (action === undefined) {
       throw createHttpError.BadRequest('Action (true/false) must be provided');
@@ -247,7 +283,7 @@ router.post(
 
     try {
       await AdminService.handleReportedReview(parseInt(reportId, 10), action);
-      res.status(200).send('Report processed successfully');
+      res.status(204).send();
     } catch (error) {
       console.error('Error in /reports/review/:reportId/handle route:', error);
       throw createHttpError.InternalServerError(

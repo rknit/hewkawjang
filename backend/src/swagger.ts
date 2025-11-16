@@ -463,6 +463,15 @@ function parameters() {
         type: 'integer',
       },
     },
+    reportId: {
+      name: 'reportId',
+      in: 'path',
+      required: true,
+      description: 'ID of the report',
+      schema: {
+        type: 'integer',
+      },
+    },
   };
 }
 
