@@ -1,13 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-test.use({
-  headless: false,
-  viewport: { width: 1280, height: 720 },
-  launchOptions: {
-    slowMo: 10,
-  },
-});
-
 test('FilterRestaurantReviews', async ({ page }) => {
   // Login
   await page.goto('/');

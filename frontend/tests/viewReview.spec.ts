@@ -1,14 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { de } from 'zod/v4/locales';
 
-test.use({
-  headless: false,
-  viewport: { width: 1280, height: 720 },
-  launchOptions: {
-    slowMo: 1000,
-  },
-});
-
 test('ViewRestaurantReviews', async ({ page }) => {
   // Login
   await page.goto('/');
