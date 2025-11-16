@@ -11,8 +11,47 @@ interface MulterRequest extends Request {
 
 const router = express.Router();
 
-// POST /upload - Upload image to Supabase (receive id and bucket name)
-
+/**
+ * @openapi
+ * /images/upload:
+ *   post:
+ *     summary: Upload image to Supabase storage
+ *     tags:
+ *       - Image
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - file
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: General ID for the image (e.g., review ID, user ID)
+ *                 example: '123'
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file to upload
+ *               bucketName:
+ *                 type: string
+ *                 description: Supabase bucket name (defaults to 'review-images')
+ *                 example: 'review-images'
+ *     responses:
+ *       200:
+ *         description: Image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UploadImageResponse'
+ *       400:
+ *         description: No file uploaded or id not provided
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/upload',
   upload.single('file'), // Handle single file upload
@@ -24,7 +63,9 @@ router.post(
 
       // Ensure id and file are provided
       if (!id || !file) {
-        return res.status(400).json({ message: 'No file uploaded or id not provided' });
+        return res
+          .status(400)
+          .json({ message: 'No file uploaded or id not provided' });
       }
 
       // Use SupabaseService to upload the image
@@ -35,10 +76,38 @@ router.post(
     } catch (err) {
       next(err); // Pass the error to the error handler
     }
-  }
+  },
 );
 
-// POST /delete - Delete image from Supabase (receive image URL only)
+/**
+ * @openapi
+ * /images/delete:
+ *   post:
+ *     summary: Delete image from Supabase storage
+ *     tags:
+ *       - Image
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ImageDeleteRequest'
+ *     responses:
+ *       200:
+ *         description: Image deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ImageDeleteResponse'
+ *       400:
+ *         description: Missing image URL
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.post(
   '/delete',
   authHandler, // Ensure user is authenticated
@@ -57,7 +126,7 @@ router.post(
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 export default router;

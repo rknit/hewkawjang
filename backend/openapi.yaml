@@ -1,0 +1,3414 @@
+openapi: 3.0.0
+info:
+  title: HewKawJang API
+  version: 1.0.0
+  description: API documentation for the HewKawJang Restaurant Reservation system
+servers:
+  - url: http://localhost:8080
+components:
+  schemas:
+    Admin:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        phoneNo:
+          type: string
+          example: '+1234567890'
+        password:
+          type: string
+          format: password
+          example: hashed_password_string
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        profileUrl:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+        refreshToken:
+          type: string
+          nullable: true
+          example: null
+        isDeleted:
+          type: boolean
+          example: false
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        adminId:
+          type: integer
+          nullable: true
+          example: 1
+        reportType:
+          type: string
+          enum:
+            - user
+            - message
+            - review
+            - restaurant
+            - support
+          nullable: true
+          example: review
+        targetRestaurantId:
+          type: integer
+          nullable: true
+          example: 456
+        targetReviewId:
+          type: integer
+          nullable: true
+          example: 789
+        targetUserId:
+          type: integer
+          nullable: true
+          example: 321
+        targetMessageId:
+          type: integer
+          nullable: true
+          example: null
+        isSolved:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-01-15T10:30:00Z
+    Restaurant:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        ownerId:
+          type: integer
+          example: 123
+        name:
+          type: string
+          example: Delicious Thai Restaurant
+        phoneNo:
+          type: string
+          example: '+66812345678'
+        wallet:
+          type: number
+          format: double
+          example: 1500.5
+        address:
+          type: string
+          nullable: true
+          example: 123 Main Street, Bangkok
+        houseNo:
+          type: string
+          nullable: true
+          example: '123'
+        village:
+          type: string
+          nullable: true
+          example: Village Name
+        building:
+          type: string
+          nullable: true
+          example: Building Name
+        road:
+          type: string
+          nullable: true
+          example: Sukhumvit Road
+        soi:
+          type: string
+          nullable: true
+          example: Soi 11
+        subDistrict:
+          type: string
+          nullable: true
+          example: Khlong Toei Nuea
+        district:
+          type: string
+          nullable: true
+          example: Watthana
+        province:
+          type: string
+          nullable: true
+          example: Bangkok
+        postalCode:
+          type: string
+          nullable: true
+          example: '10110'
+        cuisineType:
+          type: string
+          enum:
+            - Thai
+            - Chinese
+            - Japanese
+            - Korean
+            - Western
+            - Seafood
+            - Vegetarian
+            - Vegan
+            - Halal
+            - Bakery
+            - Cafe
+            - Buffet
+            - BBQ
+            - Steakhouse
+            - Fast Food
+            - Indian
+            - Italian
+            - Other
+          example: Thai
+        priceRange:
+          type: integer
+          nullable: true
+          example: 300
+        paymentMethod:
+          type: string
+          enum:
+            - MasterCard
+            - Visa
+            - HewkawjangWallet
+            - PromptPay
+          example: HewkawjangWallet
+        status:
+          type: string
+          enum:
+            - open
+            - closed
+          example: open
+        activation:
+          type: string
+          enum:
+            - active
+            - inactive
+          example: active
+        isVerified:
+          type: boolean
+          example: true
+        isDeleted:
+          type: boolean
+          example: false
+        images:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example:
+            - https://example.com/image1.jpg
+            - https://example.com/image2.jpg
+        reservationFee:
+          type: integer
+          example: 100
+    RestaurantUnverified:
+      allOf:
+        - $ref: '#/components/schemas/Restaurant'
+        - type: object
+          properties:
+            isVerified:
+              type: boolean
+              example: false
+    ReportReview:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        adminId:
+          type: integer
+          nullable: true
+          example: 1
+        reportType:
+          type: string
+          enum:
+            - review
+          example: review
+        targetRestaurantId:
+          type: integer
+          nullable: true
+          example: 456
+        targetReviewId:
+          type: integer
+          nullable: true
+          example: 789
+        targetUserId:
+          type: integer
+          nullable: true
+          example: 321
+        targetChatId:
+          type: integer
+          nullable: true
+          example: null
+        isSolved:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-01-15T10:30:00Z
+        reviewId:
+          type: integer
+          nullable: true
+          example: 789
+        reviewRating:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+          example: 4
+        reviewComment:
+          type: string
+          nullable: true
+          example: Great food and service!
+        reviewCreatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2024-01-10T14:30:00Z
+        reviewImages:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example:
+            - https://example.com/review1.jpg
+        reviewAuthorId:
+          type: integer
+          nullable: true
+          example: 456
+        reviewAuthorName:
+          type: string
+          nullable: true
+          example: John Doe
+        userImage:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+        reviewRestaurant:
+          type: string
+          nullable: true
+          example: Delicious Thai Restaurant
+    ReportMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        reportType:
+          type: string
+          enum:
+            - message
+          example: message
+        isSolved:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-01-15T10:30:00Z
+        messageText:
+          type: string
+          nullable: true
+          example: This is an inappropriate message
+        messageImageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/message-image.jpg
+        reporterName:
+          type: string
+          nullable: true
+          example: John Doe
+        reporterImage:
+          type: string
+          nullable: true
+          example: https://example.com/reporter-profile.jpg
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: Password123!
+    TokenResponseWeb:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 15 minutes)
+          example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
+    TokenResponseMobile:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (expires in 15 minutes)
+          example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 1 day)
+          example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...
+    LogoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Logged out successfully
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        phoneNo:
+          type: string
+          example: '+66812345678'
+        balance:
+          type: number
+          format: double
+          example: 1000
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        profileUrl:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+        isDeleted:
+          type: boolean
+          example: false
+    RegisterRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+    VerifyUserRequest:
+      type: object
+      required:
+        - otp
+        - firstName
+        - lastName
+        - email
+        - phoneNo
+        - password
+      properties:
+        otp:
+          type: string
+          example: '123456'
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        phoneNo:
+          type: string
+          example: '+66812345678'
+        password:
+          type: string
+          format: password
+          example: SecurePassword123!
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        profileUrl:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+    UpdateUserProfileRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          nullable: true
+          example: John D.
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        phoneNo:
+          type: string
+          example: '+66812345678'
+        email:
+          type: string
+          format: email
+          example: user@example.com
+    CreateReviewRequest:
+      type: object
+      required:
+        - reservationId
+        - rating
+      properties:
+        reservationId:
+          type: integer
+          example: 123
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          nullable: true
+          example: Great food and excellent service!
+        attachPhotos:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example:
+            - https://example.com/photo1.jpg
+            - https://example.com/photo2.jpg
+    CreateReviewResponse:
+      type: object
+      properties:
+        reviewId:
+          type: integer
+          example: 456
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        restaurantId:
+          type: integer
+          example: 456
+        reserveAt:
+          type: string
+          format: date-time
+          example: 2025-12-25T18:00:00Z
+        reservationFee:
+          type: integer
+          nullable: true
+          example: 100
+        numberOfAdult:
+          type: integer
+          nullable: true
+          example: 2
+        numberOfChildren:
+          type: integer
+          nullable: true
+          example: 1
+        status:
+          type: string
+          enum:
+            - unconfirmed
+            - expired
+            - confirmed
+            - cancelled
+            - rejected
+            - completed
+            - uncompleted
+          example: confirmed
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-11-15T10:00:00Z
+        confirmedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: 2025-11-15T12:00:00Z
+    ReservationWithRestaurant:
+      allOf:
+        - $ref: '#/components/schemas/Reservation'
+        - type: object
+          properties:
+            restaurant:
+              $ref: '#/components/schemas/Restaurant'
+    UploadImageResponse:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+          example: https://example.com/uploads/profile123.jpg
+    ReportUpdateRequest:
+      type: object
+      properties:
+        adminId:
+          type: integer
+          nullable: true
+          example: 1
+        reportType:
+          type: string
+          enum:
+            - user
+            - message
+            - review
+            - restaurant
+            - support
+          nullable: true
+          example: message
+        targetRestaurantId:
+          type: integer
+          nullable: true
+          example: 456
+        targetReviewId:
+          type: integer
+          nullable: true
+          example: 789
+        targetUserId:
+          type: integer
+          nullable: true
+          example: 321
+        targetMessageId:
+          type: integer
+          nullable: true
+          example: 111
+        isSolved:
+          type: boolean
+          example: true
+    ImageDeleteRequest:
+      type: object
+      required:
+        - imageUrl
+      properties:
+        imageUrl:
+          type: string
+          example: https://example.com/uploads/image123.jpg
+    ImageDeleteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Image deleted successfully
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        title:
+          type: string
+          example: Reservation Confirmed
+        message:
+          type: string
+          nullable: true
+          example: Your reservation at Thai Restaurant has been confirmed
+        imageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/restaurant-image.jpg
+        reservationId:
+          type: integer
+          nullable: true
+          example: 456
+        notificationType:
+          type: string
+          enum:
+            - reservation_status
+            - chat
+            - system
+          example: reservation_status
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-11-16T10:00:00Z
+        isRead:
+          type: boolean
+          example: false
+    CreateNotificationRequest:
+      type: object
+      required:
+        - userId
+        - title
+        - message
+        - notificationType
+      properties:
+        userId:
+          type: integer
+          example: 123
+        title:
+          type: string
+          example: Reservation Confirmed
+        message:
+          type: string
+          example: Your reservation at Thai Restaurant has been confirmed
+        imageUrl:
+          type: string
+          nullable: true
+          example: https://example.com/restaurant-image.jpg
+        reservationId:
+          type: integer
+          nullable: true
+          example: 456
+        notificationType:
+          type: string
+          enum:
+            - reservation_status
+            - chat
+            - system
+          example: reservation_status
+    UnreadCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 5
+    Chat:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        restaurantId:
+          type: integer
+          example: 456
+        isBanned:
+          type: boolean
+          example: false
+    ChatWithDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        restaurantId:
+          type: integer
+          example: 456
+        userName:
+          type: string
+          nullable: true
+          example: John Doe
+        restaurantName:
+          type: string
+          nullable: true
+          example: Thai Restaurant
+        lastMessage:
+          type: string
+          nullable: true
+          example: Thanks for the reservation!
+        displayName:
+          type: string
+          example: Thai Restaurant
+    ChatAdmin:
+      type: object
+      properties:
+        chatId:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 123
+        adminId:
+          type: integer
+          example: 1
+        displayName:
+          type: string
+          example: John Doe
+        profileUrl:
+          type: string
+          nullable: true
+          example: https://example.com/profile.jpg
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        chatId:
+          type: integer
+          nullable: true
+          example: 1
+        chatAdminId:
+          type: integer
+          nullable: true
+          example: null
+        senderId:
+          type: integer
+          example: 123
+        text:
+          type: string
+          nullable: true
+          example: Hello, I have a question about my reservation
+        imgURL:
+          type: string
+          nullable: true
+          example: https://example.com/message-image.jpg
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-11-16T10:00:00Z
+    AdminMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        chatAdminId:
+          type: integer
+          example: 1
+        senderId:
+          type: integer
+          example: 1
+        senderRole:
+          type: string
+          enum:
+            - user
+            - admin
+            - restaurant
+          example: admin
+        text:
+          type: string
+          nullable: true
+          example: How can I help you?
+        imgURL:
+          type: string
+          nullable: true
+          example: https://example.com/admin-message.jpg
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-11-16T10:00:00Z
+    CreateChatRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: integer
+          example: 123
+    SendMessageRequest:
+      type: object
+      required:
+        - chatId
+        - senderId
+      properties:
+        chatId:
+          type: integer
+          example: 1
+        senderId:
+          type: integer
+          example: 123
+        text:
+          type: string
+          nullable: true
+          example: Hello, I have a question
+        imgURL:
+          type: string
+          nullable: true
+          example: https://example.com/image.jpg
+    SendAdminMessageRequest:
+      type: object
+      required:
+        - chatAdminId
+        - senderRole
+      properties:
+        chatAdminId:
+          type: integer
+          example: 1
+        senderRole:
+          type: string
+          enum:
+            - user
+            - admin
+            - restaurant
+          example: admin
+        text:
+          type: string
+          nullable: true
+          example: How can I help you?
+        imgURL:
+          type: string
+          nullable: true
+          example: https://example.com/image.jpg
+    CreateReservationRequest:
+      type: object
+      required:
+        - restaurantId
+        - reserveAt
+        - reservationFee
+      properties:
+        restaurantId:
+          type: integer
+          example: 456
+        reserveAt:
+          type: string
+          format: date-time
+          example: 2025-12-25T18:00:00Z
+        numberOfAdult:
+          type: integer
+          nullable: true
+          example: 2
+        numberOfChildren:
+          type: integer
+          nullable: true
+          example: 1
+        reservationFee:
+          type: integer
+          example: 100
+    CancelReservationRequest:
+      type: object
+      required:
+        - cancelBy
+      properties:
+        cancelBy:
+          type: string
+          enum:
+            - user
+            - restaurant_owner
+          example: user
+    UpdateReservationStatusRequest:
+      type: object
+      required:
+        - status
+        - updateBy
+      properties:
+        status:
+          type: string
+          enum:
+            - unconfirmed
+            - expired
+            - confirmed
+            - cancelled
+            - rejected
+            - completed
+            - uncompleted
+          example: confirmed
+        updateBy:
+          type: string
+          enum:
+            - user
+            - restaurant_owner
+          example: restaurant_owner
+    VerifySessionRequest:
+      type: object
+      required:
+        - sessionId
+      properties:
+        sessionId:
+          type: string
+          description: Stripe checkout session ID
+          example: cs_test_a1b2c3d4e5f6g7h8i9j0
+    VerifySessionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        balance:
+          type: integer
+          description: Updated user balance after top-up
+          example: 5000
+    BalanceResponse:
+      type: object
+      properties:
+        balance:
+          type: integer
+          description: Current user balance
+          example: 3500
+    CreateCheckoutSessionRequest:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: integer
+          description: Amount to top up (must be greater than 0)
+          example: 1000
+          minimum: 1
+    CreateCheckoutSessionResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Stripe checkout session URL to redirect user
+          example: https://checkout.stripe.com/pay/cs_test_a1b2c3d4e5f6g7h8i9j0
+    WithdrawRequest:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: integer
+          description: Amount to withdraw from restaurant wallet (must be greater than 0)
+          example: 500
+          minimum: 1
+    WithdrawResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+    RestaurantSearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: Search term for restaurant name or description
+          example: Thai restaurant
+        province:
+          type: string
+          description: Filter by province
+          example: Bangkok
+        priceRange:
+          type: object
+          properties:
+            min:
+              type: integer
+              example: 0
+            max:
+              type: integer
+              example: 1000
+        cuisineTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - Thai
+              - Chinese
+              - Japanese
+              - Korean
+              - Western
+              - Seafood
+              - Vegetarian
+              - Vegan
+              - Halal
+              - Bakery
+              - Cafe
+              - Buffet
+              - BBQ
+              - Steakhouse
+              - Fast Food
+              - Indian
+              - Italian
+              - Other
+          example:
+            - Thai
+            - Japanese
+        minRating:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 5
+          example: 4
+        sortBy:
+          type: object
+          properties:
+            field:
+              type: string
+              enum:
+                - rating
+                - price
+                - name
+              example: rating
+            order:
+              type: string
+              enum:
+                - asc
+                - desc
+              example: desc
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+        limit:
+          type: integer
+          minimum: 1
+          default: 20
+    RestaurantSearchResponse:
+      type: object
+      properties:
+        restaurants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Restaurant'
+        total:
+          type: integer
+          description: Total number of matching restaurants
+          example: 150
+        hasMore:
+          type: boolean
+          description: Whether there are more results available
+          example: true
+        searchParams:
+          $ref: '#/components/schemas/RestaurantSearchRequest'
+    CreateRestaurantRequest:
+      type: object
+      required:
+        - name
+        - phoneNo
+        - cuisineType
+        - paymentMethod
+        - reservationFee
+      properties:
+        name:
+          type: string
+          example: New Thai Restaurant
+        phoneNo:
+          type: string
+          example: '+66812345678'
+        address:
+          type: string
+          nullable: true
+          example: 123 Main Street
+        houseNo:
+          type: string
+          nullable: true
+        village:
+          type: string
+          nullable: true
+        building:
+          type: string
+          nullable: true
+        road:
+          type: string
+          nullable: true
+        soi:
+          type: string
+          nullable: true
+        subDistrict:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        cuisineType:
+          type: string
+          enum:
+            - Thai
+            - Chinese
+            - Japanese
+            - Korean
+            - Western
+            - Seafood
+            - Vegetarian
+            - Vegan
+            - Halal
+            - Bakery
+            - Cafe
+            - Buffet
+            - BBQ
+            - Steakhouse
+            - Fast Food
+            - Indian
+            - Italian
+            - Other
+        priceRange:
+          type: integer
+          nullable: true
+        paymentMethod:
+          type: string
+          enum:
+            - MasterCard
+            - Visa
+            - HewkawjangWallet
+            - PromptPay
+        images:
+          type: array
+          items:
+            type: string
+          nullable: true
+        reservationFee:
+          type: integer
+    CreateRestaurantResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Restaurant submitted successfully
+        id:
+          type: integer
+          example: 42
+    UpdateRestaurantRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Restaurant ID to update
+        name:
+          type: string
+        phoneNo:
+          type: string
+        address:
+          type: string
+          nullable: true
+        houseNo:
+          type: string
+          nullable: true
+        village:
+          type: string
+          nullable: true
+        building:
+          type: string
+          nullable: true
+        road:
+          type: string
+          nullable: true
+        soi:
+          type: string
+          nullable: true
+        subDistrict:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        cuisineType:
+          type: string
+          enum:
+            - Thai
+            - Chinese
+            - Japanese
+            - Korean
+            - Western
+            - Seafood
+            - Vegetarian
+            - Vegan
+            - Halal
+            - Bakery
+            - Cafe
+            - Buffet
+            - BBQ
+            - Steakhouse
+            - Fast Food
+            - Indian
+            - Italian
+            - Other
+        priceRange:
+          type: integer
+          nullable: true
+        paymentMethod:
+          type: string
+          enum:
+            - MasterCard
+            - Visa
+            - HewkawjangWallet
+            - PromptPay
+        images:
+          type: array
+          items:
+            type: string
+          nullable: true
+        reservationFee:
+          type: integer
+    RestaurantActivationRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          example: active
+    RestaurantActivationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Restaurant activated successfully
+        restaurant:
+          $ref: '#/components/schemas/Restaurant'
+    RestaurantStatusRequest:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: integer
+          description: Restaurant ID
+        status:
+          type: string
+          enum:
+            - open
+            - closed
+          example: open
+    RestaurantHours:
+      type: object
+      properties:
+        id:
+          type: integer
+        restaurantId:
+          type: integer
+        dayOfWeek:
+          type: string
+          enum:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+            - Saturday
+            - Sunday
+          example: Monday
+        openTime:
+          type: string
+          format: time
+          example: 09:00:00
+        closeTime:
+          type: string
+          format: time
+          example: 22:00:00
+        isClosed:
+          type: boolean
+          example: false
+    DaysOffRequest:
+      type: object
+      required:
+        - dates
+      properties:
+        dates:
+          type: array
+          items:
+            type: string
+            format: date
+          example:
+            - 2025-11-15
+            - 2025-12-25
+    DaysOffResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Days off created successfully
+        restaurant_id:
+          type: integer
+        dates:
+          type: array
+          items:
+            type: string
+            format: date
+    DaysOffData:
+      type: object
+      properties:
+        daysOff:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              restaurantId:
+                type: integer
+              date:
+                type: string
+                format: date
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token in Authorization header
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+      description: Refresh token stored in HttpOnly cookie
+  parameters:
+    AuthClientTypeHeader:
+      name: hkj-auth-client-type
+      in: header
+      required: true
+      schema:
+        type: string
+        enum:
+          - web
+      description: Client type identifier; must be `"web"` for browser clients
+    restaurantId:
+      name: restaurantId
+      in: path
+      required: true
+      description: ID of the restaurant
+      schema:
+        type: integer
+    reportId:
+      name: reportId
+      in: path
+      required: true
+      description: ID of the report
+      schema:
+        type: integer
+    userId:
+      name: id
+      in: path
+      required: true
+      description: ID of the user
+      schema:
+        type: integer
+    reviewId:
+      name: id
+      in: path
+      required: true
+      description: ID of the review
+      schema:
+        type: integer
+    messageId:
+      name: messageId
+      in: path
+      required: true
+      description: ID of the message
+      schema:
+        type: integer
+    notificationId:
+      name: notificationId
+      in: path
+      required: true
+      description: ID of the notification
+      schema:
+        type: integer
+    chatId:
+      name: chatId
+      in: path
+      required: true
+      description: ID of the chat
+      schema:
+        type: integer
+    chatAdminId:
+      name: chatAdminId
+      in: path
+      required: true
+      description: ID of the admin chat
+      schema:
+        type: integer
+    reservationId:
+      name: id
+      in: path
+      required: true
+      description: ID of the reservation
+      schema:
+        type: integer
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing token (see authHandler)
+    AdminAuthUnauthorized:
+      description:
+        Unauthorized - Invalid or missing token, or admin role required
+        (see authHandler and adminRoleHandler)
+    InternalServerError:
+      description: Internal Server Error
+security:
+  - bearerAuth: []
+paths:
+  /admins/me:
+    get:
+      summary: Get current admin profile
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved admin profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
+          description: Admin not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/reports/pending:
+    get:
+      summary: Get pending reports for admin review
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved pending reports
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/restaurants/pending-verification:
+    get:
+      summary: Get restaurants pending verification for admin review
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved restaurants that are not verified
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RestaurantUnverified'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/restaurants/{restaurantId}:
+    delete:
+      summary: Ban a restaurant by ID
+      tags:
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Restaurant banned successfully
+        '400':
+          description: Invalid restaurant ID provided
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
+          description: Restaurant not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/reports/review:
+    get:
+      summary: Get reported reviews for admin review
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved reported reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportReview'
+        '400':
+          description: Invalid query parameters
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/reports/review/{reportId}/handle:
+    post:
+      summary: Handle a reported review (ban or reject)
+      tags:
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/reportId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Action to take on the reported review
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: boolean
+                  description: true to ban the review, false to reject the report
+      responses:
+        '204':
+          description: Successfully handled the reported review
+        '400':
+          description: Invalid query parameters/body
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
+          description: Report not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/restaurants/{restaurantId}/verify:
+    post:
+      summary: Verify or reject a restaurant's verification status
+      tags:
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Action to take on the restaurant verification
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: boolean
+                  description: true to approve, false to reject
+      responses:
+        '204':
+          description: Successfully updated restaurant verification status
+        '400':
+          description: Invalid query parameters/body
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
+          description: Restaurant not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/reports/message/{reportId}/handle:
+    post:
+      summary: Handle a reported message (delete or reject)
+      tags:
+        - Admin
+      parameters:
+        - $ref: '#/components/parameters/reportId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Action to take on the reported message
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: boolean
+                  description: true to delete the message, false to reject the report
+      responses:
+        '204':
+          description: Successfully handled the reported message
+        '400':
+          description: Invalid query parameters/body
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
+          description: Report not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /admins/reports/message:
+    get:
+      summary: Get reported messages for admin review
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved reported messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportMessage'
+        '400':
+          description: Invalid query parameters/body
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /auth/login:
+    post:
+      summary: Login with email and password
+      tags:
+        - Authentication
+      parameters:
+        - $ref: '#/components/parameters/AuthClientTypeHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successfully logged in (response varies by client type)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TokenResponseWeb'
+                  - $ref: '#/components/schemas/TokenResponseMobile'
+          headers:
+            Set-Cookie:
+              description: Refresh token as HttpOnly cookie (web clients only)
+              schema:
+                type: string
+                example:
+                  refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict;
+                  Max-Age=86400
+        '400':
+          description: Missing required fields or invalid client type header
+        '401':
+          description: Invalid email or password
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /auth/logout:
+    post:
+      summary: Logout and invalidate refresh token
+      tags:
+        - Authentication
+      parameters:
+        - $ref: '#/components/parameters/AuthClientTypeHeader'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+          headers:
+            Set-Cookie:
+              description: Clears the refresh token cookie
+              schema:
+                type: string
+                example: refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0
+        '400':
+          description: Missing or invalid client type header
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User or admin not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /auth/refresh:
+    post:
+      summary: Refresh access token using refresh token
+      tags:
+        - Authentication
+      parameters:
+        - $ref: '#/components/parameters/AuthClientTypeHeader'
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully refreshed tokens (response varies by client type)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TokenResponseWeb'
+                  - $ref: '#/components/schemas/TokenResponseMobile'
+          headers:
+            Set-Cookie:
+              description: New refresh token as HttpOnly cookie (web clients only)
+              schema:
+                type: string
+                example:
+                  refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict;
+                  Max-Age=86400
+        '400':
+          description: Missing or invalid client type header
+        '401':
+          description: Invalid or expired refresh token, or user account deleted
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /chat/user/{userId}:
+    get:
+      summary: Get all chat channels for a specific user
+      tags:
+        - Chat
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved user chats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Chat'
+        '500':
+          description: Failed to get user chats
+  /chat/all/{userId}:
+    get:
+      summary: Get all chats where user is either a customer or restaurant owner
+      tags:
+        - Chat
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved all chats for user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatWithDetails'
+        '500':
+          description: Failed to fetch all chats
+  /chat/{restaurantId}:
+    post:
+      summary: Create or find chat between user and restaurant
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatRequest'
+      responses:
+        '200':
+          description: Successfully created or found chat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+        '500':
+          description: Failed to create or find chat
+  /chat/{chatId}/messages:
+    get:
+      summary: Get messages of a chat
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/chatId'
+      responses:
+        '200':
+          description: Successfully retrieved chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '400':
+          description: Chat not found
+        '500':
+          description: Failed to fetch messages
+  /chat/user/messages:
+    post:
+      summary: Send a message in a chat
+      tags:
+        - Chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Invalid request - missing senderId or chat not found
+        '500':
+          description: Failed to send message
+  /chat/admin/{adminId}:
+    get:
+      summary: Get all admin chats for a specific admin
+      tags:
+        - Chat
+      parameters:
+        - name: adminId
+          in: path
+          required: true
+          description: ID of the admin
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved admin chats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatAdmin'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '500':
+          description: Failed to get admin chats
+  /chat/admin/messages/{chatAdminId}:
+    get:
+      summary: Get messages in an admin chat
+      tags:
+        - Chat
+      parameters:
+        - $ref: '#/components/parameters/chatAdminId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved admin chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminMessage'
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '500':
+          description: Failed to get admin chat messages
+  /chat/admin/messages:
+    post:
+      summary: Send a message in an admin chat
+      tags:
+        - Chat
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAdminMessageRequest'
+      responses:
+        '201':
+          description: Admin message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminMessage'
+        '400':
+          description: Missing required fields (chatAdminId, adminId, or senderRole)
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '500':
+          description: Failed to create admin message
+  /images/upload:
+    post:
+      summary: Upload image to Supabase storage
+      tags:
+        - Image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - id
+                - file
+              properties:
+                id:
+                  type: string
+                  description: General ID for the image (e.g., review ID, user ID)
+                  example: '123'
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to upload
+                bucketName:
+                  type: string
+                  description: Supabase bucket name (defaults to 'review-images')
+                  example: review-images
+      responses:
+        '200':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
+          description: No file uploaded or id not provided
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /images/delete:
+    post:
+      summary: Delete image from Supabase storage
+      tags:
+        - Image
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageDeleteRequest'
+      responses:
+        '200':
+          description: Image deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageDeleteResponse'
+        '400':
+          description: Missing image URL
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /notifications/:
+    get:
+      summary: Get notifications for authenticated user
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of notifications to return
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: offset
+          in: query
+          description: Number of notifications to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Create a notification
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNotificationRequest'
+      responses:
+        '201':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Invalid request data
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /notifications/unread/count:
+    get:
+      summary: Get count of unread notifications
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved unread count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /notifications/mark-all-as-read:
+    post:
+      summary: Mark all notifications as read
+      tags:
+        - Notification
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: All notifications marked as read successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /notifications/{notificationId}/read:
+    patch:
+      summary: Mark a notification as read
+      tags:
+        - Notification
+      parameters:
+        - $ref: '#/components/parameters/notificationId'
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Notification marked as read successfully
+        '400':
+          description: Invalid notification ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /notifications/{notificationId}:
+    delete:
+      summary: Delete a notification
+      tags:
+        - Notification
+      parameters:
+        - $ref: '#/components/parameters/notificationId'
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Notification deleted successfully
+        '400':
+          description: Invalid notification ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /payment/verify-session:
+    post:
+      summary: Verify Stripe checkout session and update user balance
+      tags:
+        - Payment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifySessionRequest'
+      responses:
+        '200':
+          description: Session verified and balance updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifySessionResponse'
+        '400':
+          description: Session ID missing, payment not completed, or already processed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Session does not belong to this user
+        '404':
+          description: Session not found
+        '500':
+          description: Failed to verify session
+  /payment/balance:
+    get:
+      summary: Get user's current balance
+      tags:
+        - Payment
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+        '500':
+          description: Failed to fetch balance
+  /payment/create-checkout-session:
+    post:
+      summary: Create Stripe checkout session for balance top-up
+      tags:
+        - Payment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCheckoutSessionRequest'
+      responses:
+        '200':
+          description: Checkout session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCheckoutSessionResponse'
+        '400':
+          description: Amount must be greater than 0
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Failed to create checkout session
+  /payment/withdraw/{id}:
+    post:
+      summary: Withdraw funds from restaurant wallet
+      tags:
+        - Payment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawRequest'
+      responses:
+        '200':
+          description: Withdrawal successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawResponse'
+        '400':
+          description: Invalid restaurant ID, amount must be greater than 0, or
+            insufficient balance
+        '404':
+          description: Restaurant not found
+        '500':
+          description: Withdrawal failed
+  /payment/webhook:
+    post:
+      summary: Stripe webhook endpoint for payment events
+      description:
+        This endpoint is called by Stripe to notify about payment events.
+        It is not intended to be called by clients directly.
+      tags:
+        - Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe webhook event payload
+      responses:
+        '200':
+          description: Webhook event processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                    example: true
+        '400':
+          description: Missing stripe-signature header, invalid metadata, or webhook error
+        '404':
+          description: User not found
+  /reports/{id}:
+    patch:
+      summary: Update a report (admin only)
+      tags:
+        - Report
+      parameters:
+        - $ref: '#/components/parameters/reportId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportUpdateRequest'
+      responses:
+        '200':
+          description: Report updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '400':
+          description: Invalid report ID or update data
+        '401':
+          $ref: '#/components/responses/AdminAuthUnauthorized'
+        '404':
+          description: Report not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reports/message/{messageId}:
+    post:
+      summary: Report a message
+      tags:
+        - Report
+      parameters:
+        - $ref: '#/components/parameters/messageId'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Message reported successfully
+        '400':
+          description: Invalid message ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/unconfirmed/inspect:
+    get:
+      summary: Get unconfirmed reservations for a restaurant
+      tags:
+        - Reservation
+      parameters:
+        - name: restaurantId
+          in: query
+          required: true
+          description: ID of the restaurant
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          description: Number of reservations to skip
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved unconfirmed reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid restaurant ID
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/{id}/cancel:
+    post:
+      summary: Cancel a reservation
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelReservationRequest'
+      responses:
+        '200':
+          description: Reservation cancelled successfully
+        '400':
+          description: Invalid reservation ID or cancelBy value
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/create:
+    post:
+      summary: Create a new reservation
+      tags:
+        - Reservation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Reservation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description:
+            Invalid request data or reservation time must be at least 30
+            minutes in advance
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Failed to create reservation
+  /reservations/{id}/inspect:
+    get:
+      summary: Get reservations for a restaurant in a specific month
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+        - name: month
+          in: query
+          required: true
+          description: Month (1-12)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: year
+          in: query
+          required: true
+          description: Year
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved reservations for the month
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid restaurant ID or month/year parameters
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/{id}/status:
+    patch:
+      summary: Update reservation status
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReservationStatusRequest'
+      responses:
+        '200':
+          description: Reservation status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid reservation ID, status, or updateBy value
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/{id}/confirm:
+    post:
+      summary: Confirm a reservation (restaurant owner action)
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reservation confirmed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid reservation ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/{id}/arrived:
+    post:
+      summary: Mark customer as arrived (restaurant owner action)
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Customer marked as arrived successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid reservation ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /reservations/{id}/no-show:
+    post:
+      summary: Mark customer as no-show (restaurant owner action)
+      tags:
+        - Reservation
+      parameters:
+        - $ref: '#/components/parameters/reservationId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Customer marked as no-show successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid reservation ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/:
+    get:
+      summary: Get restaurants by IDs (optional filter)
+      tags:
+        - Restaurant
+      parameters:
+        - name: ids
+          in: query
+          description: Comma-separated list of restaurant IDs to fetch
+          schema:
+            type: string
+            example: 1,2,3
+      responses:
+        '200':
+          description: Successfully retrieved restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Restaurant'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Update restaurant information (owner only)
+      tags:
+        - Restaurant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRestaurantRequest'
+      responses:
+        '200':
+          description: Restaurant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Restaurant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Create a new restaurant (owner only)
+      description:
+        Submit a new restaurant for creation. Owner ID is automatically set
+        from authentication.
+      tags:
+        - Restaurant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRestaurantRequest'
+      responses:
+        '201':
+          description: Restaurant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRestaurantResponse'
+        '400':
+          description: Invalid request data or missing required fields
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/top-rated:
+    get:
+      summary: Get top-rated restaurants
+      tags:
+        - Restaurant
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of restaurants to return
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          description: Number of restaurants to skip
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Successfully retrieved top-rated restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Restaurant'
+        '400':
+          description: Invalid limit or offset parameter
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/owner/{ownerId}:
+    get:
+      summary: Get restaurants by owner ID
+      tags:
+        - Restaurant
+      parameters:
+        - name: ownerId
+          in: path
+          required: true
+          description: ID of the restaurant owner
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Successfully retrieved owner's restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Restaurant'
+        '400':
+          description: Invalid owner ID
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/my-reservations:
+    get:
+      summary: Get reservations for owner's restaurant (owner only)
+      description: Allows restaurant owners to view all reservations for their
+        restaurant with filtering options
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+        - name: status
+          in: query
+          description: Filter by reservation status (can be comma-separated)
+          schema:
+            type: string
+            example: confirmed,completed
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid restaurant ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        '404':
+          description: Restaurant not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/reservations:
+    get:
+      summary: Get public reservations for a restaurant
+      description: Public endpoint to view reservations for a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+        - name: status
+          in: query
+          description: Filter by reservation status (can be comma-separated)
+          schema:
+            type: string
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Successfully retrieved reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid restaurant ID
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/reviews:
+    get:
+      summary: Get all reviews for a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Successfully retrieved restaurant reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid restaurant ID
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/update/status:
+    put:
+      summary: Update restaurant status (open/closed)
+      tags:
+        - Restaurant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestaurantStatusRequest'
+      responses:
+        '200':
+          description: Restaurant status updated successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/search:
+    post:
+      summary: Advanced restaurant search with filters
+      description:
+        Search for restaurants with multiple filter criteria including
+        query text, province, price range, cuisine types, minimum rating, and
+        sorting options
+      tags:
+        - Restaurant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestaurantSearchRequest'
+      responses:
+        '200':
+          description: Search completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantSearchResponse'
+        '400':
+          description:
+            Invalid search parameters (e.g., invalid sort field or order,
+            invalid offset/limit)
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/activation:
+    patch:
+      summary: Activate or deactivate a restaurant (owner only)
+      description: Change restaurant activation status. Deactivating will
+        automatically cancel all active reservations.
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RestaurantActivationRequest'
+      responses:
+        '200':
+          description: Restaurant activation status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantActivationResponse'
+        '400':
+          description: Invalid restaurant ID or status value
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        '404':
+          description: Restaurant not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}:
+    delete:
+      summary: Delete a restaurant (owner only)
+      description: Soft delete a restaurant. Only the owner can delete their restaurant.
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Restaurant deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Restaurant deleted successfully
+        '400':
+          description: Invalid restaurant ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        '404':
+          description: Restaurant not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/reviews/filter:
+    get:
+      summary: Get filtered reviews for a restaurant by rating range
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+        - name: minRating
+          in: query
+          description: Minimum rating filter
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            maximum: 5
+        - name: maxRating
+          in: query
+          description: Maximum rating filter
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            maximum: 5
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+      responses:
+        '200':
+          description: Successfully retrieved filtered reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+        '400':
+          description: Invalid restaurant ID
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/createDaysOff:
+    post:
+      summary: Create days off for a restaurant (owner only)
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DaysOffRequest'
+      responses:
+        '201':
+          description: Days off created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaysOffResponse'
+        '400':
+          description: Missing or invalid dates array
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/updateDaysOff:
+    put:
+      summary: Update days off for a restaurant (owner only)
+      description: Replace existing days off with a new list of dates
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DaysOffRequest'
+      responses:
+        '200':
+          description: Days off updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaysOffResponse'
+        '400':
+          description: Missing or invalid dates array
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/daysOff:
+    get:
+      summary: Get days off for a restaurant (owner only)
+      description: Retrieve list of days off for a restaurant within an optional date range
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+        - name: startDate
+          in: query
+          description: Start date for filtering (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date for filtering (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved days off
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaysOffData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/report:
+    post:
+      summary: Report a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Restaurant reported successfully
+        '400':
+          description: Invalid restaurant ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/reviews/{reviewId}/report:
+    post:
+      summary: Report a review
+      tags:
+        - Restaurant
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          description: ID of the review to report
+          schema:
+            type: integer
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Review reported successfully
+        '400':
+          description: Invalid review ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /restaurants/{id}/hours:
+    get:
+      summary: Get operating hours for a restaurant
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      responses:
+        '200':
+          description: Successfully retrieved restaurant hours
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RestaurantHours'
+        '400':
+          description: Invalid restaurant ID
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Update operating hours for a restaurant (owner only)
+      tags:
+        - Restaurant
+      parameters:
+        - $ref: '#/components/parameters/restaurantId'
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/RestaurantHours'
+      responses:
+        '200':
+          description: Restaurant hours updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RestaurantHours'
+        '400':
+          description: Invalid restaurant ID
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User is not the owner of this restaurant
+        '404':
+          description: Restaurant not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/me:
+    get:
+      summary: Get authenticated user profile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Soft delete authenticated user account
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User account successfully soft deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found or already removed
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/register:
+    post:
+      summary: Send OTP to email for user registration
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: OTP sent successfully to email
+        '400':
+          description: Invalid email address
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/verify:
+    post:
+      summary: Register user with OTP verification
+      tags:
+        - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyUserRequest'
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid OTP or registration data
+        '409':
+          description: Email already exists
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/me/reviews:
+    post:
+      summary: Create a review for a completed reservation
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReviewRequest'
+      responses:
+        '201':
+          description: Review successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateReviewResponse'
+        '400':
+          description: Invalid review data
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/me/reviews/{id}:
+    delete:
+      summary: Delete a review created by the authenticated user
+      tags:
+        - User
+      parameters:
+        - $ref: '#/components/parameters/reviewId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Review successfully deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Review not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/me/reservations:
+    get:
+      summary: Get reservations for the authenticated user
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by reservation status (can specify multiple)
+          schema:
+            oneOf:
+              - type: string
+                enum:
+                  - unconfirmed
+                  - expired
+                  - confirmed
+                  - cancelled
+                  - rejected
+                  - completed
+                  - uncompleted
+              - type: array
+                items:
+                  type: string
+                  enum:
+                    - unconfirmed
+                    - expired
+                    - confirmed
+                    - cancelled
+                    - rejected
+                    - completed
+                    - uncompleted
+        - name: offset
+          in: query
+          description: Number of reservations to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of reservations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Successfully retrieved user reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReservationWithRestaurant'
+        '400':
+          description: Invalid query parameters
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/{id}:
+    get:
+      summary: Get public user profile by ID
+      tags:
+        - User
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Successfully retrieved user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid user ID
+        '404':
+          description: User not found
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/me/uploadProfileImage:
+    post:
+      summary: Upload profile image for authenticated user
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Profile image file to upload
+      responses:
+        '200':
+          description: Profile image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
+          description: No file uploaded or invalid file
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+  /users/updateProfile:
+    post:
+      summary: Update authenticated user profile
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid profile data
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        5XX:
+          $ref: '#/components/responses/InternalServerError'
+tags: []
