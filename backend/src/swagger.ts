@@ -900,6 +900,223 @@ function schemas() {
         },
       },
     },
+    Chat: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        restaurantId: {
+          type: 'integer',
+          example: 456,
+        },
+        isBanned: {
+          type: 'boolean',
+          example: false,
+        },
+      },
+    },
+    ChatWithDetails: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        restaurantId: {
+          type: 'integer',
+          example: 456,
+        },
+        userName: {
+          type: 'string',
+          nullable: true,
+          example: 'John Doe',
+        },
+        restaurantName: {
+          type: 'string',
+          nullable: true,
+          example: 'Thai Restaurant',
+        },
+        lastMessage: {
+          type: 'string',
+          nullable: true,
+          example: 'Thanks for the reservation!',
+        },
+        displayName: {
+          type: 'string',
+          example: 'Thai Restaurant',
+        },
+      },
+    },
+    ChatAdmin: {
+      type: 'object',
+      properties: {
+        chatId: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        adminId: {
+          type: 'integer',
+          example: 1,
+        },
+        displayName: {
+          type: 'string',
+          example: 'John Doe',
+        },
+        profileUrl: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/profile.jpg',
+        },
+      },
+    },
+    Message: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        chatId: {
+          type: 'integer',
+          nullable: true,
+          example: 1,
+        },
+        chatAdminId: {
+          type: 'integer',
+          nullable: true,
+          example: null,
+        },
+        senderId: {
+          type: 'integer',
+          example: 123,
+        },
+        text: {
+          type: 'string',
+          nullable: true,
+          example: 'Hello, I have a question about my reservation',
+        },
+        imgURL: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/message-image.jpg',
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-11-16T10:00:00Z',
+        },
+      },
+    },
+    AdminMessage: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        chatAdminId: {
+          type: 'integer',
+          example: 1,
+        },
+        senderId: {
+          type: 'integer',
+          example: 1,
+        },
+        senderRole: {
+          type: 'string',
+          enum: ['user', 'admin', 'restaurant'],
+          example: 'admin',
+        },
+        text: {
+          type: 'string',
+          nullable: true,
+          example: 'How can I help you?',
+        },
+        imgURL: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/admin-message.jpg',
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-11-16T10:00:00Z',
+        },
+      },
+    },
+    CreateChatRequest: {
+      type: 'object',
+      required: ['userId'],
+      properties: {
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+      },
+    },
+    SendMessageRequest: {
+      type: 'object',
+      required: ['chatId', 'senderId'],
+      properties: {
+        chatId: {
+          type: 'integer',
+          example: 1,
+        },
+        senderId: {
+          type: 'integer',
+          example: 123,
+        },
+        text: {
+          type: 'string',
+          nullable: true,
+          example: 'Hello, I have a question',
+        },
+        imgURL: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/image.jpg',
+        },
+      },
+    },
+    SendAdminMessageRequest: {
+      type: 'object',
+      required: ['chatAdminId', 'senderRole'],
+      properties: {
+        chatAdminId: {
+          type: 'integer',
+          example: 1,
+        },
+        senderRole: {
+          type: 'string',
+          enum: ['user', 'admin', 'restaurant'],
+          example: 'admin',
+        },
+        text: {
+          type: 'string',
+          nullable: true,
+          example: 'How can I help you?',
+        },
+        imgURL: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/image.jpg',
+        },
+      },
+    },
   };
 }
 
@@ -985,6 +1202,24 @@ function parameters() {
       in: 'path',
       required: true,
       description: 'ID of the notification',
+      schema: {
+        type: 'integer',
+      },
+    },
+    chatId: {
+      name: 'chatId',
+      in: 'path',
+      required: true,
+      description: 'ID of the chat',
+      schema: {
+        type: 'integer',
+      },
+    },
+    chatAdminId: {
+      name: 'chatAdminId',
+      in: 'path',
+      required: true,
+      description: 'ID of the admin chat',
       schema: {
         type: 'integer',
       },
