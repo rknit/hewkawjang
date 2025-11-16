@@ -35,6 +35,29 @@ router.get('/me', authHandler, adminRoleHandler, async (req, res) => {
   res.status(200).json(admin);
 });
 
+/**
+ * @openapi
+ * /admins/reports/pending:
+ *   get:
+ *     summary: Get pending reports for admin review
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved pending reports
+ *         content:
+ *           application/json:
+ *            schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/Report'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get(
   '/reports/pending',
   authHandler,
@@ -45,6 +68,29 @@ router.get(
   },
 );
 
+/**
+ * @openapi
+ * /admins/restaurants/pending-verification:
+ *   get:
+ *     summary: Get restaurants pending verification for admin review
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved restaurants that are not verified
+ *         content:
+ *           application/json:
+ *            schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/RestaurantUnverified'
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get(
   '/restaurants/pending-verification',
   authHandler,
@@ -56,6 +102,29 @@ router.get(
   },
 );
 
+/**
+ * @openapi
+ * /admins/restaurants/{restaurantId}:
+ *   delete:
+ *     summary: Ban a restaurant by ID
+ *     tags:
+ *       - Admin
+ *     parameters:
+ *      - $ref: '#/components/parameters/restaurantId'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         description: Restaurant banned successfully
+ *       400:
+ *         description: Invalid restaurant ID provided
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       404:
+ *        description: Restaurant not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.delete(
   '/restaurants/:restaurantId',
   authHandler,
@@ -87,6 +156,31 @@ router.post('/admin-bypass', async (req, res) => {
   res.status(201);
 });
 
+/**
+ * @openapi
+ * /admins/reports/review:
+ *   get:
+ *     summary: Get reported reviews for admin review
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved reported reviews
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ReportReview'
+ *       400:
+ *         description: Invalid query parameters
+ *       401:
+ *         $ref: '#/components/responses/AdminAuthUnauthorized'
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 router.get(
   '/reports/review',
   authHandler,

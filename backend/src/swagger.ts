@@ -102,6 +102,323 @@ function schemas() {
         },
       },
     },
+    Report: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        adminId: {
+          type: 'integer',
+          nullable: true,
+          example: 1,
+        },
+        reportType: {
+          type: 'string',
+          enum: ['user', 'message', 'review', 'restaurant', 'support'],
+          nullable: true,
+          example: 'review',
+        },
+        targetRestaurantId: {
+          type: 'integer',
+          nullable: true,
+          example: 456,
+        },
+        targetReviewId: {
+          type: 'integer',
+          nullable: true,
+          example: 789,
+        },
+        targetUserId: {
+          type: 'integer',
+          nullable: true,
+          example: 321,
+        },
+        targetMessageId: {
+          type: 'integer',
+          nullable: true,
+          example: null,
+        },
+        isSolved: {
+          type: 'boolean',
+          example: false,
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2024-01-15T10:30:00Z',
+        },
+      },
+    },
+    Restaurant: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        ownerId: {
+          type: 'integer',
+          example: 123,
+        },
+        name: {
+          type: 'string',
+          example: 'Delicious Thai Restaurant',
+        },
+        phoneNo: {
+          type: 'string',
+          example: '+66812345678',
+        },
+        wallet: {
+          type: 'number',
+          format: 'double',
+          example: 1500.5,
+        },
+        address: {
+          type: 'string',
+          nullable: true,
+          example: '123 Main Street, Bangkok',
+        },
+        houseNo: {
+          type: 'string',
+          nullable: true,
+          example: '123',
+        },
+        village: {
+          type: 'string',
+          nullable: true,
+          example: 'Village Name',
+        },
+        building: {
+          type: 'string',
+          nullable: true,
+          example: 'Building Name',
+        },
+        road: {
+          type: 'string',
+          nullable: true,
+          example: 'Sukhumvit Road',
+        },
+        soi: {
+          type: 'string',
+          nullable: true,
+          example: 'Soi 11',
+        },
+        subDistrict: {
+          type: 'string',
+          nullable: true,
+          example: 'Khlong Toei Nuea',
+        },
+        district: {
+          type: 'string',
+          nullable: true,
+          example: 'Watthana',
+        },
+        province: {
+          type: 'string',
+          nullable: true,
+          example: 'Bangkok',
+        },
+        postalCode: {
+          type: 'string',
+          nullable: true,
+          example: '10110',
+        },
+        cuisineType: {
+          type: 'string',
+          enum: [
+            'Thai',
+            'Chinese',
+            'Japanese',
+            'Korean',
+            'Western',
+            'Seafood',
+            'Vegetarian',
+            'Vegan',
+            'Halal',
+            'Bakery',
+            'Cafe',
+            'Buffet',
+            'BBQ',
+            'Steakhouse',
+            'Fast Food',
+            'Indian',
+            'Italian',
+            'Other',
+          ],
+          example: 'Thai',
+        },
+        priceRange: {
+          type: 'integer',
+          nullable: true,
+          example: 300,
+        },
+        paymentMethod: {
+          type: 'string',
+          enum: ['MasterCard', 'Visa', 'HewkawjangWallet', 'PromptPay'],
+          example: 'HewkawjangWallet',
+        },
+        status: {
+          type: 'string',
+          enum: ['open', 'closed'],
+          example: 'open',
+        },
+        activation: {
+          type: 'string',
+          enum: ['active', 'inactive'],
+          example: 'active',
+        },
+        isVerified: {
+          type: 'boolean',
+          example: true,
+        },
+        isDeleted: {
+          type: 'boolean',
+          example: false,
+        },
+        images: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          nullable: true,
+          example: [
+            'https://example.com/image1.jpg',
+            'https://example.com/image2.jpg',
+          ],
+        },
+        reservationFee: {
+          type: 'integer',
+          example: 100,
+        },
+      },
+    },
+    RestaurantUnverified: {
+      allOf: [
+        { $ref: '#/components/schemas/Restaurant' },
+        {
+          type: 'object',
+          properties: {
+            isVerified: {
+              type: 'boolean',
+              example: false,
+            },
+          },
+        },
+      ],
+    },
+    ReportReview: {
+      type: 'object',
+      properties: {
+        // Report fields
+        id: {
+          type: 'integer',
+          example: 1,
+        },
+        userId: {
+          type: 'integer',
+          example: 123,
+        },
+        adminId: {
+          type: 'integer',
+          nullable: true,
+          example: 1,
+        },
+        reportType: {
+          type: 'string',
+          enum: ['review'],
+          example: 'review',
+        },
+        targetRestaurantId: {
+          type: 'integer',
+          nullable: true,
+          example: 456,
+        },
+        targetReviewId: {
+          type: 'integer',
+          nullable: true,
+          example: 789,
+        },
+        targetUserId: {
+          type: 'integer',
+          nullable: true,
+          example: 321,
+        },
+        targetChatId: {
+          type: 'integer',
+          nullable: true,
+          example: null,
+        },
+        isSolved: {
+          type: 'boolean',
+          example: false,
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2024-01-15T10:30:00Z',
+        },
+        // Review fields
+        reviewId: {
+          type: 'integer',
+          nullable: true,
+          example: 789,
+        },
+        reviewRating: {
+          type: 'integer',
+          nullable: true,
+          minimum: 1,
+          maximum: 5,
+          example: 4,
+        },
+        reviewComment: {
+          type: 'string',
+          nullable: true,
+          example: 'Great food and service!',
+        },
+        reviewCreatedAt: {
+          type: 'string',
+          format: 'date-time',
+          nullable: true,
+          example: '2024-01-10T14:30:00Z',
+        },
+        reviewImages: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          nullable: true,
+          example: ['https://example.com/review1.jpg'],
+        },
+        // Review author fields
+        reviewAuthorId: {
+          type: 'integer',
+          nullable: true,
+          example: 456,
+        },
+        reviewAuthorName: {
+          type: 'string',
+          nullable: true,
+          example: 'John Doe',
+        },
+        userImage: {
+          type: 'string',
+          nullable: true,
+          example: 'https://example.com/profile.jpg',
+        },
+        // Restaurant field
+        reviewRestaurant: {
+          type: 'string',
+          nullable: true,
+          example: 'Delicious Thai Restaurant',
+        },
+      },
+    },
   };
 }
 
@@ -136,6 +453,15 @@ function parameters() {
       },
       description:
         'Client type identifier; must be `"web"` for browser clients',
+    },
+    restaurantId: {
+      name: 'restaurantId',
+      in: 'path',
+      required: true,
+      description: 'ID of the restaurant',
+      schema: {
+        type: 'integer',
+      },
     },
   };
 }
