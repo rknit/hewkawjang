@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, FlatList } from 'react-native';
-import CommentCard from './commentCard';
+import React from "react";
+import { View, FlatList, Text } from "react-native";
+import CommentCard from "./commentCard"; // adjust path if needed
 
 type Comment = {
   id: string;
