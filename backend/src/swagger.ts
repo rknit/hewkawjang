@@ -465,6 +465,56 @@ function schemas() {
         },
       },
     },
+    LoginRequest: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'user@example.com',
+        },
+        password: {
+          type: 'string',
+          format: 'password',
+          example: 'Password123!',
+        },
+      },
+    },
+    TokenResponseWeb: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          description: 'JWT access token (expires in 15 minutes)',
+          example: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...',
+        },
+      },
+    },
+    TokenResponseMobile: {
+      type: 'object',
+      properties: {
+        accessToken: {
+          type: 'string',
+          description: 'JWT access token (expires in 15 minutes)',
+          example: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...',
+        },
+        refreshToken: {
+          type: 'string',
+          description: 'JWT refresh token (expires in 1 day)',
+          example: 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...',
+        },
+      },
+    },
+    LogoutResponse: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Logged out successfully',
+        },
+      },
+    },
   };
 }
 

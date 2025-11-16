@@ -10,6 +10,43 @@ import { JwtTokens } from '../utils/jwt';
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     summary: Login with email and password
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - $ref: '#/components/parameters/AuthClientTypeHeader'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Successfully logged in (response varies by client type)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/TokenResponseWeb'
+ *                 - $ref: '#/components/schemas/TokenResponseMobile'
+ *         headers:
+ *           Set-Cookie:
+ *             description: Refresh token as HttpOnly cookie (web clients only)
+ *             schema:
+ *               type: string
+ *               example: refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict; Max-Age=86400
+ *       400:
+ *         description: Missing required fields or invalid client type header
+ *       401:
+ *         description: Invalid email or password
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // Login and get tokens
 router.post('/login', authClientTypeHandler, async (req, res) => {
   const user: LoginUser = req.body;
@@ -21,6 +58,39 @@ router.post('/login', authClientTypeHandler, async (req, res) => {
   responseTokens(req, res, tokens);
 });
 
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     summary: Logout and invalidate refresh token
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - $ref: '#/components/parameters/AuthClientTypeHeader'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LogoutResponse'
+ *         headers:
+ *           Set-Cookie:
+ *             description: Clears the refresh token cookie
+ *             schema:
+ *               type: string
+ *               example: refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0
+ *       400:
+ *         description: Missing or invalid client type header
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       404:
+ *         description: User or admin not found
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // Logout
 router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
   if (!req.userAuthPayload) {
@@ -38,6 +108,40 @@ router.post('/logout', authClientTypeHandler, authHandler, async (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token using refresh token
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - $ref: '#/components/parameters/AuthClientTypeHeader'
+ *     security:
+ *       - cookieAuth: []
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully refreshed tokens (response varies by client type)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/TokenResponseWeb'
+ *                 - $ref: '#/components/schemas/TokenResponseMobile'
+ *         headers:
+ *           Set-Cookie:
+ *             description: New refresh token as HttpOnly cookie (web clients only)
+ *             schema:
+ *               type: string
+ *               example: refreshToken=eyJhbGc...; HttpOnly; Secure; SameSite=Strict; Max-Age=86400
+ *       400:
+ *         description: Missing or invalid client type header
+ *       401:
+ *         description: Invalid or expired refresh token, or user account deleted
+ *       5XX:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // Token refresh
 router.post(
   '/refresh',
