@@ -1,95 +1,254 @@
 import { fetchAllChats, fetchChatMessages, sendMessage } from '@/apis/chat.api';
+import {
+  fetchUserAdminChats,
+  fetchUserAdminChatMessages,
+  sendAdminMessageAsUser,
+} from '@/apis/chat.api';
 import ChatArea from '@/components/chat/ChatArea';
+import AdminChatArea from '@/components/chat/AdminChatArea';
 import { useUser } from '@/hooks/useUser';
-import { ChatChannel, ChatMessage } from '@/types/chat.type';
+import {
+  ChatChannel,
+  ChatMessage,
+  AdminChatChannel,
+  AdminChatMessage,
+} from '@/types/chat.type';
 import { useEffect, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function ChatsUserPage() {
-  const { user } = useUser(); // ensure useAuth returns userId and token
+  const { user } = useUser();
+  const params = useLocalSearchParams<{ adminChatId?: string }>();
   const [channels, setChannels] = useState<ChatChannel[]>([]);
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+  const [adminChannels, setAdminChannels] = useState<AdminChatChannel[]>([]);
+  const [selectedKind, setSelectedKind] = useState<'user' | 'admin' | null>(
+    null,
+  );
+  const [selectedChatId, setSelectedChatId] = useState<number | null>(null); // user chat id
+  const [selectedAdminChatId, setSelectedAdminChatId] = useState<number | null>(
+    null,
+  ); // admin chat id
   const [selectedChatName, setSelectedChatName] = useState<string | undefined>(
     undefined,
   );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [adminMessages, setAdminMessages] = useState<AdminChatMessage[]>([]);
+  const [adminInput, setAdminInput] = useState<string>('');
 
-  // Fetch user chat channels
+  // Heuristic: if user has a restaurant or role indicates restaurant, treat as restaurant viewer
+  const isRestaurantViewer =
+    Boolean((user as any)?.restaurantId) ||
+    (user as any)?.role === 'restaurant' ||
+    (user as any)?.role === 'restaurant_owner' ||
+    (user as any)?.role === 'owner';
+
+  const displayNameFor = (c: ChatChannel) => {
+    // Prefer backend-computed name (other party)
+    if (c.displayName) return c.displayName;
+
+    if (user?.id && c.userId) {
+      // If current user is the customer -> show restaurant; else show customer
+      return user.id === c.userId
+        ? (c.restaurantName ?? `Chat ${c.id}`)
+        : (c.userName ?? `Chat ${c.id}`);
+    }
+    return c.userName ?? c.restaurantName ?? `Chat ${c.id}`;
+  };
+
   const loadChannels = async () => {
     if (!user?.id) return;
-    const data = await fetchAllChats(user?.id);
+    const data = await fetchAllChats(user.id);
     setChannels(data);
   };
 
-  // Fetch messages of the selected chat
-  const loadMessages = async (chatId: number) => {
-    const data = await fetchChatMessages(chatId);
-    setMessages(data);
+  const loadAdminChannels = async () => {
+    if (!user?.id) return;
+    const data = await fetchUserAdminChats(user.id);
+    setAdminChannels(data);
   };
 
-  // Auto-fetch channels every 5 seconds
+  const sortChronological = <T extends { createdAt: string }>(arr: T[]) =>
+    arr
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+
+  const loadMessages = async (chatId: number) => {
+    const data = await fetchChatMessages(chatId);
+    // Ensure oldest first -> newest last
+    setMessages(sortChronological(data));
+  };
+
+  const loadAdminMessages = async (chatAdminId: number) => {
+    const data = await fetchUserAdminChatMessages(chatAdminId);
+    setAdminMessages(sortChronological(data));
+  };
+
   useEffect(() => {
     loadChannels();
-    const interval = setInterval(loadChannels, 5000);
+    loadAdminChannels();
+    const interval = setInterval(() => {
+      loadChannels();
+      loadAdminChannels();
+    }, 5000);
     return () => clearInterval(interval);
   }, [user?.id]);
 
-  // Auto-fetch messages every 3 seconds
+  // Keep header name in sync when channels refresh
   useEffect(() => {
-    if (selectedChatId === null) return;
-    loadMessages(selectedChatId);
-    const poll = setInterval(() => loadMessages(selectedChatId), 3000);
-    return () => clearInterval(poll);
-  }, [selectedChatId]);
+    if (selectedKind === 'user' && selectedChatId != null) {
+      const ch = channels.find((c) => c.id === selectedChatId);
+      if (ch) setSelectedChatName(displayNameFor(ch));
+    } else if (selectedKind === 'admin' && selectedAdminChatId != null) {
+      const ch = adminChannels.find((c) => c.chatId === selectedAdminChatId);
+      if (ch) setSelectedChatName(ch.displayName);
+    }
+  }, [
+    channels,
+    adminChannels,
+    selectedKind,
+    selectedChatId,
+    selectedAdminChatId,
+  ]);
 
-  // Select a chat channel
-  const handleSelectChannel = (channel: ChatChannel) => {
+  useEffect(() => {
+    if (selectedKind === 'user' && selectedChatId != null) {
+      loadMessages(selectedChatId);
+      const poll = setInterval(() => loadMessages(selectedChatId), 3000);
+      return () => clearInterval(poll);
+    }
+    if (selectedKind === 'admin' && selectedAdminChatId != null) {
+      loadAdminMessages(selectedAdminChatId);
+      const poll = setInterval(
+        () => loadAdminMessages(selectedAdminChatId),
+        3000,
+      );
+      return () => clearInterval(poll);
+    }
+  }, [selectedKind, selectedChatId, selectedAdminChatId]);
+
+  const handleSelectUserChannel = (channel: ChatChannel) => {
+    setSelectedKind('user');
     setSelectedChatId(channel.id);
-    setSelectedChatName(
-      channel.restaurantName ?? channel.userName ?? `Chat ${channel.id}`,
-    );
+    setSelectedAdminChatId(null);
+    setAdminMessages([]);
+    setSelectedChatName(displayNameFor(channel));
   };
 
-  // Send a message
-  const handleSend = async (text: string) => {
-    if (!selectedChatId || !user?.id) return;
-    await sendMessage(selectedChatId, user?.id, text);
-    loadMessages(selectedChatId);
+  const handleSelectAdminChannel = (channel: AdminChatChannel) => {
+    setSelectedKind('admin');
+    setSelectedAdminChatId(channel.chatId);
+    setSelectedChatId(null);
+    setMessages([]);
+    setSelectedChatName(channel.displayName);
   };
+
+  const handleSend = async (text: string) => {
+    if (!user?.id) return;
+    if (selectedKind === 'user' && selectedChatId) {
+      await sendMessage(selectedChatId, user.id, text);
+      loadMessages(selectedChatId);
+    } else if (selectedKind === 'admin' && selectedAdminChatId) {
+      await sendAdminMessageAsUser(selectedAdminChatId, user.id, text);
+      setAdminInput('');
+      loadAdminMessages(selectedAdminChatId);
+    }
+  };
+
+  const handleSendAdminImage = async (uri: string) => {
+    if (!user?.id || !selectedAdminChatId) return;
+    await sendAdminMessageAsUser(selectedAdminChatId, user.id, '', uri);
+    loadAdminMessages(selectedAdminChatId);
+  };
+
+  useEffect(() => {
+    // Preselect admin chat if a deep link param is provided
+    const raw = params?.adminChatId;
+    const adminChatId = raw ? Number(raw) : null;
+    if (adminChatId && Number.isFinite(adminChatId)) {
+      setSelectedKind('admin');
+      setSelectedAdminChatId(adminChatId);
+      setSelectedChatId(null);
+    }
+  }, [params?.adminChatId]);
 
   return (
     <View className="flex flex-row h-full">
       <View className="w-[30%] h-full p-4 border-r">
-        <Text className="text-2xl font-bold mb-4">Chats</Text>
+        <Text className="text-2xl font-bold mb-2">Chats</Text>
+
+        <Text className="text-xs text-gray-500 mb-1">Restaurants</Text>
         <FlatList
           data={channels}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item) => `user-${item.id}`}
+          renderItem={({ item }) => {
+            const name = displayNameFor(item);
+            return (
+              <TouchableOpacity
+                className={`px-3 py-3 border-b ${selectedKind === 'user' && item.id === selectedChatId ? 'bg-slate-200' : ''}`}
+                onPress={() => handleSelectUserChannel(item)}
+              >
+                <Text className="font-semibold">{name}</Text>
+                {item.lastMessage && (
+                  <Text className="text-sm text-gray-600" numberOfLines={1}>
+                    {item.lastMessage}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            );
+          }}
+        />
+
+        <Text className="text-xs text-gray-500 mt-4 mb-1">Admins</Text>
+        <FlatList
+          data={adminChannels}
+          keyExtractor={(item) => `admin-${item.chatId}`}
           renderItem={({ item }) => (
             <TouchableOpacity
-              className="px-3 py-3 border-b"
-              onPress={() => handleSelectChannel(item)}
+              className={`px-3 py-3 border-b ${selectedKind === 'admin' && item.chatId === selectedAdminChatId ? 'bg-slate-200' : ''}`}
+              onPress={() => handleSelectAdminChannel(item)}
             >
-              <Text className="font-semibold">
-                {item.restaurantName ?? item.userName ?? `Chat ${item.id}`}
-              </Text>
-              {item.lastMessage && (
-                <Text className="text-sm text-gray-600">
-                  {item.lastMessage}
-                </Text>
-              )}
+              <Text className="font-semibold">{item.displayName}</Text>
             </TouchableOpacity>
           )}
         />
       </View>
 
       <View className="flex-1 h-full">
-        {selectedChatId ? (
+        {selectedKind === 'user' && selectedChatId ? (
           <ChatArea
             id={selectedChatId}
             username={selectedChatName ?? ''}
             messages={messages}
             onSend={handleSend}
           />
+        ) : selectedKind === 'admin' && selectedAdminChatId ? (
+          // Guard until the admin channel is available to avoid undefined access in AdminChatArea
+          (() => {
+            const selectedAdminChannel = adminChannels.find(
+              (c) => c.chatId === selectedAdminChatId,
+            );
+            if (!selectedAdminChannel) {
+              return (
+                <View className="flex-1 items-center justify-center">
+                  <Text className="text-gray-500">Loading chat…</Text>
+                </View>
+              );
+            }
+            return (
+              <AdminChatArea
+                adminChatChannel={selectedAdminChannel}
+                messages={adminMessages}
+                value={adminInput}
+                onChangeText={setAdminInput}
+                onPress={() => handleSend(adminInput)}
+                onSendImage={handleSendAdminImage}
+              />
+            );
+          })()
         ) : (
           <View className="flex-1 items-center justify-center">
             <Text className="text-gray-500">

@@ -8,6 +8,7 @@ import { fetchOwnerRestaurants } from '@/apis/restaurant.api';
 import { getUserBalance } from '@/apis/payment.api';
 import { supabase } from '@/utils/supabase';
 import { useUser } from '@/hooks/useUser';
+import { ensureUserAdminSupportChat } from '@/apis/chat.api';
 
 export default function UserDropdown({
   visible,
@@ -104,6 +105,22 @@ export default function UserDropdown({
     fetchBalance();
   };
 
+  const onContactSupport = async () => {
+    try {
+      if (!user?.id) return;
+      const chatAdminId = await ensureUserAdminSupportChat(user.id, 1);
+      onClose();
+      router.push({
+        pathname: '/chat',
+        params: { adminChatId: String(chatAdminId) },
+      });
+    } catch (e) {
+      console.error('Failed to start support chat', e);
+      onClose();
+      router.push('/chat');
+    }
+  };
+
   return (
     <Modal
       animationType="fade"
@@ -168,7 +185,10 @@ export default function UserDropdown({
                   <Text>My Restaurant</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100">
+              <TouchableOpacity
+                className="flex-row items-center gap-2 p-2 rounded hover:bg-gray-100"
+                onPress={onContactSupport}
+              >
                 <MaterialCommunityIcons
                   name="headphones"
                   size={16}

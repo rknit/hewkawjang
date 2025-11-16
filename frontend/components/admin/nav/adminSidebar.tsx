@@ -43,11 +43,7 @@ const sidebarLayout: SidebarItem[] = [
   {
     name: 'Messages',
     icon: (
-      <MaterialCommunityIcons
-        name="email-alert-outline"
-        size={24}
-        color="black"
-      />
+      <MaterialCommunityIcons name="email-outline" size={24} color="black" />
     ),
     route: '/(admin)/messages',
     getPendingCount: (reports) =>

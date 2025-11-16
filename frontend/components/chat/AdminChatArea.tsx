@@ -1,29 +1,35 @@
-import { View, Text, Image, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { FaRegSmile } from "react-icons/fa";   
-import { FiPaperclip } from "react-icons/fi"; 
-import { IoSend } from "react-icons/io5";   
-import { AdminChatChannel, AdminChatMessage } from "@/types/chat.type";
-import { useRef, useEffect } from "react";
-import {launchImageLibrary} from "react-native-image-picker"
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { FaRegSmile } from 'react-icons/fa';
+import { FiPaperclip } from 'react-icons/fi';
+import { IoSend } from 'react-icons/io5';
+import { AdminChatChannel, AdminChatMessage } from '@/types/chat.type';
+import { useRef, useEffect } from 'react';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 interface AdminChatAreaProps {
   adminChatChannel: AdminChatChannel;
-  messages: AdminChatMessage[]; 
+  messages: AdminChatMessage[];
   value: string;
   onChangeText: (text: string) => void;
   onPress: () => void;
   onSendImage?: (imageUri: string) => void;
 }
 
-export default function AdminChatArea({ 
-  adminChatChannel, 
-  messages, 
+export default function AdminChatArea({
+  adminChatChannel,
+  messages,
   value,
   onChangeText,
-  onPress, 
-  onSendImage
+  onPress,
+  onSendImage,
 }: AdminChatAreaProps) {
-
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -49,15 +55,17 @@ export default function AdminChatArea({
       {/* Header */}
       <View className="flex-row items-center gap-3 bg-[#f7d6c2] px-4 py-3 border-b border-[#e2b8a0]">
         {adminChatChannel.profileUrl ? (
-            <Image
-                source={{ uri: adminChatChannel.profileUrl }}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            <View  className="w-8 h-8 bg-gray-400 rounded-full"/>
+          <Image
+            source={{ uri: adminChatChannel.profileUrl }}
+            alt="Profile"
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <View className="w-8 h-8 bg-gray-400 rounded-full" />
         )}
-        <Text className="font-semibold text-gray-800">{adminChatChannel.displayName}</Text>
+        <Text className="font-semibold text-gray-800">
+          {adminChatChannel.displayName}
+        </Text>
       </View>
 
       {/* Chat messages */}
@@ -65,7 +73,7 @@ export default function AdminChatArea({
         {messages.map((msg) => (
           <View
             key={msg.id}
-            className={`w-full my-2 ${msg.senderRole === "admin" ? "items-end" : "items-start"}`}
+            className={`w-full my-2 ${msg.senderRole === 'admin' ? 'items-end' : 'items-start'}`}
           >
             {msg.imgURL ? (
               <Image
@@ -76,9 +84,9 @@ export default function AdminChatArea({
             ) : (
               <View
                 className={`max-w-[75%] rounded-xl px-3 py-2 ${
-                  msg.senderRole === "admin"
-                    ? "bg-[#e4bda5] rounded-br-none"
-                    : "bg-[#fffaf8] rounded-bl-none"
+                  msg.senderRole === 'admin'
+                    ? 'bg-[#e4bda5] rounded-br-none'
+                    : 'bg-[#fffaf8] rounded-bl-none'
                 }`}
               >
                 <Text className="text-gray-800">{msg.text}</Text>
@@ -91,13 +99,12 @@ export default function AdminChatArea({
 
       {/* Input bar */}
       <View className="flex-row items-center gap-2 border-t border-gray-300 bg-[#f7d6c2] px-3 py-2">
-
         <TouchableOpacity className="p-2" onPress={handleAttachImage}>
           <FiPaperclip size={20} color="#555" />
         </TouchableOpacity>
 
         <TextInput
-          value = {value}
+          value={value}
           onChangeText={onChangeText}
           placeholder="Type a message..."
           className="flex-1 bg-white rounded-full px-3 py-2 text-gray-700"

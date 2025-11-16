@@ -1,5 +1,20 @@
-import { inArray, InferInsertModel, InferSelectModel, asc, eq, and, or, desc, getTableColumns } from 'drizzle-orm';
-import { usersTable, emailVerificationTable, reservationTable, reviewTable } from '../db/schema';
+import {
+  inArray,
+  InferInsertModel,
+  InferSelectModel,
+  asc,
+  eq,
+  and,
+  or,
+  desc,
+  getTableColumns,
+} from 'drizzle-orm';
+import {
+  usersTable,
+  emailVerificationTable,
+  reservationTable,
+  reviewTable,
+} from '../db/schema';
 import { db } from '../db';
 import createHttpError from 'http-errors';
 import { hashPassword } from '../utils/hash';
@@ -10,9 +25,16 @@ type ExcludeFromUser = {
   password: string;
   refreshToken: string | null;
 };
-const { password: _p, refreshToken: _r, ...non_sensitive_user_fields } = getTableColumns(usersTable);
+const {
+  password: _p,
+  refreshToken: _r,
+  ...non_sensitive_user_fields
+} = getTableColumns(usersTable);
 
-export type User = Omit<InferSelectModel<typeof usersTable>, keyof ExcludeFromUser>;
+export type User = Omit<
+  InferSelectModel<typeof usersTable>,
+  keyof ExcludeFromUser
+>;
 
 export type NewUser = InferInsertModel<typeof usersTable>;
 
@@ -20,7 +42,12 @@ export type NewReview = InferInsertModel<typeof reviewTable>;
 
 export default class UserService {
   static async getUsers(
-    props: { ids?: number[]; offset?: number; limit?: number; sortOrder?: 'asc' | 'desc' } = {},
+    props: {
+      ids?: number[];
+      offset?: number;
+      limit?: number;
+      sortOrder?: 'asc' | 'desc';
+    } = {},
   ): Promise<User[]> {
     let query: any = db.select(non_sensitive_user_fields).from(usersTable);
 
@@ -45,17 +72,28 @@ export default class UserService {
   }
 
   static async createUser(data: NewUser): Promise<User> {
-    let dup = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, data.email)).limit(1);
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
     if (dup.length > 0) {
       throw createHttpError.Conflict('Email already exists');
     }
     data.password = await hashPassword(data.password);
-    let [newUser] = await db.insert(usersTable).values(data).returning(non_sensitive_user_fields);
+    let [newUser] = await db
+      .insert(usersTable)
+      .values(data)
+      .returning(non_sensitive_user_fields);
     return newUser;
   }
 
   static async registerUser(data: NewUser, otpSend: string): Promise<User> {
-    let dup = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, data.email)).limit(1);
+    let dup = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.email, data.email))
+      .limit(1);
     if (dup.length > 0) {
       throw createHttpError.Conflict('Email already exists');
     }
@@ -73,12 +111,16 @@ export default class UserService {
     }
     const { otp, sendTime } = query[0];
     const currentTime = new Date();
-    const timeDiff = (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
+    const timeDiff =
+      (currentTime.getTime() - new Date(sendTime).getTime()) / 1000;
     if (otp !== otpSend || timeDiff > 180) {
       throw createHttpError.Unauthorized('Invalid or expired OTP');
     }
     data.password = await hashPassword(data.password);
-    let [newUser] = await db.insert(usersTable).values(data).returning(non_sensitive_user_fields);
+    let [newUser] = await db
+      .insert(usersTable)
+      .values(data)
+      .returning(non_sensitive_user_fields);
     return newUser;
   }
 
@@ -111,13 +153,19 @@ export default class UserService {
         .where(
           and(
             eq(reservationTable.userId, userId),
-            or(eq(reservationTable.status, 'unconfirmed'), eq(reservationTable.status, 'confirmed')),
+            or(
+              eq(reservationTable.status, 'unconfirmed'),
+              eq(reservationTable.status, 'confirmed'),
+            ),
           ),
         );
 
       // Force cancel them one by one (even if violate the 24-hour constraint)
       for (const r of reservations) {
-        await tx.update(reservationTable).set({ status: 'cancelled' }).where(eq(reservationTable.id, r.id));
+        await tx
+          .update(reservationTable)
+          .set({ status: 'cancelled' })
+          .where(eq(reservationTable.id, r.id));
       }
 
       return result[0];
@@ -125,7 +173,11 @@ export default class UserService {
   }
 
   static async isUserDeleted(id: number): Promise<boolean> {
-    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
     if (!user) {
       throw createHttpError.NotFound('User not found');
     }
@@ -133,7 +185,10 @@ export default class UserService {
   }
 
   static async updateUser(data: NewUser): Promise<void> {
-    let query = await db.select({ lastName: usersTable.lastName }).from(usersTable).where(eq(usersTable.id, data.id!));
+    let query = await db
+      .select({ lastName: usersTable.lastName })
+      .from(usersTable)
+      .where(eq(usersTable.id, data.id!));
 
     if (query.length === 0) {
       throw createHttpError.NotFound('User not found');
@@ -153,44 +208,50 @@ export default class UserService {
   }
 
   static async getUserById(id: number): Promise<User | undefined> {
-    const rows = await db.select(non_sensitive_user_fields).from(usersTable).where(eq(usersTable.id, id)).limit(1);
+    const rows = await db
+      .select(non_sensitive_user_fields)
+      .from(usersTable)
+      .where(eq(usersTable.id, id))
+      .limit(1);
 
     return rows[0];
   }
 
   static async createReview(data: NewReview): Promise<number> {
-  // Check if the reservation exists
-  let reservation = await db
-    .select()
-    .from(reservationTable)
-    .where(eq(reservationTable.id, data.reservationId))
-    .limit(1);
+    // Check if the reservation exists
+    let reservation = await db
+      .select()
+      .from(reservationTable)
+      .where(eq(reservationTable.id, data.reservationId))
+      .limit(1);
 
-  if (reservation.length === 0) {
-    throw createHttpError.NotFound('Reservation not found');
+    if (reservation.length === 0) {
+      throw createHttpError.NotFound('Reservation not found');
+    }
+
+    // Check if the review already exists
+    let review = await db
+      .select()
+      .from(reviewTable)
+      .where(eq(reviewTable.reservationId, data.reservationId))
+      .limit(1);
+
+    if (review.length > 0) {
+      throw createHttpError.Conflict(
+        'Review for this reservation already exists',
+      );
+    }
+
+    // Insert the new review
+    const [createdReview] = await db
+      .insert(reviewTable)
+      .values(data)
+      .returning();
+
+    return createdReview.id; // Return the ID of the newly created review
   }
-
-  // Check if the review already exists
-  let review = await db
-    .select()
-    .from(reviewTable)
-    .where(eq(reviewTable.reservationId, data.reservationId))
-    .limit(1);
-
-  if (review.length > 0) {
-    throw createHttpError.Conflict('Review for this reservation already exists');
-  }
-
-  // Insert the new review
-  const [createdReview] = await db.insert(reviewTable).values(data).returning();
-  
-  return createdReview.id; // Return the ID of the newly created review
-}
-
 
   static async deleteReview(reviewId: number, userId: number): Promise<void> {
-    //console.log('deleteReview called with:', { reviewId, userId });
-
     const review = await db
       .select({
         id: reviewTable.id,
@@ -200,25 +261,26 @@ export default class UserService {
       .where(eq(reviewTable.id, reviewId))
       .limit(1);
 
-    //console.log('review found:', review);
-
     if (review.length === 0) {
       throw createHttpError.NotFound('Review not found');
     }
 
     const reservation = await db
-      .select({
-        userId: reservationTable.userId,
-      })
+      .select({ userId: reservationTable.userId })
       .from(reservationTable)
       .where(eq(reservationTable.id, review[0].reservationId))
       .limit(1);
 
-    //console.log('reservation found:', reservation);
-
     if (reservation.length === 0) {
       throw createHttpError.NotFound('Reservation not found');
     }
+
+    // DEBUG
+    console.log('[UserService.deleteReview] check owner', {
+      reviewId,
+      reservationUserId: reservation[0].userId,
+      requesterUserId: userId,
+    });
 
     if (reservation[0].userId !== userId) {
       throw createHttpError.Forbidden('You can only delete your own review');
@@ -228,6 +290,5 @@ export default class UserService {
       .update(reviewTable)
       .set({ isDeleted: true })
       .where(eq(reviewTable.id, reviewId));
-    //console.log('review deleted successfully');
   }
 }

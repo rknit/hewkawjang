@@ -9,6 +9,8 @@ import { fetchUserById } from '@/apis/user.api';
 import { Check, X, UserCheck, UserX } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
+// add import for chat creation
+import { findOrCreateChat } from '@/apis/chat.api';
 
 // Database enum values (match pgEnum 'reservation_status')
 type ReservationStatus =
@@ -201,7 +203,7 @@ export default function Reservation({ restaurantId }: ReservationProps) {
   }, [filtered, sortConfig]);
 
   const handleApprove = (id: number) => {
-    // optimistic update to confirmed
+    const target = reservations.find((r) => r.id === id);
     const prev = reservations;
     setReservations((p) =>
       p.map((r) => (r.id === id ? { ...r, status: 'confirmed' } : r)),
@@ -213,6 +215,17 @@ export default function Reservation({ restaurantId }: ReservationProps) {
         Alert.alert('Failed', `Failed to approve reservation #${id}`);
       } else {
         Alert.alert('Reservation approved', `Reservation #${id} approved`);
+        // Auto create chat channel after approval (only if both ids are valid)
+        const uid = Number(target?.userId);
+        const rid = Number(restaurantId);
+        if (Number.isInteger(uid) && Number.isInteger(rid)) {
+          await findOrCreateChat(uid, rid);
+        } else {
+          console.warn('[Reservation] Skip chat creation: invalid ids', {
+            userId: target?.userId,
+            restaurantId,
+          });
+        }
       }
     })();
   };

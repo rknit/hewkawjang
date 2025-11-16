@@ -46,7 +46,9 @@ export async function findOrCreateChat(
   restaurantId: number,
 ): Promise<ChatChannel | null> {
   try {
-    const res = await ApiService.post(`/chat/${restaurantId}`, { userId });
+    const res = await ApiService.post(`/chat/user/${Number(restaurantId)}`, {
+      userId: Number(userId),
+    });
     return ChatChannelSchema.parse(res.data);
   } catch (error) {
     normalizeError(error);
@@ -61,7 +63,7 @@ export async function fetchChatMessages(
   chatId: number,
 ): Promise<ChatMessage[]> {
   try {
-    const res = await ApiService.get(`/chat/${chatId}/messages`);
+    const res = await ApiService.get(`/chat/user/messages/${chatId}`);
     return z.array(ChatMessageSchema).parse(res.data);
   } catch (error) {
     return normalizeError(error) ?? [];
@@ -70,18 +72,10 @@ export async function fetchChatMessages(
 
 export const fetchAllChats = async (userId: number) => {
   try {
-    const res = await ApiService.get(`/chat/all/${userId}`);
-    return res.data;
+    const res = await ApiService.get(`/chat/user/all/${userId}`);
+    return z.array(ChatChannelSchema).parse(res.data); // ensure displayName is present
   } catch (err: any) {
     console.error('Full chat fetch error:', err);
-    if (err.response) {
-      console.error('Response data:', err.response.data);
-      console.error('Status:', err.response.status);
-    } else if (err.request) {
-      console.error('No response received:', err.request);
-    } else {
-      console.error('Error message:', err.message);
-    }
     throw err;
   }
 };
@@ -96,7 +90,8 @@ export async function sendMessage(
   imgURL?: string,
 ): Promise<ChatMessage | null> {
   try {
-    const res = await ApiService.post(`/chat/${chatId}/messages`, {
+    const res = await ApiService.post(`/chat/user/messages`, {
+      chatId,
       senderId,
       text,
       imgURL,
@@ -108,7 +103,9 @@ export async function sendMessage(
   }
 }
 
-export async function fetchAdminChats(adminId: number): Promise<AdminChatChannel[]> {
+export async function fetchAdminChats(
+  adminId: number,
+): Promise<AdminChatChannel[]> {
   try {
     const res = await ApiService.get(`/chat/admin/${adminId}`);
     return z.array(AdminChatChannelSchema).parse(res.data);
@@ -117,7 +114,9 @@ export async function fetchAdminChats(adminId: number): Promise<AdminChatChannel
   }
 }
 
-export async function fetchAdminChatMessages(chatAdminId: number): Promise<AdminChatMessage[]> {
+export async function fetchAdminChatMessages(
+  chatAdminId: number,
+): Promise<AdminChatMessage[]> {
   try {
     const res = await ApiService.get(`/chat/admin/messages/${chatAdminId}`);
     return z.array(AdminChatMessageSchema).parse(res.data);
@@ -130,7 +129,7 @@ export async function createAdminChatMessage(
   chatAdminId: number,
   senderRole: 'admin' | 'user' | 'restaurant',
   text: string | null,
-  imgURL: string | null
+  imgURL: string | null,
 ): Promise<AdminChatMessage | null> {
   try {
     const res = await ApiService.post(`/chat/admin/messages`, {
@@ -144,4 +143,59 @@ export async function createAdminChatMessage(
   } catch (error) {
     return normalizeError(error) ?? null;
   }
+}
+
+export async function fetchUserAdminChats(
+  userId: number,
+): Promise<AdminChatChannel[]> {
+  try {
+    const res = await ApiService.get(`/chat/admin/user/${userId}`);
+    return z.array(AdminChatChannelSchema).parse(res.data);
+  } catch (error) {
+    return normalizeError(error) ?? [];
+  }
+}
+
+export async function fetchUserAdminChatMessages(
+  chatAdminId: number,
+): Promise<AdminChatMessage[]> {
+  try {
+    const res = await ApiService.get(
+      `/chat/admin/messages/user/${chatAdminId}`,
+    );
+    return z.array(AdminChatMessageSchema).parse(res.data);
+  } catch (error) {
+    return normalizeError(error) ?? [];
+  }
+}
+
+export async function sendAdminMessageAsUser(
+  chatAdminId: number,
+  userId: number,
+  text: string,
+  imgURL?: string | null,
+): Promise<AdminChatMessage | null> {
+  try {
+    const res = await ApiService.post(`/chat/admin/messages/user`, {
+      chatAdminId,
+      userId,
+      text,
+      imgURL: imgURL ?? null,
+    });
+    return AdminChatMessageSchema.parse(res.data);
+  } catch (error) {
+    return normalizeError(error) ?? null;
+  }
+}
+
+export async function ensureUserAdminSupportChat(
+  userId: number,
+  adminId: number = 1,
+): Promise<number> {
+  const res = await ApiService.post('/chat/admin/user/start', {
+    userId,
+    adminId,
+  });
+  const schema = z.object({ chatAdminId: z.number() });
+  return schema.parse(res.data).chatAdminId;
 }
