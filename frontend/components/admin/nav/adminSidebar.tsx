@@ -2,7 +2,6 @@ import { View } from 'react-native';
 import React from 'react';
 import { router, usePathname } from 'expo-router';
 import type { Href } from 'expo-router';
-import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AdminSidebarItem from './adminSidebarItem';
