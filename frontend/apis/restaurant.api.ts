@@ -1,4 +1,6 @@
+import { z } from 'zod';
 import ApiService from '@/services/api.service';
+import { normalizeError } from '@/utils/api-error';
 import { Reservation, ReservationSchema } from '@/types/reservation.type';
 import {
   DaysOffSchema,
@@ -18,8 +20,18 @@ import {
   ReviewsWithBreakdown,
   ReviewWithUser,
 } from '@/types/review.type';
-import { normalizeError } from '@/utils/api-error';
 import { getRelativeTime } from '@/utils/date-time';
+
+const RestaurantDetailsSchema = z
+  .object({
+    id: z.number(),
+    name: z.string(),
+    images: z.array(z.string()).nullable().optional(),
+    profileUrl: z.array(z.string()).nullable().optional(),
+  })
+  .passthrough();
+
+export type RestaurantDetails = z.infer<typeof RestaurantDetailsSchema>;
 
 export async function fetchRestaurants(
   restaurantIds?: number[],
@@ -76,10 +88,11 @@ export async function fetchRestaurantById(
   id: number,
 ): Promise<Restaurant | null> {
   try {
-    const restaurants = await fetchRestaurants();
-    return restaurants.find((restaurant) => restaurant.id === id) || null;
+    const res = await ApiService.get(`/restaurants?ids=${id}`);
+    // console.log('[API] Fetched restaurant by ID:', res.data);
+    return RestaurantSchema.parse(res.data[0]);
   } catch (error) {
-    console.error('Failed to fetch restaurant by ID:', error);
+    normalizeError(error);
     return null;
   }
 }
