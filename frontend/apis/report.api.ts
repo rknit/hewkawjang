@@ -32,7 +32,8 @@ export async function updateReportStatus(
 
 export async function reportMessage(messageId: number): Promise<void> {
   try {
-    await ApiService.post(`/reports/message/${messageId}`);
+    const res = await ApiService.post(`/reports/message/${messageId}`);
+    console.log('[API] Message reported successfully:', res);
   } catch (error) {
     normalizeError(error);
   }
