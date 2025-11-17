@@ -32,6 +32,26 @@ export default class ReportService {
     reporterUserId: number;
     targetRestaurantId: number;
   }): Promise<void> {
+    // Check if this restaurant has already been reported
+    const existingReport = await db
+      .select({
+        id: reportsTable.id,
+      })
+      .from(reportsTable)
+      .where(
+        and(
+          eq(reportsTable.targetRestaurantId, targetRestaurantId),
+          eq(reportsTable.reportType, 'restaurant'),
+          eq(reportsTable.isSolved, false),
+        ),
+      )
+      .limit(1);
+
+    // If report already exists, don't create duplicate
+    if (existingReport.length > 0) {
+      return;
+    }
+
     await db.insert(reportsTable).values({
       userId: reporterUserId,
       targetRestaurantId: targetRestaurantId,

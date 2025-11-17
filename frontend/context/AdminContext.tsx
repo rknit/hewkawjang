@@ -136,9 +136,13 @@ export function AdminProvider({ children }: AdminProviderProps) {
 
     // Fetch initial data
     fetchAdminData();
+  }, [authRole, fetchAdminData]);
+
+  useEffect(() => {
+    if (authRole !== 'admin') return;
 
     // Subscribe to realtime changes for reports assigned to this admin
-    const realtimeChannel = supabase
+    const reportChannel = supabase
       .channel('reports:admin')
       .on(
         'postgres_changes',
@@ -218,6 +222,10 @@ export function AdminProvider({ children }: AdminProviderProps) {
           }
         },
       )
+      .subscribe();
+
+    const verifyChannel = supabase
+      .channel('restaurants-verify:admin')
       .on(
         'postgres_changes',
         {
@@ -255,6 +263,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
             isDeleted: payload.new.is_deleted,
             images: payload.new.images,
             reservationFee: payload.new.reservation_fee,
+            paymentMethod: payload.new.payment_method,
           };
 
           // Only add if not deleted (this shouldn't happen)
@@ -270,28 +279,75 @@ export function AdminProvider({ children }: AdminProviderProps) {
           event: 'UPDATE',
           schema: 'public',
           table: 'restaurant',
-          filter: 'is_verified=eq.true,is_deleted=eq.true',
         },
         (payload) => {
           if (__DEV__) {
             console.log('Restaurant verification status updated:', payload);
           }
 
-          const updatedRestaurantId: number = payload.new.id;
+          const isVerified = payload.new.is_verified;
+          const isDeleted = payload.new.is_deleted;
 
-          // Remove the restaurant from pending list
-          setPendingRestaurants((prev) =>
-            prev.filter((restaurant) => restaurant.id !== updatedRestaurantId),
-          );
+          // Remove from pending list if verified or deleted
+          if (isVerified || isDeleted) {
+            setPendingRestaurants((prev) =>
+              prev.filter((restaurant) => restaurant.id !== payload.new.id),
+            );
+          } else {
+            // replace existing restaurant info if needed
+            setPendingRestaurants((prev) => {
+              const exists = prev.find(
+                (restaurant) => restaurant.id === payload.new.id,
+              );
+              if (exists) {
+                // Map database fields (snake_case) to Restaurant type (camelCase)
+                const updatedRestaurant: Restaurant = {
+                  id: payload.new.id,
+                  ownerId: payload.new.owner_id,
+                  name: payload.new.name,
+                  phoneNo: payload.new.phone_no,
+                  wallet: payload.new.wallet,
+                  // address: payload.new.address,
+                  houseNo: payload.new.house_no,
+                  village: payload.new.village,
+                  building: payload.new.building,
+                  road: payload.new.road,
+                  soi: payload.new.soi,
+                  subDistrict: payload.new.sub_district,
+                  district: payload.new.district,
+                  province: payload.new.province,
+                  postalCode: payload.new.postal_code,
+                  cuisineType: payload.new.cuisine,
+                  priceRange: payload.new.priceRange,
+                  status: payload.new.status,
+                  activation: payload.new.activation,
+                  isVerified: payload.new.is_verified,
+                  isDeleted: payload.new.is_deleted,
+                  images: payload.new.images,
+                  reservationFee: payload.new.reservation_fee,
+                  paymentMethod: payload.new.payment_method,
+                };
+
+                return prev.map((restaurant) =>
+                  restaurant.id === updatedRestaurant.id
+                    ? updatedRestaurant
+                    : restaurant,
+                );
+              } else {
+                return prev;
+              }
+            });
+          }
         },
       )
       .subscribe();
 
-    // Cleanup function
     return () => {
-      supabase.removeChannel(realtimeChannel);
+      console.log('Unsubscribing from admin realtime channel');
+      supabase.removeChannel(reportChannel);
+      supabase.removeChannel(verifyChannel);
     };
-  }, [authRole, fetchAdminData]);
+  }, [authRole]);
 
   return (
     <AdminContext.Provider

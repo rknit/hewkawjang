@@ -13,7 +13,9 @@ export default function RecommendedRestaurantGrid() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await fetchTopRatedRestaurants().then((data) => setRestaurants(data));
+      let restaurants = await fetchTopRatedRestaurants();
+      setRestaurants(restaurants.filter((r) => r.status === 'open'));
+
       setIsLoading(false);
     };
     loadData();

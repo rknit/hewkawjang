@@ -28,7 +28,7 @@ export default function SearchResults() {
         // console.log('Search params:', searchParams);
 
         const results = await searchRestaurants(searchParams);
-        
+
         setRestaurants(results.restaurants);
         setError(null);
       } catch (err) {
@@ -47,7 +47,7 @@ export default function SearchResults() {
   return (
     <HomePageTemplate>
       <RestaurantList
-        restaurants={restaurants}
+        restaurants={restaurants.filter((r) => r.status === 'open')}
         loading={loading}
         error={error}
       />
