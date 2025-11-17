@@ -293,6 +293,50 @@ export function AdminProvider({ children }: AdminProviderProps) {
             setPendingRestaurants((prev) =>
               prev.filter((restaurant) => restaurant.id !== payload.new.id),
             );
+          } else {
+            // replace existing restaurant info if needed
+            setPendingRestaurants((prev) => {
+              const exists = prev.find(
+                (restaurant) => restaurant.id === payload.new.id,
+              );
+              if (exists) {
+                // Map database fields (snake_case) to Restaurant type (camelCase)
+                const updatedRestaurant: Restaurant = {
+                  id: payload.new.id,
+                  ownerId: payload.new.owner_id,
+                  name: payload.new.name,
+                  phoneNo: payload.new.phone_no,
+                  wallet: payload.new.wallet,
+                  // address: payload.new.address,
+                  houseNo: payload.new.house_no,
+                  village: payload.new.village,
+                  building: payload.new.building,
+                  road: payload.new.road,
+                  soi: payload.new.soi,
+                  subDistrict: payload.new.sub_district,
+                  district: payload.new.district,
+                  province: payload.new.province,
+                  postalCode: payload.new.postal_code,
+                  cuisineType: payload.new.cuisine,
+                  priceRange: payload.new.priceRange,
+                  status: payload.new.status,
+                  activation: payload.new.activation,
+                  isVerified: payload.new.is_verified,
+                  isDeleted: payload.new.is_deleted,
+                  images: payload.new.images,
+                  reservationFee: payload.new.reservation_fee,
+                  paymentMethod: payload.new.payment_method,
+                };
+
+                return prev.map((restaurant) =>
+                  restaurant.id === updatedRestaurant.id
+                    ? updatedRestaurant
+                    : restaurant,
+                );
+              } else {
+                return prev;
+              }
+            });
           }
         },
       )
