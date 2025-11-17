@@ -125,6 +125,9 @@ export default function ChatsAdminPage() {
         }
       )
       .subscribe((status) => console.log("Realtime status:", status));
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [chatAdminId]);
 
 
