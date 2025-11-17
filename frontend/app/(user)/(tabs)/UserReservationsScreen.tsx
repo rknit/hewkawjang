@@ -155,29 +155,41 @@ export default function UserReservationsScreen() {
   };
 
   // Calculate expected refund percentage based on cancellation timing
+  // This must match the logic in backend/src/service/refund.service.ts
   const getRefundInfo = (reservation: ReservationWithRestaurant): string => {
     const now = new Date();
     const createdAt = new Date(reservation.createdAt);
+    const reserveAt = new Date(reservation.reserveAt);
     const minutesSinceBooking =
       (now.getTime() - createdAt.getTime()) / (1000 * 60);
 
-    // Case 1: Within 10 minutes of booking OR not confirmed yet
-    if (minutesSinceBooking <= 10 || reservation.status === 'unconfirmed') {
-      return 'You will receive a 100% refund';
+    // Case 1: Customer cancels before confirmation OR within 10 minutes of booking
+    if (reservation.status === 'unconfirmed' || minutesSinceBooking <= 10) {
+      return (
+        '✓ You will receive a 100% refund (₿' +
+        reservation.reservationFee.toFixed(2) +
+        ')'
+      );
     }
 
-    // For confirmed reservations, we need to check time since confirmation
-    // Since we don't have confirmedAt on the frontend, we'll show a general message
+    // For confirmed reservations after 10 minutes
     if (reservation.status === 'confirmed') {
-      // If less than 24 hours until reservation time
-      const reserveAt = new Date(reservation.reserveAt);
-      const hoursUntilReservation =
-        (reserveAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+      const minutesUntilReservation =
+        (reserveAt.getTime() - now.getTime()) / (1000 * 60);
 
-      if (hoursUntilReservation < 24) {
-        return 'You will receive a 5% refund (canceled within 24 hours of confirmation)';
+      if (minutesUntilReservation > 1440) {
+        // Case 2a: More than 24 hours until reservation
+        // Customer: 5% refund, Restaurant: 90%, Platform: 5%
+        const refundAmount = reservation.reservationFee * 0.05;
+        return (
+          '⚠ You will receive a 5% refund (₿' +
+          refundAmount.toFixed(2) +
+          ')\nRestaurant will receive 90% for their preparation'
+        );
       } else {
-        return 'No refund available (confirmed more than 24 hours ago)';
+        // Case 2b: Less than 24 hours until reservation
+        // Customer: 0% refund, Restaurant: 95%, Platform: 5%
+        return '✗ No refund available (less than 24 hours until reservation)\nRestaurant will receive 95% for their preparation';
       }
     }
 

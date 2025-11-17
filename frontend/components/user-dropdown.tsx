@@ -80,6 +80,34 @@ export default function UserDropdown({
     fetchBalance();
   }, [fetchBalance]);
 
+  // Real-time subscription for balance updates in dropdown
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('user-dropdown-balance-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'users',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('User balance updated in dropdown:', payload);
+          if (payload.new && 'balance' in payload.new) {
+            setWalletBalance((payload.new as any).balance || 0);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const onSelectProfile = () => {
     onClose();
     router.push('/profile');

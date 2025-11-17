@@ -2877,7 +2877,7 @@ paths:
           description: Restaurant not found
         5XX:
           $ref: '#/components/responses/InternalServerError'
-  /restaurants/{id}:
+  /:
     delete:
       summary: Delete a restaurant (owner only)
       description: Soft delete a restaurant. Only the owner can delete their restaurant.
