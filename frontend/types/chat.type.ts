@@ -53,7 +53,7 @@ export const AdminChatChannelSchema = z.object({
   chatId: z.number(),
   userId: z.number(),
   adminId: z.number(),
-  displayName: z.string(),
+  displayName: z.string().nullable(),
   profileUrl: z.string().optional().nullable(),
 });
 export type AdminChatChannel = z.infer<typeof AdminChatChannelSchema>;

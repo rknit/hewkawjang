@@ -177,7 +177,11 @@ export default class RestaurantService {
     let query = db
       .select()
       .from(restaurantTable)
-      .where(eq(restaurantTable.ownerId, ownerId))
+      .where(
+        and(
+          eq(restaurantTable.ownerId, ownerId),
+          eq(restaurantTable.isDeleted, false)
+      ))
       .orderBy(asc(restaurantTable.id))
       .offset(offset)
       .limit(limit);
