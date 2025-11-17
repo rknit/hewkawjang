@@ -276,7 +276,6 @@ router.post('/user/:restaurantId', async (req, res) => {
 router.get(
   '/admin/:adminId',
   authHandler,
-  adminRoleHandler,
   async (req, res) => {
     const adminId = req.userAuthPayload?.userId!;
     try {
@@ -322,7 +321,6 @@ router.get(
 router.get(
   '/admin/messages/:chatAdminId',
   authHandler,
-  adminRoleHandler,
   async (req, res) => {
     const { chatAdminId } = req.params;
     try {
@@ -365,7 +363,6 @@ router.get(
 router.post(
   '/admin/messages',
   authHandler,
-  adminRoleHandler,
   async (req, res) => {
     const adminId = req.userAuthPayload?.userId!;
     const { chatAdminId, senderRole, text, imgURL } = req.body;

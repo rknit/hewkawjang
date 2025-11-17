@@ -16,6 +16,8 @@ import {
 import { useEffect, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { uploadImage } from '@/apis/image.api';
+import { createAdminChatMessage } from '@/apis/chat.api';
 
 export default function ChatsUserPage() {
   const { user } = useUser();
@@ -35,6 +37,7 @@ export default function ChatsUserPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [adminMessages, setAdminMessages] = useState<AdminChatMessage[]>([]);
   const [adminInput, setAdminInput] = useState<string>('');
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
 
   // Heuristic: if user has a restaurant or role indicates restaurant, treat as restaurant viewer
   const isRestaurantViewer =
@@ -158,10 +161,39 @@ export default function ChatsUserPage() {
     }
   };
 
-  const handleSendAdminImage = async (uri: string) => {
-    if (!user?.id || !selectedAdminChatId) return;
-    await sendAdminMessageAsUser(selectedAdminChatId, user.id, '', uri);
-    loadAdminMessages(selectedAdminChatId);
+  const handleSendMessageToAdmin = async () => {
+    if (!adminInput.trim() && !attachedImage) return; // nothing to send
+    if (!selectedAdminChatId) return;
+
+    try {
+      let uploadedUrl: string | null = null;
+
+      // If an image is attached, upload it
+      if (attachedImage) {
+        const response = await fetch(attachedImage);
+        const blob = await response.blob();
+        const fileId = String(Date.now());
+        uploadedUrl = await uploadImage(blob, fileId);
+      }
+
+      // Create a chat message with text and/or image
+      const newMessage = await createAdminChatMessage(
+        selectedAdminChatId,
+        'user',                  // senderRole
+        adminInput.trim() || null, // text can be null
+        uploadedUrl                 // image can be null if none attached
+      );
+
+      // Update the message list
+      setAdminMessages(prev => [...prev, newMessage]);
+
+      // Reset input fields
+      setAdminInput('');
+      setAttachedImage(null);
+
+    } catch (err) {
+      console.error('Failed to send message', err);
+    }
   };
 
   useEffect(() => {
@@ -240,12 +272,14 @@ export default function ChatsUserPage() {
             }
             return (
               <AdminChatArea
+                owner='user'
                 adminChatChannel={selectedAdminChannel}
                 messages={adminMessages}
                 value={adminInput}
                 onChangeText={setAdminInput}
-                onPress={() => handleSend(adminInput)}
-                onSendImage={handleSendAdminImage}
+                onPress={handleSendMessageToAdmin}
+                attachedImage={attachedImage}
+                onChangeAttachedImage={setAttachedImage}
               />
             );
           })()

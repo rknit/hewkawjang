@@ -35,11 +35,11 @@ export default function ChatChannelList({chatList, chatAdminId, setChatAdminId}:
                         >
                             {chat.displayName}
                         </Text>
-                        <Text>last message</Text>
+                        {/* <Text>last message</Text> */}
                     </View>
-                    <View className="ml-auto">
+                    {/* <View className="ml-auto">
                         <Text>time</Text>
-                    </View>
+                    </View> */}
                 </TouchableOpacity>
             ))}
         </View>

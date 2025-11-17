@@ -63,8 +63,13 @@ export const AdminChatMessageSchema = z.object({
   chatAdminId: z.number(),
   senderId: z.number(),
   senderRole: z.enum(['user', 'admin', 'restaurant']),
-  text: z.string(),
+  text: z.string().nullable(),
   imgURL: z.string().nullable(),
   createdAt: z.string(),
+}).refine((data) => data.text !== null || data.imgURL !== null, {
+  message: "Either text or imgURL must be provided",
+  path: ["text", "imgURL"], // optional, shows which fields are relevant
 });
+
 export type AdminChatMessage = z.infer<typeof AdminChatMessageSchema>;
+

@@ -1,5 +1,4 @@
 import { fetchAdminChats, fetchAdminChatMessages, createAdminChatMessage } from '@/apis/chat.api';
-import ChatArea from '@/components/chat/ChatArea';
 import ChatChannelList from '@/components/chat/ChatChannelList';
 import { Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
@@ -8,29 +7,54 @@ import {
   AdminChatChannel,
   AdminChatMessage
 } from '@/types/chat.type';
+import { uploadImage } from '@/apis/image.api';
+import { supabase } from '@/utils/supabase';
 
 export default function ChatsAdminPage() {
   const [chatList, setChatList] = useState<AdminChatChannel[]>([]);
-  const [loading, setLoading] = useState(true);
   const [chatAdminId, setChatAdminId] = useState<number | null>(null);
   const [messages, setMessages] = useState<AdminChatMessage[]>([]);
   const [messageText, setMessageText] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [loadingChats, setLoadingChats] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
-  const handleSend = async () => {
+  const handleSendMessage = async () => {
     if (!messageText.trim() && !attachedImage) return; // nothing to send
+    if (!chatAdminId) return;
 
-    const newMessage = await createAdminChatMessage(
-      chatAdminId!,
-      "admin",
-      messageText.trim() || null, // text can be null
-      attachedImage || null       // image can be null
-    );
+    try {
+      let uploadedUrl: string | null = null;
 
-    setMessages(prev => [...prev, newMessage]);
-    setMessageText("");
-    setAttachedImage(null); // reset after sending
+      // If an image is attached, upload it
+      if (attachedImage) {
+        const response = await fetch(attachedImage);
+        const blob = await response.blob();
+        const fileId = String(Date.now());
+        uploadedUrl = await uploadImage(blob, fileId);
+      }
+
+      // Create a chat message with text and/or image
+      const newMessage = await createAdminChatMessage(
+        chatAdminId,
+        'admin',                  // senderRole
+        messageText.trim() || null, // text can be null
+        uploadedUrl                 // image can be null if none attached
+      );
+
+      // Update the message list
+      setMessages(prev => [...prev, newMessage]);
+
+      // Reset input fields
+      setMessageText('');
+      setAttachedImage(null);
+
+    } catch (err) {
+      console.error('Failed to send message', err);
+    }
   };
+
+
 
   useEffect(() => {
     async function fetchChats() {
@@ -41,7 +65,7 @@ export default function ChatsAdminPage() {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        setLoadingChats(false);
       }
     }
 
@@ -51,7 +75,7 @@ export default function ChatsAdminPage() {
   useEffect(() => {
     if (chatAdminId == null){
       setMessages([]);
-      setLoading(false);
+      setLoadingMessages(false);
       return;
     }
 
@@ -63,18 +87,52 @@ export default function ChatsAdminPage() {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        setLoadingMessages(false);
       }
     }
 
     fetchMessages();
   }, [chatAdminId]);
 
+  useEffect(() => {
+    if (!chatAdminId) return;
+
+    const channel = supabase
+      .channel("admin_chat_messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "admin_message",
+          filter: `chat_admin_id=eq.${chatAdminId}`
+        },
+        async (payload) => {
+          console.log("Realtime change detected:", payload);
+          async function fetchMessages() {
+            try {
+              const data = await fetchAdminChatMessages(chatAdminId);
+              console.log(data);
+              setMessages(data);
+            } catch (err) {
+              console.error(err);
+            } finally {
+              setLoadingMessages(false);
+            }
+          }
+
+          fetchMessages();
+        }
+      )
+      .subscribe((status) => console.log("Realtime status:", status));
+  }, [chatAdminId]);
+
+
   return (
     <View className="flex flex-row h-full">
       <View className="w-[30%] h-full p-4 border-r">
         <Text className="text-2xl font-bold mb-4">Support</Text>
-        {loading 
+        {loadingChats
           ? <View><Text>Loading chats...</Text></View>  // while loading
           : <ChatChannelList chatList={chatList} chatAdminId={chatAdminId} setChatAdminId={setChatAdminId}/>  // when loaded
         }
@@ -83,13 +141,16 @@ export default function ChatsAdminPage() {
         {chatAdminId === null ? 
           <View></View>:
           <AdminChatArea
+            owner = 'admin'
             adminChatChannel={
-              chatList.find(chat => chat.chatId === chatAdminId)
+              chatList.find(chat => chat.chatId === chatAdminId)!
             }
             messages={messages}
             value = {messageText}
             onChangeText={setMessageText}
-            onPress={handleSend}
+            onPress={handleSendMessage}
+            attachedImage={attachedImage}
+            onChangeAttachedImage={setAttachedImage}
           />
         }
         
