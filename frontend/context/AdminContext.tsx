@@ -136,9 +136,13 @@ export function AdminProvider({ children }: AdminProviderProps) {
 
     // Fetch initial data
     fetchAdminData();
+  }, [authRole, fetchAdminData]);
+
+  useEffect(() => {
+    if (authRole !== 'admin') return;
 
     // Subscribe to realtime changes for reports assigned to this admin
-    const realtimeChannel = supabase
+    const reportChannel = supabase
       .channel('reports:admin')
       .on(
         'postgres_changes',
@@ -218,6 +222,10 @@ export function AdminProvider({ children }: AdminProviderProps) {
           }
         },
       )
+      .subscribe();
+
+    const verifyChannel = supabase
+      .channel('restaurants-verify:admin')
       .on(
         'postgres_changes',
         {
@@ -271,28 +279,31 @@ export function AdminProvider({ children }: AdminProviderProps) {
           event: 'UPDATE',
           schema: 'public',
           table: 'restaurant',
-          filter: 'is_verified=eq.true,is_deleted=eq.true',
         },
         (payload) => {
           if (__DEV__) {
             console.log('Restaurant verification status updated:', payload);
           }
 
-          const updatedRestaurantId: number = payload.new.id;
+          const isVerified = payload.new.is_verified;
+          const isDeleted = payload.new.is_deleted;
 
-          // Remove the restaurant from pending list
-          setPendingRestaurants((prev) =>
-            prev.filter((restaurant) => restaurant.id !== updatedRestaurantId),
-          );
+          // Remove from pending list if verified or deleted
+          if (isVerified || isDeleted) {
+            setPendingRestaurants((prev) =>
+              prev.filter((restaurant) => restaurant.id !== payload.new.id),
+            );
+          }
         },
       )
       .subscribe();
 
-    // Cleanup function
     return () => {
-      supabase.removeChannel(realtimeChannel);
+      console.log('Unsubscribing from admin realtime channel');
+      supabase.removeChannel(reportChannel);
+      supabase.removeChannel(verifyChannel);
     };
-  }, [authRole, fetchAdminData]);
+  }, [authRole]);
 
   return (
     <AdminContext.Provider
