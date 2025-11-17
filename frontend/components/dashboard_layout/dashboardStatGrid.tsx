@@ -22,7 +22,7 @@ export default function DashboardStatGrid({
   restaurantId,
   month,
 }: BoxWrapperProps) {
-  const [balance, setBalance] = React.useState(0);
+  const [revenue, setRevenue] = React.useState(0);
   const [bookings, setBookings] = React.useState(0);
   const [customers, setCustomers] = React.useState(0);
 
@@ -38,36 +38,52 @@ export default function DashboardStatGrid({
     const uniqueCustomers = new Set(reservations.map((r) => r.userId));
     setCustomers(uniqueCustomers.size);
 
-    const restaurant = await fetchRestaurantById(restaurantId);
-    setBalance((restaurant as any)?.wallet || 0);
+    // Calculate total revenue from completed reservations that have been paid to restaurant
+    // This includes: no-show (95%), late cancellations (90-95%), and other restaurant payouts
+    const totalRevenue = reservations.reduce((sum, reservation) => {
+      // Only count reservations where restaurant received money
+      if (
+        reservation.status === 'completed' ||
+        reservation.status === 'uncompleted' || // no-show case
+        reservation.status === 'cancelled' // if cancelled after confirmation, restaurant gets payout
+      ) {
+        return sum + (reservation.reservationFee || 0);
+      }
+      return sum;
+    }, 0);
+
+    setRevenue(totalRevenue);
   };
 
   useEffect(() => {
     loadData();
   }, [restaurantId, month]);
 
+  // Real-time subscription for reservation changes
   useEffect(() => {
     const channel = supabase
-      .channel('realtime:reservations')
+      .channel(`restaurant-stats-${restaurantId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'restaurants',
+          table: 'reservation',
           filter: `restaurant_id=eq.${restaurantId}`,
         },
-        () => {
-          console.log('Database changed — refreshing stats');
+        (payload) => {
+          console.log('📊 Reservation changed — refreshing stats:', payload);
           loadData();
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Stats subscription status:', status);
+      });
 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [restaurantId]);
+  }, [restaurantId, month]);
 
   return (
     <View className="flex flex-row gap-4">
@@ -116,7 +132,7 @@ export default function DashboardStatGrid({
               Total Revenue
             </Text>
             <Text className="text-xl font-semibold text-gray-800">
-              ${balance.toLocaleString()}
+              ฿{revenue.toLocaleString()}
             </Text>
           </View>
         </View>

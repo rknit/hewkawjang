@@ -15,6 +15,7 @@ import { User } from '@/types/user.type';
 import { fetchRestaurants, fetchRestaurantById } from '@/apis/restaurant.api';
 import { Restaurant } from '@/types/restaurant.type';
 import { createReservation } from '@/apis/reservation.api';
+import { supabase } from '@/utils/supabase';
 import {
   pad,
   addMinutes,
@@ -144,6 +145,11 @@ export default function ReservationPane({
       };
 
       await createReservation(payload);
+
+      // Refresh user data to get updated balance
+      const updatedUser = await fetchCurrentUser();
+      setUser(updatedUser);
+
       setShowConfirmation(false);
       setShowSuccessAlert(true);
     } catch (error: any) {
