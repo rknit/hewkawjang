@@ -59,7 +59,7 @@ router.post('/create', authHandler, async (req, res) => {
     reservationFee,
   } = req.body;
 
-  if (!userId || !restaurantId || !reserveAt || !reservationFee) {
+  if (!userId || !restaurantId || !reserveAt) {
     return res.status(400).json({
       error: 'userId, restaurantId, reservationFee and reserveAt are required',
     });
