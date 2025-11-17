@@ -118,7 +118,7 @@ export default function RestaurantPreveiew() {
               <RestaurantAbout
                 address={restaurant ? makeRestaurantAddress(restaurant) : ''}
                 cuisine="Buffet"
-                paymentOptions={['MasterCard', 'HewKawJangWallet']}
+                paymentOptions={restaurant ? [restaurant.paymentMethod] : []}
               />
             </View>
           </ScrollView>

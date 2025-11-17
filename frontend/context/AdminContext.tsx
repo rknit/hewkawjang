@@ -255,6 +255,7 @@ export function AdminProvider({ children }: AdminProviderProps) {
             isDeleted: payload.new.is_deleted,
             images: payload.new.images,
             reservationFee: payload.new.reservation_fee,
+            paymentMethod: payload.new.payment_method,
           };
 
           // Only add if not deleted (this shouldn't happen)

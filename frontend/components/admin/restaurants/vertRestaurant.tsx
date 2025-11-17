@@ -78,7 +78,7 @@ export default function RestaurantScreenVertical({
             <RestaurantAbout
               address={restaurant ? makeRestaurantAddress(restaurant) : ''}
               cuisine={restaurant?.cuisineType || ''}
-              paymentOptions={['MasterCard', 'HewKawJangWallet']}
+              paymentOptions={restaurant ? [restaurant.paymentMethod] : []}
             />
           </View>
         </ScrollView>

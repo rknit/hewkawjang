@@ -28,7 +28,9 @@ const RestaurantAbout: React.FC<RestaurantAboutProps> = ({
 
       {/* Payment Options */}
       <View className="border-t border-gray-200 pt-2 mt-2">
-        <Text className="text-sm text-gray-500 mb-1">Payment Options</Text>
+        <Text className="text-sm text-gray-500 mb-1">
+          {paymentOptions.length > 1 ? 'Payment Options' : 'Payment Option'}
+        </Text>
         <Text className="text-gray-700">{paymentOptions.join(', ')}</Text>
       </View>
     </View>

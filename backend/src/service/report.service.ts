@@ -42,6 +42,7 @@ export default class ReportService {
         and(
           eq(reportsTable.targetRestaurantId, targetRestaurantId),
           eq(reportsTable.reportType, 'restaurant'),
+          eq(reportsTable.isSolved, false),
         ),
       )
       .limit(1);

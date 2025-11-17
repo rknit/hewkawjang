@@ -137,7 +137,7 @@ export default function RestaurantScreen() {
               <RestaurantAbout
                 address={restaurant ? makeRestaurantAddress(restaurant) : ''}
                 cuisine="Buffet"
-                paymentOptions={['MasterCard', 'HewKawJangWallet']}
+                paymentOptions={restaurant ? [restaurant.paymentMethod] : []}
               />
             </View>
           </ScrollView>
