@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { de } from 'zod/v4/locales';
 
 test('ViewRestaurantReviews', async ({ page }) => {
   // Login
