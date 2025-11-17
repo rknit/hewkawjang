@@ -1,5 +1,5 @@
 export const PRIVACY_POLICY = `  Privacy Policy
-Last Updated: September 14, 2025
+Last Updated: November 11, 2025
 
    1. Introduction
 This Privacy Policy outlines how we collect, use, and safeguard your personal information when you use our restaurant reservation service. By accessing or using our service, you agree to the terms described in this policy.
@@ -21,6 +21,19 @@ We may also collect information about how you use our service, including:
 - Browser type  
 - Access times and dates  
 - Pages visited  
+
+    2.3 Cookies and Similar Technologies
+We use cookies and similar technologies to:
+- Maintain your logged-in session through authentication tokens
+- Remember your preferences
+- Improve security and prevent unauthorized access
+- Analyze how our service is used
+
+Specifically, we store:
+- **Authentication Cookies**: We use secure HTTP-only cookies to store refresh tokens that keep you logged in between sessions
+- **Session Cookies**: Temporary cookies that expire when you close your browser
+
+You can control cookie settings through your browser, but disabling certain cookies may limit your ability to use our service.
 
    3. How We Use Your Information
 Your information may be used to:

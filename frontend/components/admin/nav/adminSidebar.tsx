@@ -23,11 +23,6 @@ interface SidebarItem {
 
 const sidebarLayout: SidebarItem[] = [
   {
-    name: 'Dashboard',
-    icon: <Feather name="grid" size={24} color="black" />,
-    route: '/',
-  },
-  {
     name: 'Chats',
     icon: (
       <MaterialCommunityIcons
@@ -36,7 +31,7 @@ const sidebarLayout: SidebarItem[] = [
         color="black"
       />
     ),
-    route: '/chats',
+    route: '/',
     getPendingCount: (reports) =>
       reports.filter((r) => r.reportType === 'chat').length,
   },
@@ -45,7 +40,7 @@ const sidebarLayout: SidebarItem[] = [
     icon: (
       <MaterialCommunityIcons name="email-outline" size={24} color="black" />
     ),
-    route: '/(admin)/messages',
+    route: '/messages',
     getPendingCount: (reports) =>
       reports.filter((r) => r.reportType === 'message' && !r.isSolved).length,
   },
@@ -69,13 +64,6 @@ const sidebarLayout: SidebarItem[] = [
     getPendingCount: (reports, restaurants) =>
       reports.filter((r) => r.reportType === 'restaurant').length +
       (restaurants?.length ?? 0),
-  },
-  {
-    name: 'Support',
-    icon: <MaterialIcons name="support-agent" size={24} color="black" />,
-    route: '/support',
-    getPendingCount: (reports) =>
-      reports.filter((r) => r.reportType === 'support').length,
   },
 ];
 

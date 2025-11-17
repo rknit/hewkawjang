@@ -1,19 +1,35 @@
-import { fetchTopRatedRestaurants } from '@/apis/restaurant.api';
+import {
+  fetchTopRatedRestaurants,
+  getrestaurantHours,
+} from '@/apis/restaurant.api';
 import RecommendedRestaurantCard from '@/components/recom-restaurant-card';
-import { RestaurantWithAvgRating } from '@/types/restaurant.type';
+import {
+  RestaurantHours,
+  RestaurantWithAvgRating,
+} from '@/types/restaurant.type';
 import { calculatePriceRange } from '@/utils/price-range';
 import { makeRestaurantAddress } from '@/utils/restaurant';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 export default function RecommendedRestaurantGrid() {
   const [isLoading, setIsLoading] = useState(true);
   const [restaurants, setRestaurants] = useState<RestaurantWithAvgRating[]>([]);
+  const hours = useRef<Record<number, RestaurantHours>>({});
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await fetchTopRatedRestaurants().then((data) => setRestaurants(data));
+      let restaurants = await fetchTopRatedRestaurants();
+
+      const hours = Promise.all(
+        restaurants.map(async (restaurant) => {
+          return await getrestaurantHours(restaurant.id);
+        }),
+      );
+
+      setRestaurants(restaurants);
+
       setIsLoading(false);
     };
     loadData();
