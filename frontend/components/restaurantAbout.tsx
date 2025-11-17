@@ -19,7 +19,6 @@ const RestaurantAbout: React.FC<RestaurantAboutProps> = ({
 
       {/* Address */}
       <Text className="text-gray-700 mb-3">{address}</Text>
-      <View className="h-[1px] bg-gray-200 my-2" />
 
       {/* Cuisine */}
       <View className="border-t border-gray-200 pt-2 mt-2">

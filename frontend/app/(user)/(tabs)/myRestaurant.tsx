@@ -37,7 +37,8 @@ export default function MyRestaurant() {
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
-      const restaurants = await fetchOwnerRestaurants(user.id);
+      let restaurants = await fetchOwnerRestaurants(user.id);
+      restaurants = restaurants.filter((r) => !r.isDeleted);
 
       const entries = [];
       for (const restaurant of restaurants) {

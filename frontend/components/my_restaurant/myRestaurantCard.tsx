@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable } from 'react-native';
 import { updateRestaurantStatus } from '@/apis/restaurant.api';
 import { router } from 'expo-router';
-import { MyRestaurantEntry } from '@/app/(tabs)/myRestaurant';
+import { MyRestaurantEntry } from '@/app/(user)/(tabs)/myRestaurant';
 import StarRating from '../starRating';
 
 type MyRestaurantCardProps = {
@@ -14,6 +14,9 @@ export default function MyRestaurantCard({
   entry,
   onToggleStatus,
 }: MyRestaurantCardProps) {
+  const fallbackImgUrl =
+    'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
+
   const [isOpen, setIsOpen] = React.useState(
     entry.restaurant.status === 'open',
   );
@@ -36,7 +39,7 @@ export default function MyRestaurantCard({
     >
       <Image
         source={{
-          uri: 'https://th.bing.com/th/id/OIP.XY9twaWvDwJsHOwftj4V6QHaE8?w=288&h=192&c=7&r=0&o=7&cb=12&dpr=1.3&pid=1.7&rm=3',
+          uri: entry.restaurant.images?.[0] ?? fallbackImgUrl,
         }}
         className="rounded-lg rounded-b-none"
         style={{ width: 393, height: 240 }}

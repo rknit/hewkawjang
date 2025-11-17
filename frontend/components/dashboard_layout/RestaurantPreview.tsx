@@ -10,10 +10,8 @@ import { Comment } from '@/types/review.type';
 import { makeRestaurantAddress } from '@/utils/restaurant';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, View, Text} from 'react-native';
+import { SafeAreaView, ScrollView, View, Text } from 'react-native';
 import CenteredLoadingIndicator from '@/components/centeredLoading';
-import { ReportModal } from '@/components/report-modal';
-import { reportRestaurant, reportReview } from '@/apis/report.api';
 import { useUser } from '@/hooks/useUser';
 import RestaurantReserveSummary from '@/components/restaurantReserveSummary';
 
@@ -48,19 +46,14 @@ export default function RestaurantPreveiew() {
     5: 0,
   });
 
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [showReportReviewModal, setShowReportReviewModal] = useState(false);
-  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const p1 = fetchRestaurantById(restaurantId).then((data) =>{
-            setRestaurant(data)
-            console.log(data)
-          }
-        );
+        const p1 = fetchRestaurantById(restaurantId).then((data) => {
+          setRestaurant(data);
+          console.log(data);
+        });
 
         const p2 = fetchReviewsByRestaurantId(restaurantId).then((data) => {
           setReviews(data.reviews);
@@ -90,7 +83,6 @@ export default function RestaurantPreveiew() {
 
     loadData();
   }, [restaurantId]);
-
 
   if (isLoading) {
     return <CenteredLoadingIndicator />;
@@ -125,7 +117,6 @@ export default function RestaurantPreveiew() {
 
               <RestaurantAbout
                 address={restaurant ? makeRestaurantAddress(restaurant) : ''}
-                description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
                 cuisine="Buffet"
                 paymentOptions={['MasterCard', 'HewKawJangWallet']}
               />
