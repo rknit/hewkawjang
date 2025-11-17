@@ -487,7 +487,7 @@ export default function RegisterRestaurantForm() {
                       <SimpleAlert
                         type="success"
                         title="Success!"
-                        message="Update restaurant information successfully."
+                        message="Create restaurant successfully."
                         buttonText="OK"
                         onClose={onSuccessAlertClose}
                       />
@@ -502,7 +502,7 @@ export default function RegisterRestaurantForm() {
                       <SimpleAlert
                         type="error"
                         title="Fail!"
-                        message="Failed to update restaurant information."
+                        message="Failed to create restaurant."
                         buttonText="OK"
                         onClose={() => setShowSubmitFailureAlert(false)}
                       />
