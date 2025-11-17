@@ -44,8 +44,13 @@ export default function RestaurantWallet({
   }, [restaurantId]);
 
   useEffect(() => {
+    console.log(
+      'Setting up real-time subscription for restaurant:',
+      restaurantId,
+    );
+
     const channel = supabase
-      .channel('restaurant-wallet-updates')
+      .channel(`restaurant-wallet-${restaurantId}`)
       .on(
         'postgres_changes',
         {
@@ -55,15 +60,20 @@ export default function RestaurantWallet({
           filter: `id=eq.${restaurantId}`,
         },
         (payload) => {
-          console.log('Restaurant wallet updated:', payload);
+          console.log('🔔 Restaurant wallet updated via real-time:', payload);
           if (payload.new && 'wallet' in payload.new) {
-            setBalance((payload.new as any).wallet || 0);
+            const newBalance = (payload.new as any).wallet || 0;
+            console.log('💰 Updating balance to:', newBalance);
+            setBalance(newBalance);
           }
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscription');
       void supabase.removeChannel(channel);
     };
   }, [restaurantId]);
