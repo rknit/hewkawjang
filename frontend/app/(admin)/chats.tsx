@@ -97,47 +97,34 @@ export default function ChatsAdminPage() {
   useEffect(() => {
     if (!chatAdminId) return;
 
-    // const channel = supabase
-    //   .channel("realtime:admin_chat_messages")
-    //   .on(
-    //     "postgres_changes",
-    //     {
-    //       event: "*",
-    //       schema: "public",
-    //       table: "admin_message",
-    //       filter: `chat_admin_id=eq.${chatAdminId}`
-    //     },
-    //     async (payload) => {
-    //       console.log("Realtime change detected:", payload);
-    //       async function fetchMessages() {
-    //         try {
-    //           const data = await fetchAdminChatMessages(chatAdminId);
-    //           console.log(data);
-    //           setMessages(data);
-    //         } catch (err) {
-    //           console.error(err);
-    //         } finally {
-    //           setLoadingMessages(false);
-    //         }
-    //       }
-
-    //       fetchMessages();
-    //     }
-    //   )
-    //   .subscribe((status) => console.log("Realtime status:", status));
-
-    supabase
-      .channel("debug")
+    const channel = supabase
+      .channel("admin_chat_messages")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "admin_message" },
-        (p) => console.log("DEBUG event:", p)
+        {
+          event: "*",
+          schema: "public",
+          table: "admin_message",
+          filter: `chat_admin_id=eq.${chatAdminId}`
+        },
+        async (payload) => {
+          console.log("Realtime change detected:", payload);
+          async function fetchMessages() {
+            try {
+              const data = await fetchAdminChatMessages(chatAdminId);
+              console.log(data);
+              setMessages(data);
+            } catch (err) {
+              console.error(err);
+            } finally {
+              setLoadingMessages(false);
+            }
+          }
+
+          fetchMessages();
+        }
       )
       .subscribe((status) => console.log("Realtime status:", status));
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [chatAdminId]);
 
 
