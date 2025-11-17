@@ -33,7 +33,7 @@ export default function ChatChannelList({chatList, chatAdminId, setChatAdminId}:
                             numberOfLines={1} 
                             ellipsizeMode="tail"
                         >
-                            {chat.displayName}
+                            {chat.displayName ?? "null"}
                         </Text>
                         {/* <Text>last message</Text> */}
                     </View>

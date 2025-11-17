@@ -1,163 +1,147 @@
-import React from 'react';
 import {
-  View,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+  fetchRestaurantById,
+  fetchReviewsByRestaurantId,
+} from '@/apis/restaurant.api';
 import ImageGallery from '@/components/image-gallery';
 import RestaurantAbout from '@/components/restaurantAbout';
 import ReviewSection from '@/components/reviewSection';
-import RestaurantCard from '@/components/restaurantCard';
+import { Restaurant } from '@/types/restaurant.type';
+import { Comment } from '@/types/review.type';
+import { makeRestaurantAddress } from '@/utils/restaurant';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, ScrollView, View, Text} from 'react-native';
+import CenteredLoadingIndicator from '@/components/centeredLoading';
+import { ReportModal } from '@/components/report-modal';
+import { reportRestaurant, reportReview } from '@/apis/report.api';
+import { useUser } from '@/hooks/useUser';
+import RestaurantReserveSummary from '@/components/restaurantReserveSummary';
 
-type RestaurantPreviewProps = {
-  restaurantId: number;
-  onExit?: () => void;
-};
+export default function RestaurantPreveiew() {
+  const fallbackImgUrl =
+    'https://uhrpfnyjcvpwoaioviih.supabase.co/storage/v1/object/public/test/photo-1517248135467-4c7edcad34c4.jpg';
 
-export default function RestaurantPreview({
-  restaurantId,
-  onExit,
-}: RestaurantPreviewProps) {
+  const params = useLocalSearchParams<{ restaurantId?: string }>();
+  const { user } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const restaurantId = Number(params.restaurantId);
+  if (!restaurantId || isNaN(restaurantId)) {
+    // FIXME: Handle invalid restaurant ID more gracefully
+    throw new Error('Invalid restaurant ID');
+  }
+
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [reviews, setReviews] = useState<Comment[]>([]);
+  const [avgRating, setAvgRating] = useState<number>(0);
+  const [breakdown, setBreakdown] = useState<{
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  }>({
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+  });
+
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showReportReviewModal, setShowReportReviewModal] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const p1 = fetchRestaurantById(restaurantId).then((data) =>{
+            setRestaurant(data)
+            console.log(data)
+          }
+        );
+
+        const p2 = fetchReviewsByRestaurantId(restaurantId).then((data) => {
+          setReviews(data.reviews);
+          setAvgRating(data.avgRating);
+          setBreakdown(data.breakdown);
+
+          // DEBUG: confirm reviews include userId and ids are numbers/strings
+          if (__DEV__) {
+            console.log('[Restaurant] user id:', user?.id);
+            console.log(
+              '[Restaurant] sample reviews:',
+              (data.reviews || []).slice(0, 3).map((r: any) => ({
+                id: r?.id,
+                userId: r?.userId,
+                typeofId: typeof r?.id,
+                typeofUserId: typeof r?.userId,
+              })),
+            );
+          }
+        });
+
+        await Promise.all([p1, p2]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [restaurantId]);
+
+
+  if (isLoading) {
+    return <CenteredLoadingIndicator />;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white items-center">
-      <View className="w-[100%] h-[50px] bg-gray-300 flex-row items-center justify-center px-4">
+      <View className="w-[100%] flex bg-gray-300 p-2 items-center justify-center">
         <Text className="text-black text-base mr-[10px]">
           This is your Restaurant Preview
         </Text>
-
-        <TouchableOpacity
-          className="py-1 rounded bg-gray-500 px-[20px]"
-          onPress={onExit}
-        >
-          <Text className="text-white">Exit</Text>
-        </TouchableOpacity>
       </View>
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="flex-row">
-          {/* First column */}
-          <View className="w-[50%] min-w-[500px] max-w-[600px] p-[20px] space-y-6">
-            <ImageGallery images={pictures} />
+      <View className="flex-1 flex-row w-full justify-center">
+        <View className="w-[50%] min-w-[500px] max-w-[600px]">
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ padding: 20, paddingBottom: 24 }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="space-y-6">
+              <ImageGallery images={restaurant?.images ?? [fallbackImgUrl]} />
 
-            <ReviewSection
-              restaurantId={restaurantId}
-              comments={mockComments}
-              average={4.5}
-              totalReviews={2900}
-              breakdown={{ 5: 2000, 4: 600, 3: 200, 2: 80, 1: 20 }}
-            />
+              <ReviewSection
+                restaurantId={restaurantId}
+                comments={reviews}
+                average={avgRating}
+                totalReviews={reviews.length}
+                breakdown={breakdown}
+                isLoggedIn={!!user}
+                currentUserId={user?.id} // ensure this is a number
+              />
 
-            <RestaurantAbout
-              address="199 Sukhumvit Soi22, Klong Ton, Klongtoey, Bangkok 10110, Bangkok"
-              description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
-              cuisine="Buffet"
-              paymentOptions={['MasterCard', 'HewKawJangWallet']}
-            />
-          </View>
-
-          {/* Second column */}
-          <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px]">
-            <RestaurantCard {...mockRestaurantData} />
-
-            <TouchableOpacity className="bg-orange-500 px-6 py-3 rounded-md mt-4 w-[120px] items-center">
-              <Text className="text-white font-semibold">Reserve</Text>
-            </TouchableOpacity>
-          </View>
+              <RestaurantAbout
+                address={restaurant ? makeRestaurantAddress(restaurant) : ''}
+                description="Pagoda Chinese Restaurant, located on the 4th floor of the Bangkok Marriott Marquis Queen’s Park, invites diners into an elegant Cantonese dining experience. The décor draws inspiration from traditional Chinese pagodas — think ornate lanterns, dragon motifs, warm lacquered woods, and beautifully crafted lattice work — creating a setting that’s both luxurious and welcoming."
+                cuisine="Buffet"
+                paymentOptions={['MasterCard', 'HewKawJangWallet']}
+              />
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
+
+        <View className="w-[50%] min-w-[500px] max-w-[600px] mt-[20px] p-[20px] gap-y-8">
+          <RestaurantReserveSummary
+            restaurant={restaurant}
+            avgRating={avgRating}
+            isLoggedIn={!!user}
+            disableReserveButton={true}
+          />
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
-
-const pictures: string[] = [
-  'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
-  'https://images.unsplash.com/photo-1581291519195-ef11498d1cf2?auto=format&fit=crop&w=400&q=80', // portrait
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80', // forest
-  'https://images.unsplash.com/photo-1593642532871-8b12e02d091c?auto=format&fit=crop&w=400&q=80', // desk
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80', // mountain
-  'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?auto=format&fit=crop&w=400&q=80', // workspace
-  'https://images.unsplash.com/photo-1581291519195-ef11498d1cf2?auto=format&fit=crop&w=400&q=80', // portrait
-  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80', // forest
-  'https://images.unsplash.com/photo-1593642532871-8b12e02d091c?auto=format&fit=crop&w=400&q=80', // desk
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400&q=80', // mountain
-];
-
-const mockRestaurantData = {
-  name: "Pagoda Chinese Restaurant @ Bangkok Marriott Marquis Queen's Park",
-  address: '199 Sukhumvit Soi22, Klong Ton, Klongtoey, Bangkok 10110, Bangkok',
-  tags: ['Phrom Phong', 'Chinese Cuisine'],
-  rating: 4.5,
-  prices: 4, // just placeholders
-  openingHours: [
-    { day: 'Monday', openTime: '09:00', closeTime: '17:00' },
-    { day: 'Tuesday', openTime: '09:00', closeTime: '17:00' },
-    { day: 'Wednesday', openTime: '09:00', closeTime: '17:00' },
-    { day: 'Thursday', openTime: '09:00', closeTime: '17:00' },
-    { day: 'Friday', openTime: '09:00', closeTime: '20:00' },
-    { day: 'Saturday', openTime: '10:00', closeTime: '20:00' },
-    { day: 'Sunday', openTime: '10:00', closeTime: '16:00' },
-  ],
-  buttonLabel: 'Reserve',
-};
-
-const mockComments = [
-  {
-    id: '1',
-    name: 'BankEatLaek',
-    avatar: 'https://placekitten.com/100/100',
-    rating: 5,
-    comment:
-      'Amazing experience from start to finish! The food was fresh, flavorful, and beautifully presented. Service was friendly and attentive, and the atmosphere made it perfect for a memorable night out.',
-    date: '1 days ago',
-  },
-  {
-    id: '2',
-    name: 'FoodieGirl',
-    avatar: 'https://placekitten.com/101/101',
-    rating: 4,
-    comment:
-      'The food was really good, but the service was a bit slow. Still, worth a visit!',
-    date: '3 days ago',
-  },
-  {
-    id: '3',
-    name: 'HungryMan',
-    avatar: 'https://placekitten.com/102/102',
-    rating: 5,
-    comment:
-      'Best dining experience I’ve had in a long time. Highly recommended!',
-    date: '5 days ago',
-  },
-  {
-    id: '4',
-    name: 'BankEatLaek',
-    avatar: 'https://placekitten.com/100/100',
-    rating: 5,
-    comment:
-      'Amazing experience from start to finish! The food was fresh, flavorful, and beautifully presented. Service was friendly and attentive, and the atmosphere made it perfect for a memorable night out.',
-    date: '1 days ago',
-  },
-  {
-    id: '5',
-    name: 'FoodieGirl',
-    avatar: 'https://placekitten.com/101/101',
-    rating: 4,
-    comment:
-      'The food was really good, but the service was a bit slow. Still, worth a visit!',
-    date: '3 days ago',
-  },
-  {
-    id: '6',
-    name: 'HungryMan',
-    avatar: 'https://placekitten.com/102/102',
-    rating: 5,
-    comment:
-      'Best dining experience I’ve had in a long time. Highly recommended!',
-    date: '5 days ago',
-  },
-];
