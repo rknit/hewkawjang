@@ -30,12 +30,12 @@ export default function PaymentMethodSelector({
       icon: '💰',
       description: 'Pay with your Hewkawjang wallet balance',
     },
-    {
-      id: 'PromptPay',
-      label: 'PromptPay',
-      image: require('../assets/images/promptpay-logo.png'),
-      description: 'Fast payment with PromptPay',
-    },
+    // {
+    //   id: 'PromptPay',
+    //   label: 'PromptPay',
+    //   image: require('../assets/images/promptpay-logo.png'),
+    //   description: 'Fast payment with PromptPay',
+    // },
   ];
 
   return (
