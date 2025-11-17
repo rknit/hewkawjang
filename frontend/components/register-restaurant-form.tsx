@@ -211,7 +211,7 @@ export default function RegisterRestaurantForm() {
     return (
       <View className="h-full w-3/5 bg-white p-16 pr-32 overflow-y-auto">
         <View className="bg-[#FEF9F3] rounded-2xl border border-[#FAE8D1] shadow p-16 mb-16">
-          <Text className="text-left text-2xl font-bold mb-8">Settings</Text>
+          <Text className="text-left text-2xl font-bold mb-8">Create Restaurant</Text>
   
           {/* Restaurant Name */}
           <Text className="text-left text-base mb-1">Restaurant Name</Text>
@@ -476,7 +476,7 @@ export default function RegisterRestaurantForm() {
             onPress={handleSubmit}
           >
             <Text className="text-center text-lg font-bold text-white">
-              Save
+              Submit
             </Text>
           </TouchableOpacity>
 
