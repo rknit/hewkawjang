@@ -8,6 +8,8 @@ import {
 } from '@/apis/payment.api';
 import BaseModal from './base-modal';
 import AddBalanceModal from './topup/addBalanceModal';
+import { supabase } from '@/utils/supabase';
+import { fetchCurrentUser } from '@/apis/user.api';
 
 interface MyWalletModalProps {
   visible: boolean;
@@ -18,20 +20,62 @@ export default function MyWallet({ visible, onClose }: MyWalletModalProps) {
   const [balance, setBalance] = useState<number>(0);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  const loadBalance = async () => {
+    try {
+      const userBalance = await getUserBalance();
+      setBalance(userBalance);
+    } catch (error) {
+      console.error('Failed to fetch balance:', error);
+      Alert.alert('Error', 'Failed to fetch balance. Please try again.');
+    }
+  };
+
   useEffect(() => {
-    const fetchBalance = async () => {
+    if (visible) {
+      loadBalance();
+    }
+  }, [visible]);
+
+  // Real-time subscription for balance updates
+  useEffect(() => {
+    if (!visible) return;
+
+    const setupRealtimeSubscription = async () => {
       try {
-        const userBalance = await getUserBalance();
-        setBalance(userBalance);
+        const user = await fetchCurrentUser();
+        if (!user?.id) return;
+
+        const channel = supabase
+          .channel('user-balance-updates')
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'users',
+              filter: `id=eq.${user.id}`,
+            },
+            (payload) => {
+              console.log('User balance updated:', payload);
+              if (payload.new && 'balance' in payload.new) {
+                setBalance((payload.new as any).balance || 0);
+              }
+            },
+          )
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
       } catch (error) {
-        console.error('Failed to fetch balance:', error);
-        Alert.alert('Error', 'Failed to fetch balance. Please try again.');
+        console.error('Failed to setup realtime subscription:', error);
       }
     };
 
-    if (visible) {
-      fetchBalance();
-    }
+    const cleanup = setupRealtimeSubscription();
+    return () => {
+      cleanup.then((fn) => fn && fn());
+    };
   }, [visible]);
 
   const handleAddBalance = () => {

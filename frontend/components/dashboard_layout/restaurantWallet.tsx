@@ -45,18 +45,20 @@ export default function RestaurantWallet({
 
   useEffect(() => {
     const channel = supabase
-      .channel('realtime:reservations')
+      .channel('restaurant-wallet-updates')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'restaurants',
-          filter: `restaurant_id=eq.${restaurantId}`,
+          table: 'restaurant',
+          filter: `id=eq.${restaurantId}`,
         },
-        () => {
-          console.log('Database changed — refreshing stats');
-          loadData();
+        (payload) => {
+          console.log('Restaurant wallet updated:', payload);
+          if (payload.new && 'wallet' in payload.new) {
+            setBalance((payload.new as any).wallet || 0);
+          }
         },
       )
       .subscribe();
