@@ -55,6 +55,7 @@
     "stripe": "^19.2.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.0.3",
     "yaml": "^2.8.1",
     "zod": "^4.1.8"
   }
