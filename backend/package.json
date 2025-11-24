@@ -41,7 +41,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
-    "drizzle-orm": "^0.44.5",
+    "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",
     "express": "^5.1.0",
     "fuse.js": "^7.1.0",
